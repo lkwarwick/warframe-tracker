@@ -1,0 +1,7 @@
+[project]
+name = "warframe-tracker"
+version = "0.1.0"
+description = "My personal Warframe tracker."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
