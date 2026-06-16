@@ -1,7 +1,7 @@
 import json
 import requests
 from pathlib import Path
-from dash import Dash, html
+from dash import Dash, html, dcc
 from api.schemas.warframes import Warframe
 
 WFCD_BASE = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/"
@@ -41,6 +41,16 @@ def create_warframe_cell(warframe: Warframe, image_map: dict):
     ingredients = warframe.get_ingredients()
     
     children = []
+    
+    # Add checkbox
+    children.append(
+        dcc.Checklist(
+            options=[{'label': '', 'value': True}],
+            value=[],
+            id={'type': 'wf-checkbox', 'index': warframe.unique_name},
+            style={'position': 'absolute', 'top': '10px', 'right': '10px', 'transform': 'scale(1.5)'}
+        )
+    )
     
     # Add image if available
     image_url = image_map.get(warframe.unique_name)
