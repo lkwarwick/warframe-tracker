@@ -74,12 +74,19 @@ p {
     color: #a0a0a0;
 }
 
-/* Add some container styling for a cleaner look */
+/* Custom styling for checkboxes in warframe cards */
+.warframe-card .warframe-checkbox {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    transform: scale(1.5);
+}
+
 .warframe-card input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
     background-color: rgba(212, 175, 55, 0.1);
-    border: 2px solid #d4af37;
+    border: 1px solid rgba(212, 175, 55, 0.4);
     border-radius: 4px;
     width: 20px;
     height: 20px;
@@ -88,11 +95,12 @@ p {
     align-items: center;
     justify-content: center;
     position: relative;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
 .warframe-card input[type="checkbox"]:checked {
     background-color: #d4af37;
+    border-color: #d4af37;
 }
 
 .warframe-card input[type="checkbox"]:checked::after {
@@ -103,15 +111,16 @@ p {
 }
 
 /* Remove default list styling from dcc.Checklist */
-.warframe-card .dash-checklist {
-    padding: 0;
-    margin: 0;
-    list-style: none;
+.dash-checklist {
+    padding: 0 !important;
+    margin: 0 !important;
+    list-style: none !important;
 }
 
-.warframe-card .dash-checklist li {
-    padding: 0;
-    margin: 0;
+.dash-checklist li {
+    padding: 0 !important;
+    margin: 0 !important;
+    list-style: none !important;
 }
 
 /* Add some container styling for a cleaner look */

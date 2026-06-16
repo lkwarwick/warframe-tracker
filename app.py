@@ -48,7 +48,7 @@ def create_warframe_cell(warframe: Warframe, image_map: dict):
             options=[{'label': '', 'value': True}],
             value=[],
             id={'type': 'wf-checkbox', 'index': warframe.unique_name},
-            style={'position': 'absolute', 'top': '10px', 'right': '10px', 'transform': 'scale(1.5)'}
+            className='warframe-checkbox'
         )
     )
     
