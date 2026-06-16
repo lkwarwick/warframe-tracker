@@ -3,9 +3,14 @@ import requests
 from pathlib import Path
 from dash import Dash, html, dcc
 from api.schemas.warframes import Warframe
+from api.user_db import UserDatabase
 
 WFCD_BASE = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/"
 IMG_BASE = "https://cdn.warframestat.us/img/"
+
+# Initialize user database
+user_db = UserDatabase()
+user_data = user_db.load_data()
 
 def get_warframe_images() -> dict:
     """Fetch image mapping {uniqueName: imageUrl} from WFCD for Warframes."""
@@ -42,11 +47,14 @@ def create_warframe_cell(warframe: Warframe, image_map: dict):
     
     children = []
     
+    # Check if this warframe is in the user's checked list
+    is_checked = warframe.unique_name in user_data.get("checked_warframes", [])
+    
     # Add checkbox
     children.append(
         dcc.Checklist(
             options=[{'label': '', 'value': True}],
-            value=[],
+            value=[True] if is_checked else [],
             id={'type': 'wf-checkbox', 'index': warframe.unique_name},
             className='warframe-checkbox'
         )

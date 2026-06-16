@@ -86,7 +86,7 @@ p {
     appearance: none;
     -webkit-appearance: none;
     background-color: rgba(212, 175, 55, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.4);
+    border: 1.5px solid rgba(212, 175, 55, 0.6);
     border-radius: 4px;
     width: 20px;
     height: 20px;
