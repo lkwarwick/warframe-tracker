@@ -21,14 +21,14 @@ class ItemCell(QWidget):
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(6)
 
-        # IMAGE (fixed area)
+        # IMAGE
         self.image = QLabel()
         self.image.setFixedSize(180, 180)
         self.image.setAlignment(Qt.AlignCenter)
         self.image.setStyleSheet("background: transparent;")
         layout.addWidget(self.image)
 
-        # NAME (fixed height)
+        # NAME
         self.label = QLabel(self.wf.name)
         self.label.setFixedHeight(28)
         self.label.setAlignment(Qt.AlignCenter)
@@ -40,7 +40,7 @@ class ItemCell(QWidget):
         """)
         layout.addWidget(self.label)
 
-        # COMPONENTS (fixed area)
+        # COMPONENTS
         self.components_box = QWidget()
         self.components_box.setFixedHeight(110)
 
@@ -48,29 +48,34 @@ class ItemCell(QWidget):
         comp_layout.setContentsMargins(6, 6, 6, 6)
         comp_layout.setSpacing(4)
 
-        if self.wf.components:
-            self.component_widgets = []
+        self.component_widgets: dict[str, ComponentLabel] = {}
 
-            for c in (self.wf.components or []):
+        if self.wf.components:
+            for c in self.wf.components:
                 if not c.unique_name:
                     continue
 
                 lbl = ComponentLabel(
                     c.unique_name,
-                    f"{c.item_count}× {c.name}"
+                    f"{c.item_count}× {c.name}",
                 )
 
-                lbl.setStyleSheet("font-size: 12px; color: #ddd;")
-                lbl.clicked.connect(self._on_component_clicked)
+                lbl.setStyleSheet("font-size: 12px; color: #dddddd;")
+
+                lbl.clicked.connect(
+                    lambda uid=c.unique_name: self._on_component_clicked(uid)
+                )
 
                 comp_layout.addWidget(lbl)
-                self.component_widgets.append(lbl)
+                self.component_widgets[c.unique_name] = lbl
 
         layout.addWidget(self.components_box)
 
         self._load_image()
         self.update_style()
         self._refresh_component_styles()
+
+    # ---------------- IMAGE ----------------
 
     def _load_image(self):
         if not getattr(self.wf, "image_name", None):
@@ -99,13 +104,31 @@ class ItemCell(QWidget):
                 )
             )
 
+    # ---------------- SELECTION ----------------
+
     def mousePressEvent(self, event):
-        if self.wf.components:  # has components → block full-cell toggle
+        if self.wf.components:
             return
 
         new_state = self.wf.unique_name not in self.store.selected
         self.store.toggle(self.wf.unique_name, new_state)
         self.update_style()
+
+    def _on_component_clicked(self, uid: str):
+        wf_uid = self.wf.unique_name
+
+        selected = self.store.component_selected.get(wf_uid, set())
+
+        if uid in selected:
+            self.store.toggle_component(wf_uid, uid, False)
+        else:
+            self.store.toggle_component(wf_uid, uid, True)
+
+        self.update_style()
+        self._refresh_component_styles()
+        self.update()
+
+    # ---------------- STYLE ----------------
 
     def update_style(self):
         if self.store.is_wf_complete(self.wf):
@@ -113,28 +136,18 @@ class ItemCell(QWidget):
         else:
             self.setStyleSheet("background-color: #333; border-radius: 8px;")
 
-    def _on_component_clicked(self, uid: str):
-        new_state = uid not in self.store.component_selected
-        self.store.toggle_component(uid, new_state)
-
-        self.update_style()
-        self._refresh_component_styles()
-
-
     def _refresh_component_styles(self):
         if not self.wf.components:
             return
 
-        selected = self.store.component_selected
+        selected = self.store.component_selected.get(self.wf.unique_name, set())
         all_selected = all(
             c.unique_name in selected
             for c in self.wf.components
             if c.unique_name
         )
 
-        for c, widget in zip(self.wf.components, self.component_widgets):
-            uid = c.unique_name
-
+        for uid, widget in self.component_widgets.items():
             if uid in selected and all_selected:
                 widget.setStyleSheet("""
                     font-size: 12px;
@@ -151,4 +164,4 @@ class ItemCell(QWidget):
                 widget.setStyleSheet("""
                     font-size: 12px;
                     color: #888;
-            """)
+                """)
