@@ -35,8 +35,6 @@ class App(QWidget):
         self.cells = []
         self.render()
 
-        logger.info("[INIT loader id]", id(self.loader))
-
     def render(self):
         while self.grid.count():
             w = self.grid.takeAt(0).widget()

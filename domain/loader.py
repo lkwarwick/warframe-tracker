@@ -1,11 +1,12 @@
-import json
-from pathlib import Path
+import requests
 from domain.models import Warframe
+from loguru import logger
 
-
-DATA_PATH = Path("./data/WFCD_Warframes.json")
+WF_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json"
 
 
 def load_warframes() -> list[Warframe]:
-    raw = json.loads(DATA_PATH.read_text())
+    logger.info("Loading warframes from remote source...")
+    raw = requests.get(WF_URL, timeout=10).json()
+    logger.info(f"Loaded {len(raw)} warframes from remote source.")
     return [Warframe.model_validate(x) for x in raw]
