@@ -7,7 +7,8 @@ STATE_PATH = Path("data/state.json")
 
 class Store:
     def __init__(self):
-        self.selected: set[str] = set()
+        self.selected = set()
+        self.component_selected = set()
         self.load()
 
     def load(self):
@@ -30,3 +31,19 @@ class Store:
             self.selected.discard(uid)
 
         self.save()
+    
+    def toggle_component(self, uid: str, state: bool):
+        if state:
+            self.component_selected.add(uid)
+        else:
+            self.component_selected.discard(uid)
+
+    def is_wf_complete(self, wf) -> bool:
+        if not wf.components:
+            return wf.unique_name in self.selected
+
+        return all(
+            c.unique_name in self.component_selected
+            for c in wf.components
+            if c.unique_name
+        )

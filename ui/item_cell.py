@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import Qt
 from infra.image_loader import ImageLoader
+from ui.component_label import ComponentLabel
 
 IMG_BASE = "https://cdn.warframestat.us/img/"
 
@@ -48,15 +49,28 @@ class ItemCell(QWidget):
         comp_layout.setSpacing(4)
 
         if self.wf.components:
-            for c in self.wf.components[:5]:
-                lbl = QLabel(f"{c.item_count}× {c.name}")
+            self.component_widgets = []
+
+            for c in (self.wf.components or []):
+                if not c.unique_name:
+                    continue
+
+                lbl = ComponentLabel(
+                    c.unique_name,
+                    f"{c.item_count}× {c.name}"
+                )
+
                 lbl.setStyleSheet("font-size: 12px; color: #ddd;")
+                lbl.clicked.connect(self._on_component_clicked)
+
                 comp_layout.addWidget(lbl)
+                self.component_widgets.append(lbl)
 
         layout.addWidget(self.components_box)
 
         self._load_image()
         self.update_style()
+        self._refresh_component_styles()
 
     def _load_image(self):
         if not getattr(self.wf, "image_name", None):
@@ -86,12 +100,55 @@ class ItemCell(QWidget):
             )
 
     def mousePressEvent(self, event):
+        if self.wf.components:  # has components → block full-cell toggle
+            return
+
         new_state = self.wf.unique_name not in self.store.selected
         self.store.toggle(self.wf.unique_name, new_state)
         self.update_style()
 
     def update_style(self):
-        if self.wf.unique_name in self.store.selected:
+        if self.store.is_wf_complete(self.wf):
             self.setStyleSheet("background-color: #2a6; border-radius: 8px;")
         else:
             self.setStyleSheet("background-color: #333; border-radius: 8px;")
+
+    def _on_component_clicked(self, uid: str):
+        new_state = uid not in self.store.component_selected
+        self.store.toggle_component(uid, new_state)
+
+        self.update_style()
+        self._refresh_component_styles()
+
+
+    def _refresh_component_styles(self):
+        if not self.wf.components:
+            return
+
+        selected = self.store.component_selected
+        all_selected = all(
+            c.unique_name in selected
+            for c in self.wf.components
+            if c.unique_name
+        )
+
+        for c, widget in zip(self.wf.components, self.component_widgets):
+            uid = c.unique_name
+
+            if uid in selected and all_selected:
+                widget.setStyleSheet("""
+                    font-size: 12px;
+                    color: #000;
+                    font-weight: 600;
+                """)
+            elif uid in selected:
+                widget.setStyleSheet("""
+                    font-size: 12px;
+                    color: #2a6;
+                    font-weight: 600;
+                """)
+            else:
+                widget.setStyleSheet("""
+                    font-size: 12px;
+                    color: #888;
+            """)
