@@ -1,7 +1,7 @@
 import json
 import requests
 from pathlib import Path
-from dash import Dash, html, dcc
+from dash import Dash, html, dcc, callback, Output, Input, ALL, no_update
 from api.schemas.warframes import Warframe
 from api.user_db import UserDatabase
 
@@ -10,7 +10,6 @@ IMG_BASE = "https://cdn.warframestat.us/img/"
 
 # Initialize user database
 user_db = UserDatabase()
-user_data = user_db.load_data()
 
 def get_warframe_images() -> dict:
     """Fetch image mapping {uniqueName: imageUrl} from WFCD for Warframes."""
@@ -42,13 +41,13 @@ def load_data():
     except Exception as e:
         return [], str(e)
 
-def create_warframe_cell(warframe: Warframe, image_map: dict):
+def create_warframe_cell(warframe: Warframe, image_map: dict, checked_list):
     ingredients = warframe.get_ingredients()
     
     children = []
     
     # Check if this warframe is in the user's checked list
-    is_checked = warframe.unique_name in user_data.get("checked_warframes", [])
+    is_checked = warframe.unique_name in checked_list
     
     # Add checkbox
     children.append(
@@ -82,10 +81,34 @@ warframe_images = get_warframe_images()
 
 app = Dash(__name__)
 
+@app.callback(
+    Output('warframe-grid', 'children'),
+    Input({'type': 'wf-checkbox', 'index': ALL}, 'value'),
+)
+def update_grid(values):
+    """Save checkbox state to disk and re-render grid with fresh data."""
+    if values is None:
+        return no_update
+    
+    # Map checkbox values to warframe names (ALL preserves creation order = warframes order)
+    checked_list = [
+        wf.unique_name for wf, val in zip(warframes, values) if val
+    ]
+    
+    user_db.save_data({"checked_warframes": checked_list})
+    
+    # Re-read from disk to ensure consistency
+    fresh_checked = user_db.load_data().get("checked_warframes", [])
+    return [create_warframe_cell(wf, warframe_images, fresh_checked) for wf in warframes]
+
 app.layout = html.Div(children=[
     html.Div(children=[
         html.H1(children='Warframe Tracker'),
-        html.Div(children=[create_warframe_cell(wf, warframe_images) for wf in warframes], className='warframe-grid') if not error_msg else html.P(children=f"Error loading data: {error_msg}"),
+        html.Div(
+            children=[create_warframe_cell(wf, warframe_images, user_db.load_data().get("checked_warframes", [])) for wf in warframes],
+            id='warframe-grid',
+            className='warframe-grid'
+        ) if not error_msg else html.P(children=f"Error loading data: {error_msg}"),
     ], className='container')
 ])
 

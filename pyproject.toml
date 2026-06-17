@@ -10,5 +10,6 @@ dependencies = [
     "ipykernel>=7.3.0",
     "jupyter>=1.1.1",
     "loguru>=0.7.3",
+    "nicegui>=3.13.0",
     "requests>=2.34.2",
 ]
