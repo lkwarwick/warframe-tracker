@@ -1,18 +1,13 @@
 from typing import List, Optional, Union
 from pydantic import BaseModel, Field
 
+from domain.models.common import ComponentDrop, Introduced
+
 class Ability(BaseModel):
     unique_name: str = Field(..., alias="uniqueName")
     name: str
     description: str
     image_name: str = Field(..., alias="imageName")
-
-class ComponentDrop(BaseModel):
-    location: str
-    type: str
-    chance: float
-    rarity: str
-    unique_name: Optional[str] = Field(None, alias="uniqueName")
 
 class Component(BaseModel):
     unique_name: str = Field(..., alias="uniqueName")
@@ -27,21 +22,6 @@ class Component(BaseModel):
     prime_selling_price: Optional[int] = Field(None, alias="primeSellingPrice")
     ducats: Optional[int] = Field(None, alias="ducats")
     exclude_from_codex: Optional[bool] = Field(None, alias="excludeFromCodex")
-
-class Patchlog(BaseModel):
-    name: str
-    date: str
-    url: str
-    additions: str
-    changes: str
-    fixes: str
-
-class Introduced(BaseModel):
-    name: str
-    url: str
-    aliases: List[str]
-    parent: str
-    date: str
 
 class Warframe(BaseModel):
     unique_name: str = Field(..., alias="uniqueName")

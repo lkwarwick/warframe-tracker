@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
-from domain.loader import load_warframes
+from domain.loader import load_warframes, load_primaries
 from infra.image_loader import ImageLoader
 from state.store import Store
 
@@ -18,10 +18,11 @@ from ui.primary_page import PrimaryPage
 
 
 class App(QWidget):
-    def __init__(self, items, store):
+    def __init__(self, warframes, primaries, store):
         super().__init__()
 
-        self.items = items
+        self.warframes = warframes
+        self.primaries = primaries
         self.store = store
         self.loader = ImageLoader()
 
@@ -60,8 +61,8 @@ class App(QWidget):
 
         self.stack = QStackedWidget()
 
-        self.warframes_page = WarframesPage(items, store, self.loader)
-        self.primary_page = PrimaryPage()
+        self.warframes_page = WarframesPage(warframes, store, self.loader)
+        self.primary_page = PrimaryPage(primaries, store, self.loader)
 
         self.stack.addWidget(self.warframes_page)
         self.stack.addWidget(self.primary_page)
@@ -96,10 +97,11 @@ class App(QWidget):
 if __name__ == "__main__":
     app = QApplication([])
 
-    items = load_warframes()
+    warframes = load_warframes()
+    primaries = load_primaries()
     store = Store()
 
-    w = App(items, store)
+    w = App(warframes, primaries, store)
     w.show()
 
     app.exec()

@@ -131,7 +131,7 @@ class ItemCell(QWidget):
     # ---------------- STYLE ----------------
 
     def update_style(self):
-        if self.store.is_wf_complete(self.wf):
+        if self.store.is_complete(self.wf):
             self.setStyleSheet("background-color: #2a6; border-radius: 8px;")
         else:
             self.setStyleSheet("background-color: #333; border-radius: 8px;")

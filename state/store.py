@@ -7,7 +7,7 @@ STATE_PATH = Path("data/state.json")
 
 class Store:
     def __init__(self):
-        self.selected = set()
+        self.selected: set[str] = set()
         self.component_selected: dict[str, set[str]] = {}
         self.load()
 
@@ -15,21 +15,21 @@ class Store:
         if not STATE_PATH.exists():
             return
 
-        data = json.loads(STATE_PATH.read_text())
+        data = json.loads(STATE_PATH.read_text() or "{}")
 
         self.selected = set(data.get("selected", []))
 
+        raw_components = data.get("component_selected", {}) or {}
         self.component_selected = {
-            k: set(v)
-            for k, v in data.get("component_selected", {}).items()
+            k: set(v or [])
+            for k, v in raw_components.items()
         }
 
     def save(self):
-        STATE_PATH.parent.mkdir(exist_ok=True)
+        STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
         STATE_PATH.write_text(
-            json.
-            dumps(
+            json.dumps(
                 {
                     "selected": list(self.selected),
                     "component_selected": {
@@ -47,26 +47,26 @@ class Store:
             self.selected.discard(uid)
 
         self.save()
-    
+
     def toggle_component(self, wf_uid: str, comp_uid: str, state: bool):
-        if wf_uid not in self.component_selected:
-            self.component_selected[wf_uid] = set()
+        comp_set = self.component_selected.setdefault(wf_uid, set())
 
         if state:
-            self.component_selected[wf_uid].add(comp_uid)
+            comp_set.add(comp_uid)
         else:
-            self.component_selected[wf_uid].discard(comp_uid)
+            comp_set.discard(comp_uid)
 
         self.save()
 
-    def is_wf_complete(self, wf) -> bool:
-        if not wf.components:
-            return wf.unique_name in self.selected
+    def is_complete(self, item) -> bool:
 
-        comp = self.component_selected.get(wf.unique_name, set())
+        if not getattr(item, "components", None):
+            return item.unique_name in self.selected
+
+        comp = self.component_selected.get(item.unique_name, set())
 
         return all(
             c.unique_name in comp
-            for c in wf.components
+            for c in item.components
             if c.unique_name
         )
