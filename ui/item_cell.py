@@ -49,7 +49,7 @@ class ItemCell(QWidget):
         pix = QPixmap()
         if pix.loadFromData(data):
             self.image.setPixmap(
-                pix.scaled(160, 160, Qt.KeepAspectRatio, Qt.FastTransformation)
+                pix.scaled(160, 160, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             )
 
     def mousePressEvent(self, event):
