@@ -5,11 +5,13 @@ description = "My personal Warframe tracker."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "genson>=1.3.0",
-    "ipykernel>=7.3.0",
-    "jupyter>=1.1.1",
     "loguru>=0.7.3",
     "pydantic>=2.13.4",
     "pyside6>=6.11.1",
     "requests>=2.34.2",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.17",
 ]

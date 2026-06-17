@@ -6,7 +6,6 @@ from PySide6.QtWidgets import (
     QGridLayout,
 )
 from PySide6.QtCore import Qt, QTimer
-from loguru import logger
 
 from domain.loader import load_warframes
 from infra.image_loader import ImageLoader
