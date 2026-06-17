@@ -87,27 +87,3 @@ class Warframe(BaseModel):
         if not self.components:
             return []
         return [{"name": c.name, "count": c.item_count} for c in self.components]
-
-if __name__ == "__main__":
-    import json
-    from pathlib import Path
-
-    # The data file is in the project root's data directory
-    # api/schemas/new_warframes.py -> ../../data/WFCD_Warframes.json
-    data_path = Path(__file__).resolve().parents[2] / "data" / "WFCD_Warframes.json"
-    
-    with open(data_path, "r") as f:
-        data = json.load(f)
-    
-    gyre_prime_dict = next((item for item in data if item.get("name") == "Gyre Prime"), None)
-    
-    if gyre_prime_dict:
-        try:
-            gyre_prime = Warframe.model_validate(gyre_prime_dict)
-            print(gyre_prime.model_dump_json(indent=2))
-        except Exception as e:
-            print(f"Error validating Gyre Prime: {e}")
-            # If validation fails, just print the dict as JSON
-            print(json.dumps(gyre_prime_dict, indent=2))
-    else:
-        print("Gyre Prime not found in data.")
