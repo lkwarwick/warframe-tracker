@@ -7,7 +7,13 @@ class ImageLoader(QObject):
         super().__init__()
         self.manager = QNetworkAccessManager(self)
 
+        self.cache: dict[str, bytes] = {}
+
     def fetch(self, uid: str, url: str, callback):
+        if uid in self.cache:
+            callback(uid, self.cache[uid])
+            return
+
         reply = self.manager.get(QNetworkRequest(url))
 
         reply.finished.connect(lambda r=reply: self._done(uid, r, callback))
@@ -23,5 +29,7 @@ class ImageLoader(QObject):
 
         data = reply.readAll().data()
         reply.deleteLater()
+
+        self.cache[uid] = data
 
         callback(uid, data)

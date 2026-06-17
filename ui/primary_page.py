@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QGridLayout
 from PySide6.QtCore import Qt, QTimer
 
 from ui.item_cell import ItemCell
+from ui.toolbar import build_toolbar
 
 
 class PrimaryPage(QWidget):
@@ -9,6 +10,7 @@ class PrimaryPage(QWidget):
         super().__init__()
 
         self.items = items
+        self.filtered_items = list(self.items)
         self.store = store
         self.loader = loader
 
@@ -24,7 +26,13 @@ class PrimaryPage(QWidget):
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.scroll.setWidget(self.container)
 
+        toolbar = build_toolbar(
+            on_search=self.on_search,
+            on_filter=self.on_filter,
+        )
+
         layout = QVBoxLayout(self)
+        layout.addWidget(toolbar)
         layout.addWidget(self.scroll)
 
         self.cells = []
@@ -43,7 +51,7 @@ class PrimaryPage(QWidget):
 
         self.cells.clear()
 
-        for i, weapon in enumerate(self.items):
+        for i, weapon in enumerate(self.filtered_items):
             cell = ItemCell(weapon, self.store, self.loader)
             self.cells.append(cell)
 
@@ -73,3 +81,19 @@ class PrimaryPage(QWidget):
                 i // cols,
                 i % cols,
             )
+
+    def on_search(self, text: str):
+        t = text.lower().strip()
+
+        if not t:
+            self.filtered_items = self.items
+        else:
+            self.filtered_items = [
+                w for w in self.items
+                if t in w.name.lower()
+            ]
+
+        self.render()
+
+    def on_filter(self):
+        pass

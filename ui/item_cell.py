@@ -49,6 +49,8 @@ class ItemCell(QWidget):
         comp_layout.setSpacing(4)
 
         self.component_widgets: dict[str, ComponentLabel] = {}
+        
+        self._gen = 0
 
         if self.wf.components:
             for c in self.wf.components:
@@ -81,20 +83,31 @@ class ItemCell(QWidget):
         if not getattr(self.wf, "image_name", None):
             return
 
+        self._gen += 1
+        gen = self._gen
+
         url = IMG_BASE + self.wf.image_name
 
         self.loader.fetch(
             self.wf.unique_name,
             url,
-            self._on_image_loaded,
+            lambda uid, data, gen=gen: self._on_image_loaded(uid, data, gen),
         )
 
-    def _on_image_loaded(self, uid: str, data: bytes):
+    def _on_image_loaded(self, uid: str, data: bytes, gen: int):
+        # stale async result
+        if gen != self._gen:
+            return
+
         if uid != self.wf.unique_name:
             return
 
         pix = QPixmap()
-        if pix.loadFromData(data):
+        if not pix.loadFromData(data):
+            return
+
+        # Qt object might already be deleted -> guard BEFORE touching it
+        try:
             self.image.setPixmap(
                 pix.scaled(
                     180,
@@ -103,6 +116,9 @@ class ItemCell(QWidget):
                     Qt.SmoothTransformation,
                 )
             )
+        except RuntimeError:
+            # QLabel already destroyed during filter/rebuild
+            return
 
     # ---------------- SELECTION ----------------
 
@@ -165,3 +181,6 @@ class ItemCell(QWidget):
                     font-size: 12px;
                     color: #888;
                 """)
+                
+    def _alive(self) -> bool:
+        return self.image is not None and self.image.parent() is not None

@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QGridLayout
 from PySide6.QtCore import Qt, QTimer
 
 from ui.item_cell import ItemCell
+from ui.toolbar import build_toolbar
 
 
 class WarframesPage(QWidget):
@@ -9,6 +10,7 @@ class WarframesPage(QWidget):
         super().__init__()
 
         self.items = items
+        self.filtered_items = list(self.items)
         self.store = store
         self.loader = loader
 
@@ -24,7 +26,13 @@ class WarframesPage(QWidget):
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.scroll.setWidget(self.container)
 
+        toolbar = build_toolbar(
+            on_search=self.on_search,
+            on_filter=self.on_filter,
+        )
+
         layout = QVBoxLayout(self)
+        layout.addWidget(toolbar)
         layout.addWidget(self.scroll)
 
         self.cells = []
@@ -39,7 +47,7 @@ class WarframesPage(QWidget):
 
         self.cells.clear()
 
-        for i, wf in enumerate(self.items):
+        for i, wf in enumerate(self.filtered_items):
             cell = ItemCell(wf, self.store, self.loader)
             self.cells.append(cell)
             self.grid.addWidget(cell, i // self.cols(), i % self.cols())
@@ -57,3 +65,19 @@ class WarframesPage(QWidget):
         cols = self.cols()
         for i, cell in enumerate(self.cells):
             self.grid.addWidget(cell, i // cols, i % cols)
+
+    def on_search(self, text: str):
+        t = text.lower().strip()
+
+        if not t:
+            self.filtered_items = self.items
+        else:
+            self.filtered_items = [
+                wf for wf in self.items
+                if t in wf.name.lower()
+            ]
+
+        self.render()
+
+    def on_filter(self):
+        pass
