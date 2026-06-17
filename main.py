@@ -2,15 +2,19 @@ from PySide6.QtWidgets import (
     QApplication,
     QWidget,
     QVBoxLayout,
-    QScrollArea,
-    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QStackedWidget,
 )
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt
 
 from domain.loader import load_warframes
 from infra.image_loader import ImageLoader
 from state.store import Store
-from ui.item_cell import ItemCell
+
+from ui.warframes_page import WarframesPage
+from ui.primary_page import PrimaryPage
 
 
 class App(QWidget):
@@ -22,54 +26,71 @@ class App(QWidget):
         self.loader = ImageLoader()
 
         self.resize(1920, 1080)
-        QTimer.singleShot(0, self.relayout)
-
-        self.container = QWidget()
-        self.grid = QGridLayout(self.container)
-
-        self.grid.setSpacing(12)
-        self.grid.setContentsMargins(12, 12, 12, 12)
-
-        self.scroll = QScrollArea()
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.scroll.setWidget(self.container)
 
         layout = QVBoxLayout(self)
-        layout.addWidget(self.scroll)
 
-        self.cells = []
+        # TITLE
+        title = QLabel("Warframe Tracker")
+        title.setAlignment(Qt.AlignCenter)
+        title.setStyleSheet("""
+            font-size: 28px;
+            font-weight: 700;
+            color: #e6d39a;
+            padding: 12px;
+        """)
 
-        self.render()
+        # TABS
+        tabs = QHBoxLayout()
 
-    def render(self):
-        while self.grid.count():
-            w = self.grid.takeAt(0).widget()
-            if w:
-                w.deleteLater()
+        button_style = """
+            QPushButton {
+                background-color: #c9a44b;
+                color: black;
+                border: none;
+                padding: 8px 16px;
+                font-weight: 600;
+                border-radius: 4px;
+            }
 
-        self.cells.clear()
+            QPushButton:disabled {
+                background-color: #e6d39a;
+                color: black;
+            }
+        """
 
-        for i, wf in enumerate(self.items):
-            cell = ItemCell(wf, self.store, self.loader)
-            self.cells.append(cell)
-            self.grid.addWidget(cell, i // self.cols(), i % self.cols())
+        self.stack = QStackedWidget()
 
-    def cols(self):
-        width = self.scroll.viewport().width() or 800
-        cell_width = 220  # match ItemCell width
-        return max(1, width // (cell_width + 12))
+        self.warframes_page = WarframesPage(items, store, self.loader)
+        self.primary_page = PrimaryPage()
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.relayout()
+        self.stack.addWidget(self.warframes_page)
+        self.stack.addWidget(self.primary_page)
 
-    def relayout(self):
-        cols = self.cols()
+        self.warframes_btn = QPushButton("Warframes")
+        self.primary_btn = QPushButton("Primary")
 
-        for i, cell in enumerate(self.cells):
-            self.grid.addWidget(cell, i // cols, i % cols)
+        self.warframes_btn.setStyleSheet(button_style)
+        self.primary_btn.setStyleSheet(button_style)
+
+        self.warframes_btn.setEnabled(False)
+
+        self.warframes_btn.clicked.connect(lambda: self.switch(0))
+        self.primary_btn.clicked.connect(lambda: self.switch(1))
+
+        tabs.addStretch()
+        tabs.addWidget(self.warframes_btn)
+        tabs.addWidget(self.primary_btn)
+        tabs.addStretch()
+
+        layout.addWidget(title)
+        layout.addLayout(tabs)
+        layout.addWidget(self.stack)
+
+    def switch(self, index: int):
+        self.stack.setCurrentIndex(index)
+
+        self.warframes_btn.setEnabled(index != 0)
+        self.primary_btn.setEnabled(index != 1)
 
 
 if __name__ == "__main__":
