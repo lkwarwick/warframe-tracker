@@ -14,18 +14,46 @@ class ItemCell(QWidget):
         self.store = store
         self.loader = loader
 
-        self.setFixedSize(220, 260)
+        self.setFixedSize(220, 360)
 
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(6)
 
+        # IMAGE (fixed area)
         self.image = QLabel()
+        self.image.setFixedSize(180, 180)
         self.image.setAlignment(Qt.AlignCenter)
-
-        self.label = QLabel(wf.name)
-        self.label.setAlignment(Qt.AlignCenter)
-
+        self.image.setStyleSheet("background: transparent;")
         layout.addWidget(self.image)
+
+        # NAME (fixed height)
+        self.label = QLabel(self.wf.name)
+        self.label.setFixedHeight(28)
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setWordWrap(True)
+        self.label.setStyleSheet("""
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        """)
         layout.addWidget(self.label)
+
+        # COMPONENTS (fixed area)
+        self.components_box = QWidget()
+        self.components_box.setFixedHeight(110)
+
+        comp_layout = QVBoxLayout(self.components_box)
+        comp_layout.setContentsMargins(6, 6, 6, 6)
+        comp_layout.setSpacing(4)
+
+        if self.wf.components:
+            for c in self.wf.components[:5]:
+                lbl = QLabel(f"{c.item_count}× {c.name}")
+                lbl.setStyleSheet("font-size: 12px; color: #ddd;")
+                comp_layout.addWidget(lbl)
+
+        layout.addWidget(self.components_box)
 
         self._load_image()
         self.update_style()
@@ -49,7 +77,12 @@ class ItemCell(QWidget):
         pix = QPixmap()
         if pix.loadFromData(data):
             self.image.setPixmap(
-                pix.scaled(160, 160, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                pix.scaled(
+                    180,
+                    180,
+                    Qt.KeepAspectRatio,
+                    Qt.SmoothTransformation,
+                )
             )
 
     def mousePressEvent(self, event):
