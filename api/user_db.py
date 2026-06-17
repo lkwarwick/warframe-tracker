@@ -28,12 +28,10 @@ class UserDatabase:
     def load_data(self) -> dict:
         """Load user data from the JSON file."""
         if not self.db_path.exists():
-            logger.info("No existing user database found. Starting with empty data.")
             return {}
         try:
             with open(self.db_path, 'r') as f:
                 data = json.load(f)
-                logger.info(f"User data successfully loaded from {self.db_path}")
                 return data
         except Exception as e:
             logger.error(f"Error loading user data from {self.db_path}: {e}")
