@@ -14,7 +14,7 @@ class ItemCell(QWidget):
         self.store = store
         self.loader = loader
 
-        self.setFixedSize(140, 180)
+        self.setFixedSize(220, 260)
 
         layout = QVBoxLayout(self)
 
@@ -49,7 +49,7 @@ class ItemCell(QWidget):
         pix = QPixmap()
         if pix.loadFromData(data):
             self.image.setPixmap(
-                pix.scaled(96, 96, Qt.KeepAspectRatio, Qt.FastTransformation)
+                pix.scaled(160, 160, Qt.KeepAspectRatio, Qt.FastTransformation)
             )
 
     def mousePressEvent(self, event):
