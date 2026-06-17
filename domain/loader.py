@@ -1,5 +1,5 @@
 import requests
-from domain.models import Warframe
+from domain.models.warframe import Warframe
 from loguru import logger
 
 WF_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json"
