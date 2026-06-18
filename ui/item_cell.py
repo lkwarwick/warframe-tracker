@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import Qt
+from loguru import logger
 
 from infra.image_loader import ImageLoader
 from ui.component_label import ComponentLabel
@@ -126,6 +127,10 @@ class ItemCell(QWidget):
     # ---------------- SELECTION ----------------
 
     def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            self._on_right_click()
+            return
+
         if self.wf.components:
             return
 
@@ -146,6 +151,11 @@ class ItemCell(QWidget):
         self.update_style()
         self._refresh_component_styles()
         self.update()
+        
+    def _on_right_click(self):
+        # Not implemented yet
+        logger.warning(f"Right click not implemented yet for {self.wf.unique_name}.")
+        pass
 
     # ---------------- STYLE ----------------
 
