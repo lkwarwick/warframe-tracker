@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import Qt
+
 from infra.image_loader import ImageLoader
 from ui.component_label import ComponentLabel
 
@@ -8,6 +9,7 @@ IMG_BASE = "https://cdn.warframestat.us/img/"
 
 
 class ItemCell(QWidget):
+    
     def __init__(self, wf, store, loader: ImageLoader):
         super().__init__()
 
@@ -26,6 +28,7 @@ class ItemCell(QWidget):
         self.image.setFixedSize(180, 180)
         self.image.setAlignment(Qt.AlignCenter)
         self.image.setStyleSheet("background: transparent;")
+        self.image.setAttribute(Qt.WA_TransparentForMouseEvents, True)  # <-- add this
         layout.addWidget(self.image)
 
         # NAME
@@ -62,7 +65,7 @@ class ItemCell(QWidget):
                     f"{c.item_count}× {c.name}",
                 )
 
-                lbl.setStyleSheet("font-size: 12px; color: #dddddd;")
+                lbl.setStyleSheet("font-size: 12px; color: #DDDDDD;")
 
                 lbl.clicked.connect(
                     lambda uid=c.unique_name: self._on_component_clicked(uid)
@@ -148,9 +151,18 @@ class ItemCell(QWidget):
 
     def update_style(self):
         if self.store.is_complete(self.wf):
-            self.setStyleSheet("background-color: #2a6; border-radius: 8px;")
+            if self.wf.is_prime:
+                self.setStyleSheet("background-color: #c9a44b; border-radius: 8px;")
+                self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #000000;")
+            else:
+                self.setStyleSheet("background-color: #898989; border-radius: 8px;")
+                self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #000000;")
         else:
-            self.setStyleSheet("background-color: #333; border-radius: 8px;")
+            self.setStyleSheet("background-color: #333333; border-radius: 8px;")
+            if self.wf.is_prime:
+                self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #e6d39a;")
+            else:
+                self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #DDDDDD;")
 
     def _refresh_component_styles(self):
         if not self.wf.components:
@@ -165,22 +177,17 @@ class ItemCell(QWidget):
 
         for uid, widget in self.component_widgets.items():
             if uid in selected and all_selected:
-                widget.setStyleSheet("""
-                    font-size: 12px;
-                    color: #000;
-                    font-weight: 600;
-                """)
+                if self.wf.is_prime:
+                    widget.setStyleSheet("font-size: 12px; color: #000; font-weight: 600;")
+                else:
+                    widget.setStyleSheet("font-size: 12px; color: #000; font-weight: 600;")
             elif uid in selected:
-                widget.setStyleSheet("""
-                    font-size: 12px;
-                    color: #2a6;
-                    font-weight: 600;
-                """)
+                if self.wf.is_prime:
+                    widget.setStyleSheet("font-size: 12px;color: #c9a44b;font-weight: 600;")
+                else:
+                    widget.setStyleSheet("font-size: 12px;color: #DDDDDD;font-weight: 600;")
             else:
-                widget.setStyleSheet("""
-                    font-size: 12px;
-                    color: #888;
-                """)
+                widget.setStyleSheet("font-size: 12px; color: #888;")
                 
     def _alive(self) -> bool:
         return self.image is not None and self.image.parent() is not None

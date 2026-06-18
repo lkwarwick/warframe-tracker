@@ -43,7 +43,7 @@ class Warframe(BaseModel):
     image_name: Optional[str] = Field(None, alias="imageName")
     category: Optional[str] = None
     tradable: bool
-    isPrime: bool
+    is_prime: bool = Field(..., alias="isPrime")
     masterable: bool
     vaulted: Optional[bool] = None
     vault_date: Optional[str] = Field(None, alias="vaultDate")
