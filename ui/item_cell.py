@@ -38,7 +38,7 @@ class ItemCell(QWidget):
         self.image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.image.setStyleSheet("background: transparent;")
         self.image.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)  # <-- add this
-        layout.addWidget(self.image)
+        layout.addWidget(self.image, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         # NAME
         self.label = QLabel(self.item.name)
