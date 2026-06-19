@@ -1,0 +1,50 @@
+QLabel#item-cell-image {
+    background: transparent;
+}
+
+/* Name/Label */
+
+QLabel#item-cell-name[is_prime=false] {
+    color: #DDDDDD;
+    background: #333333;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+QLabel#item-cell-name[is_prime=true] {
+    color: #e6d39a;
+    background: #333333;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+QLabel#item-cell-name[is_prime=true][is_complete=true] {
+    color: black;
+    background: #c9a44b;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+QLabel#item-cell-name[is_prime=false][is_complete=true] {
+    color: black;
+    background: #898989;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* Components (Container) */
+
+QWidget#item-cell-components {
+    background: #333333;
+    border-radius: 8px;
+}
+
+QWidget#item-cell-components[is_prime=true][is_complete=true] {
+    background: #c9a44b;
+    border-radius: 8px;
+}
+
+QWidget#item-cell-components[is_prime=false][is_complete=true] {
+    background: #898989;
+    border-radius: 8px;
+}

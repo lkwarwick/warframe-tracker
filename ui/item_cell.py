@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QMouseEvent, QPixmap
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
+from ui import refresh_style
 from ui.component_label import ComponentLabel
 
 if TYPE_CHECKING:
@@ -25,36 +26,37 @@ class ItemCell(QWidget):
         self.item = item
         self.store = store
         self.loader = loader
-
         self.setFixedSize(220, 360)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(6)
 
-        # IMAGE
+        self.setObjectName("item-cell")
+        self.setProperty("is_prime", self.item.is_prime)
+
+        # Image
         self.image = QLabel()
         self.image.setFixedSize(180, 180)
         self.image.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image.setStyleSheet("background: transparent;")
-        self.image.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)  # <-- add this
+        self.image.setObjectName("item-cell-image")
+        self.image.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
         layout.addWidget(self.image, alignment=Qt.AlignmentFlag.AlignHCenter)
 
-        # NAME
+        # Name
         self.label = QLabel(self.item.name)
         self.label.setFixedHeight(28)
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label.setWordWrap(True)
-        self.label.setStyleSheet("""
-            font-size: 16px;
-            font-weight: 600;
-            color: white;
-        """)
+        self.label.setObjectName("item-cell-name")
+        self.label.setProperty("is_prime", self.item.is_prime)
         layout.addWidget(self.label)
 
         # COMPONENTS
         self.components_box = QWidget()
         self.components_box.setFixedHeight(110)
+        self.components_box.setObjectName("item-cell-components")
+        self.components_box.setProperty("is_prime", self.item.is_prime)
 
         comp_layout = QVBoxLayout(self.components_box)
         comp_layout.setContentsMargins(6, 6, 6, 6)
@@ -169,19 +171,13 @@ class ItemCell(QWidget):
 
     def update_style(self) -> None:
         """Update the style of the title and background."""
-        if self.store.is_complete(self.item):
-            if self.item.is_prime:
-                self.setStyleSheet("background-color: #c9a44b; border-radius: 8px;")
-                self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #000000;")
-            else:
-                self.setStyleSheet("background-color: #898989; border-radius: 8px;")
-                self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #000000;")
-        else:
-            self.setStyleSheet("background-color: #333333; border-radius: 8px;")
-            if self.item.is_prime:
-                self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #e6d39a;")
-            else:
-                self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #DDDDDD;")
+        # Name/Label
+        self.label.setProperty("is_complete", self.store.is_complete(self.item))
+        refresh_style(self.label)
+
+        # Components
+        self.components_box.setProperty("is_complete", self.store.is_complete(self.item))
+        refresh_style(self.components_box)
 
     def _refresh_component_styles(self) -> None:
         if not self.item.components:

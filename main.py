@@ -108,6 +108,9 @@ if __name__ == "__main__":
     app = QApplication([])
     app.setWindowIcon(QIcon(str(Path("assets/icon.png"))))
 
+    with Path("assets/item_cell.qss").open() as f:
+        app.setStyleSheet(f.read())
+
     warframes = load_warframes()
     primaries = load_primaries()
     store = Store()
