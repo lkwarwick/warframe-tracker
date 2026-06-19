@@ -1,20 +1,16 @@
-"""
-Pydantic models generated from the Warframe weapons JSON schema.
-"""
+"""Contains models/schemas relating to Weapon items."""
 
 from __future__ import annotations
 
-from typing import Optional
 from pydantic import BaseModel, Field
 
-from domain.models.common import ComponentDrop, Introduced, Patchlog
+from domain.models.common import Patchlog  # noqa: TC001
+from domain.models.item import Item
 
-
-# ---------------------------------------------------------------------------
-# Shared / nested models
-# ---------------------------------------------------------------------------
 
 class Damage(BaseModel):
+    """A Weapon's damage statistics."""
+
     total: float
     impact: float = 0
     puncture: float = 0
@@ -37,170 +33,55 @@ class Damage(BaseModel):
     energy_drain: float = Field(0, alias="energyDrain")
     true: float = 0
 
-    model_config = {"populate_by_name": True}
-
 
 class AttackDamage(BaseModel):
-    impact: Optional[float] = None
-    slash: Optional[float] = None
-    puncture: Optional[float] = None
-    heat: Optional[int] = None
-    toxin: Optional[int] = None
-    radiation: Optional[int] = None
-    blast: Optional[int] = None
-    electricity: Optional[int] = None
-    magnetic: Optional[int] = None
-    viral: Optional[float] = None
-    corrosive: Optional[int] = None
-    cold: Optional[int] = None
-    void: Optional[int] = None
+    """Attack damage element information."""
 
-    model_config = {"populate_by_name": True}
+    impact: float | None = None
+    slash: float | None = None
+    puncture: float | None = None
+    heat: int | None = None
+    toxin: int | None = None
+    radiation: int | None = None
+    blast: int | None = None
+    electricity: int | None = None
+    magnetic: int | None = None
+    viral: float | None = None
+    corrosive: int | None = None
+    cold: int | None = None
+    void: int | None = None
 
 
 class Falloff(BaseModel):
+    """Damage falloff information."""
+
     start: float
     end: float
     reduction: float
 
 
 class Attack(BaseModel):
+    """Attack information."""
+
     name: str
-    speed: Optional[float] = None
-    crit_chance: float = Field(..., alias="crit_chance")
-    crit_mult: float = Field(..., alias="crit_mult")
-    status_chance: float = Field(..., alias="status_chance")
-    shot_type: Optional[str] = Field(None, alias="shot_type")
-    shot_speed: Optional[int] = Field(None, alias="shot_speed")
-    flight: Optional[int] = None
+    speed: float | None = None
+    crit_chance: float
+    crit_mult: float
+    status_chance: float
+    shot_type: str | None = None
+    shot_speed: int | None = None
+    flight: int | None = None
     damage: AttackDamage
-    charge_time: Optional[float] = Field(None, alias="charge_time")
-    falloff: Optional[Falloff] = None
-
-    model_config = {"populate_by_name": True}
+    charge_time: float | None = None
+    falloff: Falloff | None = None
 
 
-# ---------------------------------------------------------------------------
-# Component models (nested up to 3 levels deep in the schema)
-# ---------------------------------------------------------------------------
+class Weapon(Item):
+    """A Weapon item in Warframe."""
 
-class ComponentLevel3(BaseModel):
-    """Deepest nesting level — no sub-components."""
-    unique_name: str = Field(..., alias="uniqueName")
-    name: str
-    description: str
-    item_count: int = Field(..., alias="itemCount")
-    image_name: str = Field(..., alias="imageName")
-    tradable: bool
-    masterable: bool
-    drops: list[ComponentDrop] = Field(default_factory=list)
-    type: Optional[str] = None
-
-    model_config = {"populate_by_name": True}
-
-
-class ComponentLevel2(BaseModel):
-    """Second nesting level — may contain ComponentLevel3 children."""
-    unique_name: str = Field(..., alias="uniqueName")
-    name: str
-    description: str
-    item_count: int = Field(..., alias="itemCount")
-    image_name: str = Field(..., alias="imageName")
-    tradable: bool
-    masterable: bool
-    drops: list[ComponentDrop] = Field(default_factory=list)
-    type: Optional[str] = None
-    components: Optional[list[ComponentLevel3]] = None
-
-    # Build info
-    build_price: Optional[int] = Field(None, alias="buildPrice")
-    build_time: Optional[int] = Field(None, alias="buildTime")
-    skip_build_time_price: Optional[int] = Field(None, alias="skipBuildTimePrice")
-    build_quantity: Optional[int] = Field(None, alias="buildQuantity")
-    consume_on_build: Optional[bool] = Field(None, alias="consumeOnBuild")
-
-    model_config = {"populate_by_name": True}
-
-
-class Component(BaseModel):
-    """Top-level component of a weapon — may contain ComponentLevel2 children."""
-    unique_name: str = Field(..., alias="uniqueName")
-    name: str
-    description: str
-    item_count: int = Field(..., alias="itemCount")
-    image_name: str = Field(..., alias="imageName")
-    tradable: bool
-    masterable: bool
-    drops: list[ComponentDrop] = Field(default_factory=list)
-    type: Optional[str] = None
-    components: Optional[list[ComponentLevel2]] = None
-
-    # Build info
-    build_price: Optional[int] = Field(None, alias="buildPrice")
-    build_time: Optional[int] = Field(None, alias="buildTime")
-    skip_build_time_price: Optional[int] = Field(None, alias="skipBuildTimePrice")
-    build_quantity: Optional[int] = Field(None, alias="buildQuantity")
-    consume_on_build: Optional[bool] = Field(None, alias="consumeOnBuild")
-
-    # Trading / market
-    prime_selling_price: Optional[int] = Field(None, alias="primeSellingPrice")
-    ducats: Optional[int] = None
-    exclude_from_codex: Optional[bool] = Field(None, alias="excludeFromCodex")
-
-    # Weapon stats (some components are themselves weapons, e.g. kitguns)
-    damage_per_shot: Optional[list[float]] = Field(None, alias="damagePerShot")
-    total_damage: Optional[int] = Field(None, alias="totalDamage")
-    critical_chance: Optional[float] = Field(None, alias="criticalChance")
-    critical_multiplier: Optional[float] = Field(None, alias="criticalMultiplier")
-    proc_chance: Optional[float] = Field(None, alias="procChance")
-    fire_rate: Optional[float] = Field(None, alias="fireRate")
-    mastery_req: Optional[int] = Field(None, alias="masteryReq")
-    product_category: Optional[str] = Field(None, alias="productCategory")
-    slot: Optional[int] = None
-    accuracy: Optional[float] = None
-    omega_attenuation: Optional[float] = Field(None, alias="omegaAttenuation")
-    noise: Optional[str] = None
-    trigger: Optional[str] = None
-    magazine_size: Optional[int] = Field(None, alias="magazineSize")
-    reload_time: Optional[float] = Field(None, alias="reloadTime")
-    multishot: Optional[int] = None
-    damage: Optional[Damage] = None
-    attacks: Optional[list[Attack]] = None
-
-    # Market
-    market_cost: Optional[int] = Field(None, alias="marketCost")
-    bp_cost: Optional[int] = Field(None, alias="bpCost")
-
-    # Modding
-    polarities: Optional[list[str]] = None
-    tags: Optional[list[str]] = None
-    exilus_polarity: Optional[str] = Field(None, alias="exilusPolarity")
-
-    # Wiki
-    wiki_available: Optional[bool] = Field(None, alias="wikiAvailable")
-    wikia_thumbnail: Optional[str] = Field(None, alias="wikiaThumbnail")
-    wikia_url: Optional[str] = Field(None, alias="wikiaUrl")
-
-    # Meta
-    introduced: Optional[Introduced] = None
-    disposition: Optional[int] = None
-    release_date: Optional[str] = Field(None, alias="releaseDate")
-
-    model_config = {"populate_by_name": True}
-
-
-# ---------------------------------------------------------------------------
-# Top-level weapon model
-# ---------------------------------------------------------------------------
-
-class Weapon(BaseModel):
     # Identity
-    name: str
-    unique_name: str = Field(..., alias="uniqueName")
-    description: str
-    type: str
-    category: str
-    image_name: str = Field(..., alias="imageName")
+    slot: int
+    tags: list[str] | None = None
 
     # Core stats
     damage_per_shot: list[float] = Field(..., alias="damagePerShot")
@@ -214,58 +95,27 @@ class Weapon(BaseModel):
     omega_attenuation: float = Field(..., alias="omegaAttenuation")
     noise: str
     trigger: str
-    magazine_size: Optional[int] = Field(None, alias="magazineSize")
+    magazine_size: int | None = Field(None, alias="magazineSize")
     reload_time: float = Field(..., alias="reloadTime")
     multishot: int
-
-    # Mastery / slot
-    mastery_req: int = Field(..., alias="masteryReq")
-    product_category: str = Field(..., alias="productCategory")
-    slot: int
-
-    # Flags
-    is_prime: bool = Field(..., alias="isPrime")
-    masterable: bool
-    tradable: bool
-    vaulted: Optional[bool] = None
-    vault_date: Optional[str] = Field(None, alias="vaultDate")
-    estimated_vault_date: Optional[str] = Field(None, alias="estimatedVaultDate")
+    attacks: list[Attack] | None = None
 
     # Build info
-    build_price: Optional[int] = Field(None, alias="buildPrice")
-    build_time: Optional[int] = Field(None, alias="buildTime")
-    skip_build_time_price: Optional[int] = Field(None, alias="skipBuildTimePrice")
-    build_quantity: Optional[int] = Field(None, alias="buildQuantity")
-    consume_on_build: Optional[bool] = Field(None, alias="consumeOnBuild")
-
-    # Components / crafting
-    components: Optional[list[Component]] = None
-    bp_cost: Optional[int] = Field(None, alias="bpCost")
+    build_price: int | None = Field(None, alias="buildPrice")
+    build_time: int | None = Field(None, alias="buildTime")
+    skip_build_time_price: int | None = Field(None, alias="skipBuildTimePrice")
+    build_quantity: int | None = Field(None, alias="buildQuantity")
+    consume_on_build: bool | None = Field(None, alias="consumeOnBuild")
 
     # Modding
-    polarities: Optional[list[str]] = None
-    tags: Optional[list[str]] = None
-    exilus_polarity: Optional[str] = Field(None, alias="exilusPolarity")
-    disposition: Optional[int] = None
-
-    # Attacks
-    attacks: Optional[list[Attack]] = None
-
-    # Market
-    market_cost: Optional[int] = Field(None, alias="marketCost")
+    disposition: int | None = None
 
     # Wiki / meta
-    wiki_available: Optional[bool] = Field(None, alias="wikiAvailable")
-    wikia_thumbnail: Optional[str] = Field(None, alias="wikiaThumbnail")
-    wikia_url: Optional[str] = Field(None, alias="wikiaUrl")
-    introduced: Optional[Introduced] = None
-    patchlogs: Optional[list[Patchlog]] = None
-    release_date: Optional[str] = Field(None, alias="releaseDate")
+    wiki_available: bool | None = Field(None, alias="wikiAvailable")
+    wikia_thumbnail: str | None = Field(None, alias="wikiaThumbnail")
+    patchlogs: list[Patchlog] | None = None
 
     # Misc
-    max_level_cap: Optional[int] = Field(None, alias="maxLevelCap")
-    item_count: Optional[int] = Field(None, alias="itemCount")
-    parents: Optional[list[str]] = None
-    drops: Optional[list[ComponentDrop]] = None
-
-    model_config = {"populate_by_name": True}
+    max_level_cap: int | None = Field(None, alias="maxLevelCap")
+    item_count: int | None = Field(None, alias="itemCount")
+    parents: list[str] | None = None

@@ -1,12 +1,24 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QGridLayout
+"""Contains the Warframe display page."""
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import QGridLayout, QScrollArea, QVBoxLayout, QWidget
 
 from ui.item_cell import ItemCell
 from ui.toolbar import build_toolbar
 
+if TYPE_CHECKING:
+    from PySide6.QtGui import QResizeEvent
+
+    from domain.models import Warframe
+    from infra.image_loader import ImageLoader
+    from state.store import Store
+
 
 class WarframesPage(QWidget):
-    def __init__(self, items, store, loader):
+    """Contains the layout for the Warframes page."""
+
+    def __init__(self, items: list[Warframe], store: Store, loader: ImageLoader) -> None:
         super().__init__()
 
         self.items = items
@@ -20,10 +32,10 @@ class WarframesPage(QWidget):
         self.grid.setSpacing(12)
         self.grid.setContentsMargins(12, 12, 12, 12)
 
-        self.scroll = QScrollArea()
+        self.scroll = QScrollArea()  # ty:ignore[invalid-assignment]
         self.scroll.setWidgetResizable(True)
-        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.scroll.setWidget(self.container)
 
         toolbar = build_toolbar(
@@ -39,9 +51,10 @@ class WarframesPage(QWidget):
         self.render()
         QTimer.singleShot(0, self.relayout)
 
-    def render(self):
+    def render(self) -> None:  # ty:ignore[invalid-method-override]
+        """Render the layout grid of items."""
         while self.grid.count():
-            w = self.grid.takeAt(0).widget()
+            w = self.grid.takeAt(0).widget()  # ty:ignore[unresolved-attribute]
             if w:
                 w.deleteLater()
 
@@ -52,21 +65,25 @@ class WarframesPage(QWidget):
             self.cells.append(cell)
             self.grid.addWidget(cell, i // self.cols(), i % self.cols())
 
-    def cols(self):
-        width = self.scroll.viewport().size().width()
+    def cols(self) -> int:
+        """Calculate how many columns should be shown."""
+        width = self.scroll.viewport().size().width()  # ty:ignore[unresolved-attribute]
         cell_width = 220
         return max(1, width // (cell_width + 12))
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        """Ran when the screen is resized."""
         super().resizeEvent(event)
         self.relayout()
 
-    def relayout(self):
+    def relayout(self) -> None:
+        """Force a relayout calculation."""
         cols = self.cols()
         for i, cell in enumerate(self.cells):
             self.grid.addWidget(cell, i // cols, i % cols)
 
-    def on_search(self, text: str):
+    def on_search(self, text: str) -> None:
+        """Ran when the user inputs text in the search bar."""
         t = text.lower().strip()
 
         if not t:
@@ -79,5 +96,5 @@ class WarframesPage(QWidget):
 
         self.render()
 
-    def on_filter(self):
-        pass
+    def on_filter(self) -> None:
+        """Ran when filter is selected."""

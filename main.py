@@ -1,24 +1,33 @@
+"""Contains the main application class and the entry point of the program."""
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication,
-    QWidget,
-    QVBoxLayout,
     QHBoxLayout,
     QLabel,
     QPushButton,
     QStackedWidget,
+    QVBoxLayout,
+    QWidget,
 )
-from PySide6.QtCore import Qt
 
-from domain.loader import load_warframes, load_primaries
+from domain.loader import load_primaries, load_warframes
 from infra.image_loader import ImageLoader
 from state.store import Store
-
-from ui.warframes_page import WarframesPage
 from ui.primary_page import PrimaryPage
+from ui.warframes_page import WarframesPage
+
+if TYPE_CHECKING:
+    from domain.models import Warframe, Weapon
 
 
 class App(QWidget):
-    def __init__(self, warframes, primaries, store):
+    """Main app container."""
+
+    def __init__(self, warframes: list[Warframe], primaries: list[Weapon], store: Store) -> None:
         super().__init__()
 
         self.warframes = warframes
@@ -26,13 +35,13 @@ class App(QWidget):
         self.store = store
         self.loader = ImageLoader()
 
-        self.resize(1920, 1080)
+        self.resize(1280, 720)
 
         layout = QVBoxLayout(self)
 
         # TITLE
         title = QLabel("Warframe Tracker")
-        title.setAlignment(Qt.AlignCenter)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("""
             font-size: 28px;
             font-weight: 700;
@@ -87,7 +96,8 @@ class App(QWidget):
         layout.addLayout(tabs)
         layout.addWidget(self.stack)
 
-    def switch(self, index: int):
+    def switch(self, index: int) -> None:
+        """Switch the current page to the index's page."""
         self.stack.setCurrentIndex(index)
 
         self.warframes_btn.setEnabled(index != 0)
@@ -96,6 +106,7 @@ class App(QWidget):
 
 if __name__ == "__main__":
     app = QApplication([])
+    app.setWindowIcon(QIcon(str(Path("assets/icon.png"))))
 
     warframes = load_warframes()
     primaries = load_primaries()

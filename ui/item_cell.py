@@ -1,20 +1,28 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
-from PySide6.QtGui import QPixmap
-from PySide6.QtCore import Qt
-from loguru import logger
+"""Contains the ItemCell class for displaying any Item (i.e., Warframe, Weapon)."""
+from typing import TYPE_CHECKING
 
-from infra.image_loader import ImageLoader
+from loguru import logger
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QMouseEvent, QPixmap
+from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
+
 from ui.component_label import ComponentLabel
+
+if TYPE_CHECKING:
+    from domain.models.item import Item
+    from infra.image_loader import ImageLoader
+    from state.store import Store
 
 IMG_BASE = "https://cdn.warframestat.us/img/"
 
 
 class ItemCell(QWidget):
-    
-    def __init__(self, wf, store, loader: ImageLoader):
+    """Renders an Item Cell for any Item."""
+
+    def __init__(self, item: Item, store: Store, loader: ImageLoader) -> None:
         super().__init__()
 
-        self.wf = wf
+        self.item = item
         self.store = store
         self.loader = loader
 
@@ -27,15 +35,15 @@ class ItemCell(QWidget):
         # IMAGE
         self.image = QLabel()
         self.image.setFixedSize(180, 180)
-        self.image.setAlignment(Qt.AlignCenter)
+        self.image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.image.setStyleSheet("background: transparent;")
-        self.image.setAttribute(Qt.WA_TransparentForMouseEvents, True)  # <-- add this
+        self.image.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)  # <-- add this
         layout.addWidget(self.image)
 
         # NAME
-        self.label = QLabel(self.wf.name)
+        self.label = QLabel(self.item.name)
         self.label.setFixedHeight(28)
-        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label.setWordWrap(True)
         self.label.setStyleSheet("""
             font-size: 16px;
@@ -53,23 +61,23 @@ class ItemCell(QWidget):
         comp_layout.setSpacing(4)
 
         self.component_widgets: dict[str, ComponentLabel] = {}
-        
+
         self._gen = 0
 
-        if self.wf.components:
-            for c in self.wf.components:
+        if self.item.components:
+            for c in self.item.components:
                 if not c.unique_name:
                     continue
 
                 lbl = ComponentLabel(
                     c.unique_name,
-                    f"{c.item_count}× {c.name}",
+                    f"{c.item_count}x {c.name}",
                 )
 
                 lbl.setStyleSheet("font-size: 12px; color: #DDDDDD;")
 
                 lbl.clicked.connect(
-                    lambda uid=c.unique_name: self._on_component_clicked(uid)
+                    lambda uid=c.unique_name: self._on_component_clicked(uid),
                 )
 
                 comp_layout.addWidget(lbl)
@@ -83,27 +91,27 @@ class ItemCell(QWidget):
 
     # ---------------- IMAGE ----------------
 
-    def _load_image(self):
-        if not getattr(self.wf, "image_name", None):
+    def _load_image(self) -> None:
+        if not getattr(self.item, "image_name", None):
             return
 
         self._gen += 1
         gen = self._gen
 
-        url = IMG_BASE + self.wf.image_name
+        url = IMG_BASE + self.item.image_name
 
         self.loader.fetch(
-            self.wf.unique_name,
+            self.item.unique_name,
             url,
             lambda uid, data, gen=gen: self._on_image_loaded(uid, data, gen),
         )
 
-    def _on_image_loaded(self, uid: str, data: bytes, gen: int):
+    def _on_image_loaded(self, uid: str, data: bytes, gen: int) -> None:
         # stale async result
         if gen != self._gen:
             return
 
-        if uid != self.wf.unique_name:
+        if uid != self.item.unique_name:
             return
 
         pix = QPixmap()
@@ -116,9 +124,9 @@ class ItemCell(QWidget):
                 pix.scaled(
                     180,
                     180,
-                    Qt.KeepAspectRatio,
-                    Qt.SmoothTransformation,
-                )
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                ),
             )
         except RuntimeError:
             # QLabel already destroyed during filter/rebuild
@@ -126,20 +134,21 @@ class ItemCell(QWidget):
 
     # ---------------- SELECTION ----------------
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.RightButton:
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        """Event invoked when the component is clicked."""
+        if event.button() == Qt.MouseButton.RightButton:
             self._on_right_click()
             return
 
-        if self.wf.components:
+        if self.item.components:
             return
 
-        new_state = self.wf.unique_name not in self.store.selected
-        self.store.toggle(self.wf.unique_name, new_state)
+        new_state = self.item.unique_name not in self.store.selected
+        self.store.toggle(self.item.unique_name, new_state)
         self.update_style()
 
-    def _on_component_clicked(self, uid: str):
-        wf_uid = self.wf.unique_name
+    def _on_component_clicked(self, uid: str) -> None:
+        wf_uid = self.item.unique_name
 
         selected = self.store.component_selected.get(wf_uid, set())
 
@@ -151,17 +160,17 @@ class ItemCell(QWidget):
         self.update_style()
         self._refresh_component_styles()
         self.update()
-        
-    def _on_right_click(self):
+
+    def _on_right_click(self) -> None:
         # Not implemented yet
-        logger.warning(f"Right click not implemented yet for {self.wf.unique_name}.")
-        pass
+        logger.warning(f"Right click not implemented yet for {self.item.unique_name}.")
 
     # ---------------- STYLE ----------------
 
-    def update_style(self):
-        if self.store.is_complete(self.wf):
-            if self.wf.is_prime:
+    def update_style(self) -> None:
+        """Update the style of the title and background."""
+        if self.store.is_complete(self.item):
+            if self.item.is_prime:
                 self.setStyleSheet("background-color: #c9a44b; border-radius: 8px;")
                 self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #000000;")
             else:
@@ -169,35 +178,35 @@ class ItemCell(QWidget):
                 self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #000000;")
         else:
             self.setStyleSheet("background-color: #333333; border-radius: 8px;")
-            if self.wf.is_prime:
+            if self.item.is_prime:
                 self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #e6d39a;")
             else:
                 self.label.setStyleSheet("font-size: 16px; font-weight: 600; color: #DDDDDD;")
 
-    def _refresh_component_styles(self):
-        if not self.wf.components:
+    def _refresh_component_styles(self) -> None:
+        if not self.item.components:
             return
 
-        selected = self.store.component_selected.get(self.wf.unique_name, set())
+        selected = self.store.component_selected.get(self.item.unique_name, set())
         all_selected = all(
             c.unique_name in selected
-            for c in self.wf.components
+            for c in self.item.components
             if c.unique_name
         )
 
         for uid, widget in self.component_widgets.items():
             if uid in selected and all_selected:
-                if self.wf.is_prime:
+                if self.item.is_prime:
                     widget.setStyleSheet("font-size: 12px; color: #000; font-weight: 600;")
                 else:
                     widget.setStyleSheet("font-size: 12px; color: #000; font-weight: 600;")
             elif uid in selected:
-                if self.wf.is_prime:
+                if self.item.is_prime:
                     widget.setStyleSheet("font-size: 12px;color: #c9a44b;font-weight: 600;")
                 else:
                     widget.setStyleSheet("font-size: 12px;color: #DDDDDD;font-weight: 600;")
             else:
                 widget.setStyleSheet("font-size: 12px; color: #888;")
-                
+
     def _alive(self) -> bool:
         return self.image is not None and self.image.parent() is not None

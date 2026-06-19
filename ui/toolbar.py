@@ -1,7 +1,14 @@
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton
+"""Contains the helper function to build a search bar."""
+from typing import TYPE_CHECKING
+
+from PySide6.QtWidgets import QHBoxLayout, QLineEdit, QPushButton, QWidget
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
-def build_toolbar(on_search=None, on_filter=None) -> QWidget:
+def build_toolbar(on_search: Callable[[str], None] | None = None, on_filter: Callable[[], None] | None = None) -> QWidget:
+    """Build a toolbar containing the search bar and filters."""
     widget = QWidget()
     layout = QHBoxLayout(widget)
     layout.setContentsMargins(8, 8, 8, 8)
@@ -10,7 +17,7 @@ def build_toolbar(on_search=None, on_filter=None) -> QWidget:
     search = QLineEdit()
     search.setPlaceholderText("Search...")
 
-    def _on_text():
+    def _on_text() -> None:
         if on_search:
             on_search(search.text())
 

@@ -1,17 +1,24 @@
+"""Contains the Store class, which contains and handles persistent data management."""
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from domain.models.item import Item
 
 STATE_PATH = Path("data/state.json")
 
 
 class Store:
-    def __init__(self):
+    """Handles persistent data management."""
+
+    def __init__(self) -> None:
         self.selected: set[str] = set()
         self.component_selected: dict[str, set[str]] = {}
         self.load()
 
-    def load(self):
+    def load(self) -> None:
+        """Load the state from the file system."""
         if not STATE_PATH.exists():
             return
 
@@ -25,7 +32,8 @@ class Store:
             for k, v in raw_components.items()
         }
 
-    def save(self):
+    def save(self) -> None:
+        """Write the state to the file system."""
         STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
         STATE_PATH.write_text(
@@ -37,10 +45,11 @@ class Store:
                     },
                 },
                 indent=2,
-            )
+            ),
         )
 
-    def toggle(self, uid: str, value: bool):
+    def toggle(self, uid: str, value: bool) -> None:
+        """Add or remove a uid based on the value."""
         if value:
             self.selected.add(uid)
         else:
@@ -48,7 +57,8 @@ class Store:
 
         self.save()
 
-    def toggle_component(self, wf_uid: str, comp_uid: str, state: bool):
+    def toggle_component(self, wf_uid: str, comp_uid: str, state: bool) -> None:
+        """Toggle a component based on the target state."""
         comp_set = self.component_selected.setdefault(wf_uid, set())
 
         if state:
@@ -58,8 +68,8 @@ class Store:
 
         self.save()
 
-    def is_complete(self, item) -> bool:
-
+    def is_complete(self, item: Item) -> bool:
+        """Check whether or not the item is in a 'completed' state."""
         if not getattr(item, "components", None):
             return item.unique_name in self.selected
 
@@ -69,4 +79,4 @@ class Store:
             c.unique_name in comp
             for c in item.components
             if c.unique_name
-        )
+        ) if item.components else False

@@ -1,5 +1,21 @@
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from pydantic import BaseModel, Field
+
+
+class Component(BaseModel):
+    unique_name: str = Field(..., alias="uniqueName")
+    name: str
+    description: str
+    item_count: int = Field(..., alias="itemCount")
+    image_name: str = Field(..., alias="imageName")
+    tradable: bool
+    masterable: bool
+    drops: list[ComponentDrop]
+    type: str|None = None
+    prime_selling_price: int|None = Field(None, alias="primeSellingPrice")
+    ducats: int|None = Field(None, alias="ducats")
+    exclude_from_codex: bool|None = Field(None, alias="excludeFromCodex")
 
 
 class ComponentDrop(BaseModel):

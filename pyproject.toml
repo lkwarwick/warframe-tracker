@@ -14,4 +14,17 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ruff>=0.15.17",
+    "ty>=0.0.51",
+]
+
+[tool.ruff]
+line-length = 150
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D107",  # Missing docstring in __init__
+    "FBT001",  # Boolean parameters
+    "FBT003",  # Boolean parameters
+    "N802",  # Pascal Case
 ]
