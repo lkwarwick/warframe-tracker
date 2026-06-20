@@ -20,14 +20,14 @@ QLabel#item-cell-name[is_prime=true] {
 
 QLabel#item-cell-name[is_prime=true][is_complete=true] {
     color: black;
-    background: #c9a44b;
+    background: rgba(201, 164, 75, 64);
     border-radius: 8px;
     font-weight: 600;
 }
 
 QLabel#item-cell-name[is_prime=false][is_complete=true] {
-    color: black;
-    background: #898989;
+    color: rgba(0, 0, 0, 164);;
+    background: rgba(137, 137, 137, 32);
     border-radius: 8px;
     font-weight: 600;
 }
@@ -40,16 +40,16 @@ QWidget#item-cell-components {
 }
 
 QWidget#item-cell-components[is_prime=true][is_complete=true] {
-    background: #c9a44b;
+    background: rgba(201, 164, 75, 64);
     border-radius: 8px;
 }
 
 QWidget#item-cell-components[is_prime=false][is_complete=true] {
-    background: #898989;
+    background: rgba(137, 137, 137, 32);
     border-radius: 8px;
 }
 
-/* Component Label */
+/* Component Label (Text) */
 
 QLabel#item-cell-component[is_complete=false] {
     font-size: 12px;
@@ -71,5 +71,5 @@ QLabel#item-cell-component[is_complete=true][is_item_complete=false][is_prime=fa
 QLabel#item-cell-component[is_complete=true][is_item_complete=true] {
     font-size: 12px;
     font-weight: 600;
-    color: black;
+    color: rgba(0, 0, 0, 164);
 }

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from loguru import logger
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QMouseEvent, QPixmap
-from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget, QGraphicsOpacityEffect
 
 from ui import refresh_style
 from ui.component_label import ComponentLabel
@@ -152,6 +152,11 @@ class ItemCell(QWidget):
 
     def update_style(self) -> None:
         """Update the style of the title and background."""
+        # Image
+        effect = QGraphicsOpacityEffect(self.image)
+        effect.setOpacity(0.25 if self.store.is_complete(self.item) else 1)
+        self.image.setGraphicsEffect(effect)
+
         # Name/Label
         self.label.setProperty("is_complete", self.store.is_complete(self.item))
         refresh_style(self.label)
