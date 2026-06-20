@@ -15,6 +15,7 @@ class ComponentLabel(QLabel):
 
     def __init__(self, component_uid: str, text: str) -> None:
         super().__init__(text)
+        self.setObjectName("item-cell-component")
         self.uid = component_uid
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 

@@ -48,3 +48,28 @@ QWidget#item-cell-components[is_prime=false][is_complete=true] {
     background: #898989;
     border-radius: 8px;
 }
+
+/* Component Label */
+
+QLabel#item-cell-component[is_complete=false] {
+    font-size: 12px;
+    color: #888888;
+}
+
+QLabel#item-cell-component[is_complete=true][is_item_complete=false][is_prime=true] {
+    font-size: 12px;
+    font-weight: 600;
+    color: #c9a44b;
+}
+
+QLabel#item-cell-component[is_complete=true][is_item_complete=false][is_prime=false] {
+    font-size: 12px;
+    font-weight: 600;
+    color: #DDDDDD;
+}
+
+QLabel#item-cell-component[is_complete=true][is_item_complete=true] {
+    font-size: 12px;
+    font-weight: 600;
+    color: black;
+}

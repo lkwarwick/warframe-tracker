@@ -71,16 +71,8 @@ class ItemCell(QWidget):
                 if not c.unique_name:
                     continue
 
-                lbl = ComponentLabel(
-                    c.unique_name,
-                    f"{c.item_count}x {c.name}",
-                )
-
-                lbl.setStyleSheet("font-size: 12px; color: #DDDDDD;")
-
-                lbl.clicked.connect(
-                    lambda uid=c.unique_name: self._on_component_clicked(uid),
-                )
+                lbl = ComponentLabel(c.unique_name, f"{c.item_count}x {c.name}")
+                lbl.clicked.connect(lambda uid=c.unique_name: self._on_component_clicked(uid))
 
                 comp_layout.addWidget(lbl)
                 self.component_widgets[c.unique_name] = lbl
@@ -102,11 +94,7 @@ class ItemCell(QWidget):
 
         url = IMG_BASE + self.item.image_name
 
-        self.loader.fetch(
-            self.item.unique_name,
-            url,
-            lambda uid, data, gen=gen: self._on_image_loaded(uid, data, gen),
-        )
+        self.loader.fetch(self.item.unique_name, url, lambda uid, data, gen=gen: self._on_image_loaded(uid, data, gen))
 
     def _on_image_loaded(self, uid: str, data: bytes, gen: int) -> None:
         # stale async result
@@ -122,14 +110,7 @@ class ItemCell(QWidget):
 
         # Qt object might already be deleted -> guard BEFORE touching it
         try:
-            self.image.setPixmap(
-                pix.scaled(
-                    180,
-                    180,
-                    Qt.AspectRatioMode.KeepAspectRatio,
-                    Qt.TransformationMode.SmoothTransformation,
-                ),
-            )
+            self.image.setPixmap(pix.scaled(180, 180, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         except RuntimeError:
             # QLabel already destroyed during filter/rebuild
             return
@@ -184,25 +165,12 @@ class ItemCell(QWidget):
             return
 
         selected = self.store.component_selected.get(self.item.unique_name, set())
-        all_selected = all(
-            c.unique_name in selected
-            for c in self.item.components
-            if c.unique_name
-        )
 
         for uid, widget in self.component_widgets.items():
-            if uid in selected and all_selected:
-                if self.item.is_prime:
-                    widget.setStyleSheet("font-size: 12px; color: #000; font-weight: 600;")
-                else:
-                    widget.setStyleSheet("font-size: 12px; color: #000; font-weight: 600;")
-            elif uid in selected:
-                if self.item.is_prime:
-                    widget.setStyleSheet("font-size: 12px;color: #c9a44b;font-weight: 600;")
-                else:
-                    widget.setStyleSheet("font-size: 12px;color: #DDDDDD;font-weight: 600;")
-            else:
-                widget.setStyleSheet("font-size: 12px; color: #888;")
+            widget.setProperty("is_prime", self.item.is_prime)
+            widget.setProperty("is_complete", uid in selected)
+            widget.setProperty("is_item_complete", self.store.is_complete(self.item))
+            refresh_style(widget)
 
     def _alive(self) -> bool:
         return self.image is not None and self.image.parent() is not None
