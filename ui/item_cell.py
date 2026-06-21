@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from loguru import logger
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QMouseEvent, QPixmap
-from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget, QGraphicsOpacityEffect
+from PySide6.QtWidgets import QGraphicsOpacityEffect, QLabel, QVBoxLayout, QWidget
 
 from ui import refresh_style
 from ui.component_label import ComponentLabel
