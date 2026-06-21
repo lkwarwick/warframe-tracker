@@ -1,0 +1,125 @@
+:root {
+  --bg: #0a0a0b;
+  --panel: #111113;
+  --panel-alt: #161618;
+  --text: #e6e1d3;
+  --muted: #a39b86;
+  --gold: #c8a44d;
+  --gold-dim: rgba(200, 164, 77, 0.35);
+  --border: rgba(200, 164, 77, 0.12);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 220px;
+  grid-template-rows: 72px minmax(0, 1fr);
+
+  width: 100vw;
+  height: 100vh;
+
+  overflow: hidden;
+}
+
+.header {
+  grid-column: 1 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: linear-gradient(90deg, var(--panel), var(--panel-alt));
+  border-bottom: 1px solid var(--gold-dim);
+}
+
+.left, .right {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 12px;
+}
+
+.right {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+
+.content {
+  min-width: 0;
+  min-height: 0;
+
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+.search {
+  width: 100%;
+  padding: 10px 12px;
+  height: 75px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  outline: none;
+}
+
+.search:focus {
+  border-color: var(--gold-dim);
+}
+
+.card-grid {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+
+  align-content: start;   /* stops vertical stretching */
+  justify-content: start; /* stops horizontal edge flush behaviour */
+
+  padding: 8px;           /* THIS is what you’re missing */
+  box-sizing: border-box;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+
+/* Firefox */
+.card-grid {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-dim) transparent;
+}
+
+/* Chromium / WebKit */
+.card-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.card-grid::-webkit-scrollbar-thumb {
+  background: var(--gold-dim);
+  border-radius: 6px;
+  border: 2px solid var(--panel);
+}
+
+.card-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
