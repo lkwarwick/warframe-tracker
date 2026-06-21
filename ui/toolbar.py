@@ -18,7 +18,8 @@ class PrimeFilterMode(Enum):
 
 def build_toolbar(
     on_search: Callable[[str], None] | None = None,
-    on_filter: Callable[[PrimeFilterMode], None] | None = None,
+    on_prime_filter: Callable[[PrimeFilterMode], None] | None = None,
+    on_completed_filter: Callable[[bool], None] | None = None,
 ) -> QWidget:
     """Build the custom toolbar for filters."""
     widget = QWidget()
@@ -51,12 +52,22 @@ def build_toolbar(
             mode = PrimeFilterMode.ALL
             filter_btn.setText("All")
 
-        if on_filter:
-            on_filter(mode)
+        if on_prime_filter:
+            on_prime_filter(mode)
 
     filter_btn.clicked.connect(_cycle)
 
+    hide_completed_btn = QPushButton("Hide completed")
+    hide_completed_btn.setCheckable(True)
+
+    def _toggle_hide(checked: bool) -> None:
+        if on_completed_filter:
+            on_completed_filter(checked)
+
+    hide_completed_btn.toggled.connect(_toggle_hide)
+
     layout.addWidget(search)
     layout.addWidget(filter_btn)
+    layout.addWidget(hide_completed_btn)
 
     return widget
