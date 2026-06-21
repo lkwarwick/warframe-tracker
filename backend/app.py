@@ -31,16 +31,12 @@ def vertical_card(item):
         children=[
             html.Img(src=f"{IMG_BASE}{item.image_name}", className="card-image"),
             html.H3(item.name, className="card-title"),
-
             html.Div(
                 className="card-checklist",
                 children=[
                     html.Div(
-                        className="check-item",
-                        children=[
-                            html.Span("☐", className="check-box"),
-                            html.Span(c.name if hasattr(c, "name") else str(c)),
-                        ],
+                        className="component-pill",
+                        children=str(c.name if hasattr(c, "name") else c),
                     )
                     for c in components
                 ],

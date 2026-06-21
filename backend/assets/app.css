@@ -55,6 +55,7 @@ html, body {
 }
 
 .content {
+  gap: 0;
   min-width: 0;
   min-height: 0;
 
@@ -68,13 +69,23 @@ html, body {
 }
 
 .search {
-  width: 100%;
-  padding: 10px 12px;
-  height: 75px;
+  width: calc(100% - 12px);
+  height: 42px;
+
+  padding: 0 12px;
+  margin: 6px;
+
+  display: block;
+  box-sizing: border-box;
+
+  font-size: 14px;
+  line-height: 42px;
+
   background: var(--panel);
   border: 1px solid var(--border);
   color: var(--text);
-  outline: none;
+
+  flex: 0 0 auto;
 }
 
 .search:focus {
