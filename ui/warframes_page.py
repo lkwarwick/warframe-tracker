@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QGridLayout, QScrollArea, QVBoxLayout, QWidget
 
 from ui.item_cell import ItemCell
-from ui.toolbar import build_toolbar
+from ui.toolbar import PrimeFilterMode, build_toolbar
 
 if TYPE_CHECKING:
     from PySide6.QtGui import QResizeEvent
@@ -25,6 +25,8 @@ class WarframesPage(QWidget):
         self.filtered_items = list(self.items)
         self.store = store
         self.loader = loader
+        self.search_text = ""
+        self.filter_mode = PrimeFilterMode.ALL
 
         self.container = QWidget()
         self.grid = QGridLayout(self.container)
@@ -49,7 +51,7 @@ class WarframesPage(QWidget):
 
         self.cells = []
         self.render()
-        QTimer.singleShot(0, self.relayout)
+        QTimer.singleShot(0, self._initial_render)
 
     def render(self) -> None:  # ty:ignore[invalid-method-override]
         """Render the layout grid of items."""
@@ -74,27 +76,32 @@ class WarframesPage(QWidget):
     def resizeEvent(self, event: QResizeEvent) -> None:
         """Ran when the screen is resized."""
         super().resizeEvent(event)
-        self.relayout()
-
-    def relayout(self) -> None:
-        """Force a relayout calculation."""
-        cols = self.cols()
-        for i, cell in enumerate(self.cells):
-            self.grid.addWidget(cell, i // cols, i % cols)
+        self.render()
+    def _initial_render(self) -> None:
+        self.render()
 
     def on_search(self, text: str) -> None:
         """Ran when the user inputs text in the search bar."""
-        t = text.lower().strip()
+        self.search_text = text
+        self.apply_filters()
 
-        if not t:
-            self.filtered_items = self.items
-        else:
-            self.filtered_items = [
-                wf for wf in self.items
-                if t in wf.name.lower()
-            ]
-
-        self.render()
-
-    def on_filter(self) -> None:
+    def on_filter(self, mode: PrimeFilterMode) -> None:
         """Ran when filter is selected."""
+        self.filter_mode = mode
+        self.apply_filters()
+
+    def apply_filters(self) -> None:
+        """Apply all the active filters at once."""
+        t = (self.search_text or "").lower().strip()
+
+        items = self.items
+        if t:
+            items = [w for w in items if t in w.name.lower()]
+
+        if self.filter_mode == PrimeFilterMode.PRIMES:
+            items = [w for w in items if w.is_prime]
+        elif self.filter_mode == PrimeFilterMode.NORMAL:
+            items = [w for w in items if not w.is_prime]
+
+        self.filtered_items = items
+        self.render()
