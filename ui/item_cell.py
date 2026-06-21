@@ -32,7 +32,9 @@ class ItemCell(QWidget):
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(6)
 
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setObjectName("item-cell")
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
         self.setProperty("is_prime", self.item.is_prime)
 
         # Image

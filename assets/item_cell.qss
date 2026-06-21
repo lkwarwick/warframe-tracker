@@ -2,6 +2,22 @@ QLabel#item-cell-image {
     background: transparent;
 }
 
+#item-cell {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+}
+
+#item-cell[is_prime=false]:hover {
+    border: 1px solid rgba(137, 137, 137, 180);
+    background: rgba(137, 137, 137, 10);
+}
+
+#item-cell[is_prime=true]:hover {
+    border: 1px solid rgba(201, 164, 75, 180);
+    background: rgba(201, 164, 75, 10);
+}
+
 /* Name/Label */
 
 QLabel#item-cell-name[is_prime=false] {
