@@ -45,11 +45,13 @@
         );
     }
 
-    function initLazyImages() {
-        const images = document.querySelectorAll("img.card-image.lazy");
-        if (!images.length) return;
+    let lazyObserver = null;
 
-        const onIntersect = (entries, observer) => {
+    function getLazyObserver() {
+        if (lazyObserver) return lazyObserver;
+
+        const root = document.querySelector(".card-grid") || null;
+        lazyObserver = new IntersectionObserver((entries) => {
             for (const entry of entries) {
                 if (!entry.isIntersecting) continue;
                 const img = entry.target;
@@ -58,23 +60,30 @@
 
                 img.onload = () => img.classList.add("loaded");
                 img.src = src;
-                observer.unobserve(img);
+                lazyObserver.unobserve(img);
             }
-        };
-
-        const root = document.querySelector(".card-grid") || null;
-        const io = new IntersectionObserver(onIntersect, {
+        }, {
             root,
             rootMargin: "200px",
             threshold: 0.1,
         });
 
+        return lazyObserver;
+    }
+
+    function initLazyImages() {
+        const images = document.querySelectorAll("img.card-image.lazy:not([data-lazy-observed])");
+        if (!images.length) return;
+
+        const observer = getLazyObserver();
+
         images.forEach((img) => {
+            img.dataset.lazyObserved = "true";
             if (img.src && img.src !== "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==") {
                 img.classList.add("loaded");
                 return;
             }
-            io.observe(img);
+            observer.observe(img);
         });
     }
 

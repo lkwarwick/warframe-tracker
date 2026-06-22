@@ -157,6 +157,22 @@ html, body {
   font-size: 13px;
 }
 
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+}
+
+.pager .toolbar-button {
+  padding: 8px 12px;
+}
+
+.page-text {
+  color: var(--text);
+  font-size: 13px;
+}
+
 .card-grid {
   min-width: 0;
   flex: 1 1 auto;
@@ -181,17 +197,16 @@ html, body {
   aspect-ratio: 1 / 1;
   object-fit: cover;
   display: block;
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
 }
 
 .card-image.lazy {
-  opacity: 0.6;
-  transition: opacity 0.3s ease, filter 0.3s ease;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .card-image.lazy.loaded {
   opacity: 1;
-  filter: none;
 }
 
 .card {
