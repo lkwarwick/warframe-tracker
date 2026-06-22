@@ -72,7 +72,17 @@ app.layout = html.Div(
     ],
 )
 
-DATA_FILE = Path(__file__).parent / "completion_data.json"
+DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "warframe-tracker"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+DATA_FILE = DATA_DIR / "completion_data.json"
+REPO_DATA_FILE = Path(__file__).parent / "completion_data.json"
+
+if not DATA_FILE.exists() and REPO_DATA_FILE.exists():
+    logger.info(
+        "Migrating completion data from repository into the user data directory: %s",
+        DATA_FILE,
+    )
+    DATA_FILE.write_text(REPO_DATA_FILE.read_text())
 
 @server.route("/api/completion", methods=["GET"])
 def get_completion():
