@@ -1,3 +1,6 @@
+import json
+from flask import jsonify, request
+from pathlib import Path
 from dash import Dash, html, dcc
 import os
 from loguru import logger
@@ -10,22 +13,24 @@ app.title = "Warframe Tracker"
 server = app.server
 
 IMG_BASE = "https://cdn.warframestat.us/img/"
-
 WF_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json"
 PRIMARY_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Primary.json"
+
 
 def load_warframes() -> list[Item]:
     """Load Warframes from the remote source."""
     logger.info("Loading warframes from remote source...")
     raw = requests.get(WF_URL, timeout=10).json()
     logger.info(f"Loaded {len(raw)} warframes from remote source.")
-    return [Item.model_validate(x) for x in raw if x.get("uniqueName") != "/Lotus/Powersuits/PowersuitAbilities/Helminth"]
-
+    return [
+        Item.model_validate(x)
+        for x in raw
+        if x.get("uniqueName") != "/Lotus/Powersuits/PowersuitAbilities/Helminth"
+    ]
 
 
 def vertical_card(item):
     components = (item.components or [])[:5]
-
     return html.Div(
         className="card",
         children=[
@@ -35,14 +40,16 @@ def vertical_card(item):
                 className="card-checklist",
                 children=[
                     html.Div(
+                        str(c.name if hasattr(c, "name") else c),
                         className="component-pill",
-                        children=str(c.name if hasattr(c, "name") else c),
+                        **{"data-wf": item.unique_name, "data-idx": str(idx)},
                     )
-                    for c in components
+                    for idx, c in enumerate(components)
                 ],
             ),
         ],
     )
+
 
 items = load_warframes()
 
@@ -65,10 +72,26 @@ app.layout = html.Div(
     ],
 )
 
+DATA_FILE = Path(__file__).parent / "completion_data.json"
+
+@server.route("/api/completion", methods=["GET"])
+def get_completion():
+    if DATA_FILE.exists():
+        return DATA_FILE.read_text(), 200, {"Content-Type": "application/json"}
+    return jsonify({})
+
+@server.route("/api/completion", methods=["POST"])
+def save_completion():
+    data = request.get_json(silent=True) or {}
+    DATA_FILE.write_text(json.dumps(data, indent=2, sort_keys=True))
+    return jsonify({"ok": True})
+
+
 @server.route("/shutdown", methods=["POST"])
 def shutdown():
     os.kill(os.getpid(), signal.SIGTERM)
     return "ok"
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=8050)
