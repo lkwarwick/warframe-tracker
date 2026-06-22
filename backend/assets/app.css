@@ -88,6 +88,30 @@ html, body {
   flex: 0 0 auto;
 }
 
+.toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px 0;
+  flex-wrap: wrap;
+}
+
+.toolbar-button {
+  padding: 10px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.toolbar-button.active,
+.toolbar-button:hover {
+  background: linear-gradient(90deg, rgba(200, 164, 77, 0.1), rgba(200, 164, 77, 0.02));
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
 .search:focus {
   border-color: var(--gold-dim);
 }

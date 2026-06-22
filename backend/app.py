@@ -1,7 +1,8 @@
 import json
 from flask import jsonify, request
 from pathlib import Path
-from dash import Dash, html, dcc
+from dash import Dash, html, dcc, callback_context
+from dash.dependencies import ALL, Input, Output, State
 import os
 from loguru import logger
 from schemas.item import Item
@@ -29,6 +30,25 @@ def load_warframes() -> list[Item]:
     ]
 
 
+def load_primary_weapons() -> list[Item]:
+    """Load primary weapons from the remote source."""
+    logger.info("Loading primary weapons from remote source...")
+    raw = requests.get(PRIMARY_URL, timeout=10).json()
+    logger.info(f"Loaded {len(raw)} primary weapons from remote source.")
+    return [Item.model_validate(x) for x in raw]
+
+
+def filter_items(items: list[Item], query: str | None) -> list[Item]:
+    if not query:
+        return items
+    q = query.lower().strip()
+    return [
+        item
+        for item in items
+        if q in item.name.lower() or q in item.unique_name.lower()
+    ]
+
+
 def vertical_card(item):
     components = (item.components or [])[:5]
     return html.Div(
@@ -51,7 +71,26 @@ def vertical_card(item):
     )
 
 
-items = load_warframes()
+ITEM_GROUPS = {
+    "warframes": {
+        "label": "Warframes",
+        "loader": load_warframes,
+        "items": None,
+    },
+    "primary_weapons": {
+        "label": "Primary Weapons",
+        "loader": load_primary_weapons,
+        "items": None,
+    },
+}
+
+
+def get_items(group_key: str) -> list[Item]:
+    group = ITEM_GROUPS[group_key]
+    if group["items"] is None:
+        group["items"] = group["loader"]()
+    return group["items"]
+
 
 app.layout = html.Div(
     className="app-grid",
@@ -60,9 +99,23 @@ app.layout = html.Div(
         html.Div("Left Sidebar", className="left"),
         html.Div(
             [
-                dcc.Input(placeholder="Search...", className="search"),
                 html.Div(
-                    [vertical_card(i) for i in items],
+                    [
+                        html.Button(
+                            group["label"],
+                            id={"type": "group-btn", "index": group_id},
+                            className=("toolbar-button active" if group_id == "warframes" else "toolbar-button"),
+                            n_clicks=0,
+                        )
+                        for group_id, group in ITEM_GROUPS.items()
+                    ],
+                    className="toolbar",
+                ),
+                dcc.Input(id="search-input", placeholder="Search...", className="search", debounce=True),
+                dcc.Store(id="active-list", data="warframes"),
+                html.Div(
+                    [vertical_card(i) for i in get_items("warframes")],
+                    id="card-grid",
                     className="card-grid",
                 ),
             ],
@@ -71,6 +124,36 @@ app.layout = html.Div(
         html.Div("Right Sidebar", className="right"),
     ],
 )
+
+
+@app.callback(
+    Output("card-grid", "children"),
+    Output("active-list", "data"),
+    Output({"type": "group-btn", "index": ALL}, "className"),
+    Input({"type": "group-btn", "index": ALL}, "n_clicks"),
+    Input("search-input", "value"),
+    State("active-list", "data"),
+)
+def update_item_list(button_clicks, search_value, active_list):
+    active_key = active_list or "warframes"
+    triggered = callback_context.triggered[0]["prop_id"] if callback_context.triggered else ""
+
+    if triggered and triggered != ".":
+        try:
+            trigger_id = json.loads(triggered.split(".")[0])
+            if trigger_id.get("type") == "group-btn":
+                active_key = trigger_id["index"]
+        except ValueError:
+            pass
+
+    items = filter_items(get_items(active_key), search_value)
+    button_classes = [
+        "toolbar-button active" if group_id == active_key else "toolbar-button"
+        for group_id in ITEM_GROUPS
+    ]
+
+    return [vertical_card(i) for i in items], active_key, button_classes
+
 
 DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "warframe-tracker"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
