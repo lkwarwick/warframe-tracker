@@ -42,11 +42,7 @@ def filter_items(items: list[Item], query: str | None) -> list[Item]:
     if not query:
         return items
     q = query.lower().strip()
-    return [
-        item
-        for item in items
-        if q in item.name.lower() or q in item.unique_name.lower()
-    ]
+    return [item for item in items if q in item.name.lower()]
 
 
 def vertical_card(item):
@@ -130,6 +126,7 @@ app.layout = html.Div(
     Output("card-grid", "children"),
     Output("active-list", "data"),
     Output({"type": "group-btn", "index": ALL}, "className"),
+    Output("search-input", "value"),
     Input({"type": "group-btn", "index": ALL}, "n_clicks"),
     Input("search-input", "value"),
     State("active-list", "data"),
@@ -137,22 +134,28 @@ app.layout = html.Div(
 def update_item_list(button_clicks, search_value, active_list):
     active_key = active_list or "warframes"
     triggered = callback_context.triggered[0]["prop_id"] if callback_context.triggered else ""
+    group_changed = False
 
     if triggered and triggered != ".":
         try:
             trigger_id = json.loads(triggered.split(".")[0])
             if trigger_id.get("type") == "group-btn":
-                active_key = trigger_id["index"]
+                if trigger_id["index"] != active_key:
+                    active_key = trigger_id["index"]
+                    group_changed = True
         except ValueError:
             pass
 
-    items = filter_items(get_items(active_key), search_value)
+    # If group changed, clear the search filter
+    effective_query = None if group_changed else search_value
+
+    items = filter_items(get_items(active_key), effective_query)
     button_classes = [
         "toolbar-button active" if group_id == active_key else "toolbar-button"
         for group_id in ITEM_GROUPS
     ]
 
-    return [vertical_card(i) for i in items], active_key, button_classes
+    return [vertical_card(i) for i in items], active_key, button_classes, ("" if group_changed else (search_value or ""))
 
 
 DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "warframe-tracker"
