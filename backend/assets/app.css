@@ -68,6 +68,41 @@ html, body {
   overflow: hidden;
 }
 
+.main-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main-panel > .card-grid,
+.main-panel > #card-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.card-grid {
+  min-width: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+
+  align-content: start;   /* stops vertical stretching */
+  justify-content: start; /* stops horizontal edge flush behaviour */
+
+  padding: 8px;
+  box-sizing: border-box;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .search {
   width: calc(100% - 12px);
   height: 42px;
@@ -116,8 +151,16 @@ html, body {
   border-color: var(--gold-dim);
 }
 
+.status {
+  padding: 6px 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .card-grid {
   min-width: 0;
+  flex: 1 1 auto;
+  min-height: 0;
 
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -126,11 +169,34 @@ html, body {
   align-content: start;   /* stops vertical stretching */
   justify-content: start; /* stops horizontal edge flush behaviour */
 
-  padding: 8px;           /* THIS is what you’re missing */
+  padding: 8px;
   box-sizing: border-box;
 
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.card-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.card-image.lazy {
+  opacity: 0.6;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.card-image.lazy.loaded {
+  opacity: 1;
+  filter: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
 }
 
 

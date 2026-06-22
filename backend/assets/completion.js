@@ -45,11 +45,47 @@
         );
     }
 
+    function initLazyImages() {
+        const images = document.querySelectorAll("img.card-image.lazy");
+        if (!images.length) return;
+
+        const onIntersect = (entries, observer) => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                const img = entry.target;
+                const src = img.dataset.src;
+                if (!src) continue;
+
+                img.onload = () => img.classList.add("loaded");
+                img.src = src;
+                observer.unobserve(img);
+            }
+        };
+
+        const root = document.querySelector(".card-grid") || null;
+        const io = new IntersectionObserver(onIntersect, {
+            root,
+            rootMargin: "200px",
+            threshold: 0.1,
+        });
+
+        images.forEach((img) => {
+            if (img.src && img.src !== "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==") {
+                img.classList.add("loaded");
+                return;
+            }
+            io.observe(img);
+        });
+    }
+
     function observeChanges() {
         const grid = document.querySelector(".card-grid");
         if (!grid) { requestAnimationFrame(observeChanges); return; }
 
-        const observer = new MutationObserver(() => paint(currentStore));
+        const observer = new MutationObserver(() => {
+            paint(currentStore);
+            initLazyImages();
+        });
         observer.observe(grid, { childList: true, subtree: true });
     }
 
@@ -71,4 +107,5 @@
 
     restore();
     observeChanges();
+    initLazyImages();
 })();

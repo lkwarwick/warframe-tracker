@@ -38,11 +38,30 @@ def load_primary_weapons() -> list[Item]:
     return [Item.model_validate(x) for x in raw]
 
 
-def filter_items(items: list[Item], query: str | None) -> list[Item]:
-    if not query:
-        return items
-    q = query.lower().strip()
-    return [item for item in items if q in item.name.lower()]
+def load_all_items() -> list[Item]:
+    """Load all items by combining known groups."""
+    # call loaders directly to avoid depending on ITEM_GROUPS state
+    warframes = load_warframes()
+    primaries = load_primary_weapons()
+    return warframes + primaries
+
+
+def filter_items(items: list[Item], query: str | None, prime_filter: str = "all") -> list[Item]:
+    # filter by name first
+    if query:
+        q = query.lower().strip()
+        items = [item for item in items if q in item.name.lower()]
+
+    # filter by prime status
+    if prime_filter == "prime":
+        items = [item for item in items if item.is_prime]
+    elif prime_filter == "nonprime":
+        items = [item for item in items if not item.is_prime]
+
+    return items
+
+
+LAZY_PLACEHOLDER = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
 
 
 def vertical_card(item):
@@ -50,7 +69,12 @@ def vertical_card(item):
     return html.Div(
         className="card",
         children=[
-            html.Img(src=f"{IMG_BASE}{item.image_name}", className="card-image"),
+            html.Img(
+                src=LAZY_PLACEHOLDER,
+                **{"data-src": f"{IMG_BASE}{item.image_name}"},
+                className="card-image lazy",
+                alt=item.name,
+            ),
             html.H3(item.name, className="card-title"),
             html.Div(
                 className="card-checklist",
@@ -68,6 +92,11 @@ def vertical_card(item):
 
 
 ITEM_GROUPS = {
+    "all": {
+        "label": "All",
+        "loader": load_all_items,
+        "items": None,
+    },
     "warframes": {
         "label": "Warframes",
         "loader": load_warframes,
@@ -92,7 +121,22 @@ app.layout = html.Div(
     className="app-grid",
     children=[
         html.Div("Warframe Tracker", className="header"),
-        html.Div("Left Sidebar", className="left"),
+        html.Div(
+            [
+                html.Div("Filters", className="sidebar-header"),
+                dcc.RadioItems(
+                    id="prime-filter",
+                    options=[
+                        {"label": "All", "value": "all"},
+                        {"label": "Prime Only", "value": "prime"},
+                        {"label": "Non-Prime Only", "value": "nonprime"},
+                    ],
+                    value="all",
+                    labelStyle={"display": "block"},
+                ),
+            ],
+            className="left",
+        ),
         html.Div(
             [
                 html.Div(
@@ -100,7 +144,7 @@ app.layout = html.Div(
                         html.Button(
                             group["label"],
                             id={"type": "group-btn", "index": group_id},
-                            className=("toolbar-button active" if group_id == "warframes" else "toolbar-button"),
+                            className=("toolbar-button active" if group_id == "all" else "toolbar-button"),
                             n_clicks=0,
                         )
                         for group_id, group in ITEM_GROUPS.items()
@@ -108,12 +152,18 @@ app.layout = html.Div(
                     className="toolbar",
                 ),
                 dcc.Input(id="search-input", placeholder="Search...", className="search", debounce=True),
-                dcc.Store(id="active-list", data="warframes"),
+                dcc.Store(id="active-list", data="all"),
                 html.Div(
-                    [vertical_card(i) for i in get_items("warframes")],
-                    id="card-grid",
-                    className="card-grid",
-                ),
+                    [
+                        html.Div(
+                            [],
+                            id="card-grid",
+                            className="card-grid",
+                        ),
+                        html.Div(id="status-text", className="status"),
+                    ],
+                    className="main-panel",
+                )
             ],
             className="content",
         ),
@@ -127,12 +177,14 @@ app.layout = html.Div(
     Output("active-list", "data"),
     Output({"type": "group-btn", "index": ALL}, "className"),
     Output("search-input", "value"),
+    Output("status-text", "children"),
     Input({"type": "group-btn", "index": ALL}, "n_clicks"),
     Input("search-input", "value"),
+    Input("prime-filter", "value"),
     State("active-list", "data"),
 )
-def update_item_list(button_clicks, search_value, active_list):
-    active_key = active_list or "warframes"
+def update_item_list(button_clicks, search_value, prime_filter_value, active_list):
+    active_key = active_list or "all"
     triggered = callback_context.triggered[0]["prop_id"] if callback_context.triggered else ""
     group_changed = False
 
@@ -149,13 +201,16 @@ def update_item_list(button_clicks, search_value, active_list):
     # If group changed, clear the search filter
     effective_query = None if group_changed else search_value
 
-    items = filter_items(get_items(active_key), effective_query)
+    items = filter_items(get_items(active_key), effective_query, prime_filter_value)
     button_classes = [
         "toolbar-button active" if group_id == active_key else "toolbar-button"
         for group_id in ITEM_GROUPS
     ]
+    # build a concise status message for the UI
+    display_query = effective_query or ""
+    status_text = f"{ITEM_GROUPS[active_key]['label']} — Filter: {prime_filter_value} — Query: {display_query}"
 
-    return [vertical_card(i) for i in items], active_key, button_classes, ("" if group_changed else (search_value or ""))
+    return [vertical_card(i) for i in items], active_key, button_classes, ("" if group_changed else (search_value or "")), status_text
 
 
 DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "warframe-tracker"
