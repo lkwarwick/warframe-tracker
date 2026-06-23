@@ -139,6 +139,12 @@ html, body {
   appearance: none;
 }
 
+.search:focus-within {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 2px rgba(200, 164, 77, 0.18) !important;
+  outline: none !important;
+}
+
 .toolbar {
   display: flex;
   gap: 8px;
