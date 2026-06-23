@@ -73,6 +73,9 @@ LAZY_PLACEHOLDER = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAA
 
 def vertical_card(item):
     components = (item.components or [])[:5]
+    if not components:
+        components = ["Set as Completed"]
+
     return html.Div(
         className="card",
         children=[
