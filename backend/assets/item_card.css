@@ -121,3 +121,12 @@
     color: white;
     text-decoration: line-through;
 }
+
+.card.complete {
+  border-color: #2e7d32;
+  background: rgba(46, 125, 50, 0.12);
+}
+
+.card.complete .card-title {
+  color: #2e7d32;
+}

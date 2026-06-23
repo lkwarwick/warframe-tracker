@@ -15,7 +15,25 @@
         localStorage.setItem(KEY, JSON.stringify(data));
     };
 
-    const apply = (el, key, store) => el.classList.toggle("complete", !!store[key]);
+    const updateCardState = (pill) => {
+        const card = pill.closest(".card");
+        if (!card) return;
+
+        const pills = card.querySelectorAll(".component-pill");
+        if (!pills.length) {
+            card.classList.remove("complete");
+            return;
+        }
+
+        const allComplete = Array.from(pills).every((node) => node.classList.contains("complete"));
+        card.classList.toggle("complete", allComplete);
+    };
+
+    const apply = (el, key, store) => {
+        const completed = !!store[key];
+        el.classList.toggle("complete", completed);
+        updateCardState(el);
+    };
 
     function scheduleSave(store) {
         clearTimeout(saveTimer);

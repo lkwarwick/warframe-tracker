@@ -147,8 +147,12 @@ html, body {
   color: var(--gold);
 }
 
-.search:focus {
-  border-color: var(--gold-dim);
+#prime-filter label {
+  color: var(--text);
+}
+
+#prime-filter input[type="radio"] {
+  accent-color: var(--gold);
 }
 
 .status {
