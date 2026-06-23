@@ -48,7 +48,9 @@ def load_all_items() -> list[Item]:
     if primaries is None:
         primaries = ITEM_GROUPS["primary_weapons"]["items"] = load_primary_weapons()
 
-    return warframes + primaries
+    combined = warframes + primaries
+    # Always return a list sorted by item name for consistent display
+    return sorted(combined, key=lambda it: (it.name or "").lower())
 
 
 def filter_items(items: list[Item], query: str | None, prime_filter: str = "all") -> list[Item]:
@@ -122,7 +124,9 @@ PAGE_RENDER_CACHE: dict[tuple[str, str, int], list[html.Div]] = {}
 def get_items(group_key: str) -> list[Item]:
     group = ITEM_GROUPS[group_key]
     if group["items"] is None:
-        group["items"] = group["loader"]()
+        # Load items for the group and keep them sorted by name
+        loaded = group["loader"]()
+        group["items"] = sorted(loaded, key=lambda it: (it.name or "").lower())
     return group["items"]
 
 
