@@ -13,7 +13,7 @@ class ItemCard:
     def __init__(self, item: Item) -> None:
         self.item = item
     
-    def render(self):
+    def render(self) -> html.Div:
         """Render this item's item card"""
         # Grab components to tick off, or toggle button
         components = (self.item.components or ["Set as Completed"])[:5]

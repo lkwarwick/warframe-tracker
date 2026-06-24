@@ -1,14 +1,17 @@
 """Contains the base Item model/schema."""
 from pydantic import BaseModel, Field
 
-from schemas.common import Component, ComponentDrop, Introduced  # noqa: TC001
+from backend.schemas.common import Component, ComponentDrop, Introduced  # noqa: TC001
+
+
+type ItemUniqueName = str
 
 
 class Item(BaseModel):
     """Base item in Warframe (i.e., Warframe, Weapon)."""
 
     # Generic
-    unique_name: str = Field(..., alias="uniqueName")
+    unique_name: ItemUniqueName = Field(..., alias="uniqueName")
     name: str
     description: str | None = None
     is_prime: bool = Field(..., alias="isPrime")

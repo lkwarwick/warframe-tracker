@@ -130,8 +130,8 @@
         const cards = document.querySelectorAll('.card-grid .card');
         cards.forEach((card) => {
             let visible = true;
-            if (primeFilter === 'prime' && card.dataset.prime !== 'prime') visible = false;
-            if (primeFilter === 'nonprime' && card.dataset.prime !== 'nonprime') visible = false;
+            if (primeFilter === 'Prime Only' && card.dataset.prime !== 'prime') visible = false;
+            if (primeFilter === 'Non-Prime Only' && card.dataset.prime !== 'nonprime') visible = false;
             if (query && !card.dataset.name.includes(query)) visible = false;
             if (hideCompleted && card.classList.contains('complete')) visible = false;
             card.classList.toggle('filtered-out', !visible);

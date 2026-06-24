@@ -7,69 +7,12 @@ import os
 from loguru import logger
 import signal
 
-from backend.schemas.item import Item
-from backend.caches import ItemCache, ItemGroup
-from backend.components import ItemCard
+from backend.caches import ItemCache, ItemGroup, ItemCardCache
+from backend.components import PrimeFilter
 
 app = Dash(__name__)
 app.title = "Warframe Tracker"
 server = app.server
-
-IMG_BASE = "https://cdn.warframestat.us/img/"
-
-
-def filter_items(items: list[Item], query: str | None, prime_filter: str = "all") -> list[Item]:
-    # filter by name first
-    if query:
-        q = query.lower().strip()
-        items = [item for item in items if q in item.name.lower()]
-
-    # filter by prime status
-    if prime_filter == "prime":
-        items = [item for item in items if item.is_prime]
-    elif prime_filter == "nonprime":
-        items = [item for item in items if not item.is_prime]
-    return items
-
-
-
-ITEM_FILTER_CACHE: dict[tuple[ItemGroup, str], list[Item]] = {}
-RENDER_CACHE: dict[tuple[str, str], list[html.Div]] = {}
-CARD_CACHE: dict[str, html.Div] = {}
-
-def get_card(item: Item) -> html.Div:
-    if item.unique_name not in CARD_CACHE:
-        CARD_CACHE[item.unique_name] = ItemCard(item).render()
-    return CARD_CACHE[item.unique_name]
-
-
-def render_items(items: list[Item]) -> list[html.Div]:
-    return [get_card(i) for i in items]
-
-
-def cached_items(item_group: ItemGroup, prime_filter: str) -> list[Item]:
-    cache_key = (item_group, prime_filter)
-    if cache_key in ITEM_FILTER_CACHE:
-        return ITEM_FILTER_CACHE[cache_key]
-
-    items = ItemCache.fetch(item_group)
-    if prime_filter == "prime":
-        items = [item for item in items if item.is_prime]
-    elif prime_filter == "nonprime":
-        items = [item for item in items if not item.is_prime]
-
-    ITEM_FILTER_CACHE[cache_key] = items
-    return items
-
-
-def cached_rendered_items(item_group: ItemGroup, prime_filter: str) -> list[html.Div]:
-    cache_key = (item_group, prime_filter)
-    if cache_key in RENDER_CACHE:
-        return RENDER_CACHE[cache_key]
-
-    cards = render_items(cached_items(item_group, prime_filter))
-    RENDER_CACHE[cache_key] = cards
-    return cards
 
 
 app.layout = html.Div(
@@ -84,11 +27,7 @@ app.layout = html.Div(
                         html.Div("Prime Status", className="filter-group-header"),
                         dcc.RadioItems(
                             id="prime-filter",
-                            options=[
-                                {"label": "All", "value": "all"},
-                                {"label": "Prime Only", "value": "prime"},
-                                {"label": "Non-Prime Only", "value": "nonprime"},
-                            ],
+                            options=[{"label": pf, "value": pf} for pf in PrimeFilter],
                             value="all",
                             labelStyle={"display": "block"},
                             className="filter-group",
@@ -133,15 +72,10 @@ app.layout = html.Div(
                             id="card-grid-loading",
                             type="default",
                             children=html.Div(
-                                cached_rendered_items(ItemGroup.WARFRAMES, "all"),
+                                ItemCardCache.rendered_item_cards(ItemGroup.WARFRAMES),
                                 id="card-grid",
                                 className="card-grid",
                             ),
-                            # `className`/`style` on dcc.Loading only target the
-                            # spinner's own root node (used by the .card-grid-loading
-                            # .dash-spinner rules in app.css). To size the actual
-                            # outer wrapper div that holds #card-grid, you need
-                            # `parent_className` (and `parent_style`) instead.
                             className="card-grid-loading",
                             parent_className="card-grid-loading-wrapper",
                         ),
@@ -175,8 +109,8 @@ def update_item_list(button_clicks, active_list):
                 active_key = trigger_id["index"]
         except ValueError:
             pass
-
-    cards = cached_rendered_items(active_key, "all")
+        
+    cards = ItemCardCache.rendered_item_cards(active_key)
     button_classes = [
         "toolbar-button active" if item_group == active_key else "toolbar-button"
         for item_group in ItemGroup

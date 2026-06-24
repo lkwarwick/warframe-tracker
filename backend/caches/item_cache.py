@@ -7,6 +7,7 @@ from backend.schemas.item import Item
 
 
 class ItemGroup(StrEnum):
+    ALL = "all"
     WARFRAMES = "warframes"
     PRIMARIES = "primaries"
     SECONDARIES = "secondaries"
@@ -43,6 +44,28 @@ class ItemCache:
 
     @staticmethod
     def fetch(group: ItemGroup) -> list[Item]:
+        if group == ItemGroup.ALL:
+            if ItemGroup.ALL in ItemCache._CACHE:
+                return ItemCache._CACHE[ItemGroup.ALL]
+
+            seen: set[str] = set()
+            all_items: list[Item] = []
+
+            for g in ItemGroup:
+                if g == ItemGroup.ALL:
+                    continue
+
+                items = ItemCache.fetch(g)
+                for item in items:
+                    key = item.unique_name or item.name
+                    if key and key not in seen:
+                        seen.add(key)
+                        all_items.append(item)
+
+            all_items = sorted(all_items, key=lambda i: (i.name or "").lower())
+            ItemCache._CACHE[ItemGroup.ALL] = all_items
+            return all_items
+
         if group in ItemCache._CACHE:
             return ItemCache._CACHE[group]
 
@@ -54,10 +77,8 @@ class ItemCache:
         ]
 
         items = sorted(items, key=lambda i: (i.name or "").lower())
-
         ItemCache._CACHE[group] = items
         logger.debug("Loaded %s into cache", group.value)
-
         return items
 
     @staticmethod
