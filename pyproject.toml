@@ -1,6 +1,9 @@
 [project]
 name = "warframe-tracker"
 version = "0.1.0"
+description = "Local Warframe mastery tracker application, built for Linux."
+readme = "README.md"
+requires-python = ">=3.12"
 dependencies = [
     "dash>=4.3,<4.4",
     "loguru>=0.7,<0.8",
