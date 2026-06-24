@@ -288,7 +288,7 @@ app.layout = html.Div(
             ],
             className="content",
         ),
-        html.Div("Right Sidebar", className="right"),
+        html.Div(className="right"),
     ],
 )
 
