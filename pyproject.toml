@@ -9,3 +9,9 @@ dependencies = [
     "loguru>=0.7,<0.8",
     "pydantic>=2.13,<2.14"
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15,<0.16",
+    "ty==0.0.53",
+]
