@@ -305,7 +305,6 @@ app.layout = html.Div(
                             className="card-grid-loading",
                             parent_className="card-grid-loading-wrapper",
                         ),
-                        html.Div(id="status-text", className="status"),
                     ],
                     className="main-panel",
                 )
@@ -322,7 +321,6 @@ app.layout = html.Div(
     Output("active-list", "data"),
     Output({"type": "group-btn", "index": ALL}, "className"),
     Output("search-input", "value"),
-    Output("status-text", "children"),
     Input({"type": "group-btn", "index": ALL}, "n_clicks"),
     State("active-list", "data"),
 )
@@ -343,9 +341,8 @@ def update_item_list(button_clicks, active_list):
         "toolbar-button active" if group_id == active_key else "toolbar-button"
         for group_id in ITEM_GROUPS
     ]
-    status_text = f"{ITEM_GROUPS[active_key]['label']} — {len(cards)} items — Filter: all — Query: "
 
-    return cards, active_key, button_classes, "", status_text
+    return cards, active_key, button_classes, ""
 
 
 DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "warframe-tracker"
