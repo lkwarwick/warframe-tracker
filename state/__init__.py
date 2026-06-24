@@ -1,1 +1,0 @@
-"""Contains persistent state logic."""

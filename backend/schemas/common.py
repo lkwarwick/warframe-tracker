@@ -11,7 +11,7 @@ class Component(BaseModel):
     image_name: str = Field(..., alias="imageName")
     tradable: bool
     masterable: bool
-    drops: list[ComponentDrop]
+    drops: list["ComponentDrop"] = Field(default_factory=list)
     type: str|None = None
     prime_selling_price: int|None = Field(None, alias="primeSellingPrice")
     ducats: int|None = Field(None, alias="ducats")

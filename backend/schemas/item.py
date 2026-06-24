@@ -1,7 +1,7 @@
 """Contains the base Item model/schema."""
 from pydantic import BaseModel, Field
 
-from domain.models.common import Component, ComponentDrop, Introduced  # noqa: TC001
+from schemas.common import Component, ComponentDrop, Introduced  # noqa: TC001
 
 
 class Item(BaseModel):
