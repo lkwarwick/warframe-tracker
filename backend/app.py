@@ -119,9 +119,8 @@ ITEM_GROUPS = {
     },
 }
 
-PAGE_SIZE = 48
 ITEM_FILTER_CACHE: dict[tuple[str, str], list[Item]] = {}
-PAGE_RENDER_CACHE: dict[tuple[str, str, int], list[html.Div]] = {}
+RENDER_CACHE: dict[tuple[str, str], list[html.Div]] = {}
 
 
 def get_items(group_key: str) -> list[Item]:
@@ -152,24 +151,14 @@ def cached_items(group_key: str, prime_filter: str) -> list[Item]:
     return items
 
 
-def cached_page(group_key: str, prime_filter: str, page: int) -> list[html.Div]:
-    cache_key = (group_key, prime_filter, page)
-    if cache_key in PAGE_RENDER_CACHE:
-        return PAGE_RENDER_CACHE[cache_key]
+def cached_rendered_items(group_key: str, prime_filter: str) -> list[html.Div]:
+    cache_key = (group_key, prime_filter)
+    if cache_key in RENDER_CACHE:
+        return RENDER_CACHE[cache_key]
 
-    items = cached_items(group_key, prime_filter)
-    cards = render_items(paginate_items(items, page))
-    PAGE_RENDER_CACHE[cache_key] = cards
+    cards = render_items(cached_items(group_key, prime_filter))
+    RENDER_CACHE[cache_key] = cards
     return cards
-
-
-def paginate_items(items: list[Item], page: int) -> list[Item]:
-    start = (page - 1) * PAGE_SIZE
-    return items[start : start + PAGE_SIZE]
-
-
-def page_count(items: list[Item]) -> int:
-    return max(1, (len(items) + PAGE_SIZE - 1) // PAGE_SIZE)
 
 
 app.layout = html.Div(
@@ -208,21 +197,12 @@ app.layout = html.Div(
                 ),
                 dcc.Input(id="search-input", placeholder="Search...", className="search", debounce=True),
                 dcc.Store(id="active-list", data="warframes"),
-                dcc.Store(id="page-store", data=1),
                 html.Div(
                     [
                         html.Div(
-                            render_items(paginate_items(cached_items("warframes", "all"), 1)),
+                            cached_rendered_items("warframes", "all"),
                             id="card-grid",
                             className="card-grid",
-                        ),
-                        html.Div(
-                            [
-                                html.Button("Prev", id="prev-page", className="toolbar-button", n_clicks=0),
-                                html.Button("Next", id="next-page", className="toolbar-button", n_clicks=0),
-                                html.Div("Page 1", id="page-text", className="page-text"),
-                            ],
-                            className="pager",
                         ),
                         html.Div(id="status-text", className="status"),
                     ],
@@ -241,24 +221,16 @@ app.layout = html.Div(
     Output("active-list", "data"),
     Output({"type": "group-btn", "index": ALL}, "className"),
     Output("search-input", "value"),
-    Output("page-store", "data"),
-    Output("prev-page", "disabled"),
-    Output("next-page", "disabled"),
-    Output("page-text", "children"),
     Output("status-text", "children"),
     Input({"type": "group-btn", "index": ALL}, "n_clicks"),
     Input("search-input", "value"),
     Input("prime-filter", "value"),
-    Input("prev-page", "n_clicks"),
-    Input("next-page", "n_clicks"),
     State("active-list", "data"),
-    State("page-store", "data"),
 )
-def update_item_list(button_clicks, search_value, prime_filter_value, prev_clicks, next_clicks, active_list, current_page):
+def update_item_list(button_clicks, search_value, prime_filter_value, active_list):
     active_key = active_list or "warframes"
     triggered = callback_context.triggered[0]["prop_id"] if callback_context.triggered else ""
     group_changed = False
-    page = current_page or 1
 
     if triggered and triggered != ".":
         try:
@@ -267,48 +239,27 @@ def update_item_list(button_clicks, search_value, prime_filter_value, prev_click
                 if trigger_id["index"] != active_key:
                     active_key = trigger_id["index"]
                     group_changed = True
-            elif trigger_id.get("type") == "prev-page":
-                page = max(1, page - 1)
-            elif trigger_id.get("type") == "next-page":
-                page += 1
         except ValueError:
             if triggered.startswith("search-input") or triggered.startswith("prime-filter"):
-                page = 1
-            elif triggered.startswith("prev-page"):
-                page = max(1, page - 1)
-            elif triggered.startswith("next-page"):
-                page += 1
-
-    if triggered and triggered != "." and not group_changed and not triggered.startswith("prev-page") and not triggered.startswith("next-page"):
-        if triggered.startswith("search-input") or triggered.startswith("prime-filter"):
-            page = 1
+                group_changed = False
 
     effective_query = None if group_changed else (search_value or None)
 
     if effective_query is None:
-        filtered_items = cached_items(active_key, prime_filter_value)
+        items = cached_items(active_key, prime_filter_value)
+        cards = cached_rendered_items(active_key, prime_filter_value)
     else:
-        filtered_items = filter_items(get_items(active_key), effective_query, prime_filter_value)
-
-    total_pages = page_count(filtered_items)
-    page = min(max(1, page), total_pages)
-    if effective_query is None:
-        cards = cached_page(active_key, prime_filter_value, page)
-    else:
-        cards = render_items(paginate_items(filtered_items, page))
-
-    prev_disabled = page <= 1
-    next_disabled = page >= total_pages
+        items = filter_items(get_items(active_key), effective_query, prime_filter_value)
+        cards = render_items(items)
 
     button_classes = [
         "toolbar-button active" if group_id == active_key else "toolbar-button"
         for group_id in ITEM_GROUPS
     ]
     display_query = effective_query or ""
-    status_text = f"{ITEM_GROUPS[active_key]['label']} — Filter: {prime_filter_value} — Query: {display_query}"
-    page_text = f"Page {page} / {total_pages}"
+    status_text = f"{ITEM_GROUPS[active_key]['label']} — {len(items)} items — Filter: {prime_filter_value} — Query: {display_query}"
 
-    return cards, active_key, button_classes, ("" if group_changed else (search_value or "")), page, prev_disabled, next_disabled, page_text, status_text
+    return cards, active_key, button_classes, ("" if group_changed else (search_value or "")), status_text
 
 
 DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "warframe-tracker"
