@@ -25,6 +25,10 @@
   filter: brightness(1.05) contrast(1.05);
 }
 
+.card.filtered-out {
+  display: none !important;
+}
+
 .card-image {
   width: 100%;
   aspect-ratio: 1 / 1;

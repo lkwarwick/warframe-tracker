@@ -105,6 +105,10 @@ def vertical_card(item):
 
     return html.Div(
         className="card",
+        **{
+            "data-prime": "prime" if item.is_prime else "nonprime",
+            "data-name": (item.name or "").lower(),
+        },
         children=[
             html.Img(
                 src=LAZY_PLACEHOLDER,
@@ -296,77 +300,28 @@ app.layout = html.Div(
     Output("search-input", "value"),
     Output("status-text", "children"),
     Input({"type": "group-btn", "index": ALL}, "n_clicks"),
-    Input("search-input", "value"),
-    Input("prime-filter", "value"),
-    Input("hide-completed-filter", "value"),
     State("active-list", "data"),
 )
-def update_item_list(button_clicks, search_value, prime_filter_value, hide_completed_value, active_list):
+def update_item_list(button_clicks, active_list):
     active_key = active_list or "warframes"
     triggered = callback_context.triggered[0]["prop_id"] if callback_context.triggered else ""
-    group_changed = False
 
     if triggered and triggered != ".":
         try:
             trigger_id = json.loads(triggered.split(".")[0])
-            if trigger_id.get("type") == "group-btn":
-                if trigger_id["index"] != active_key:
-                    active_key = trigger_id["index"]
-                    group_changed = True
+            if trigger_id.get("type") == "group-btn" and trigger_id["index"] != active_key:
+                active_key = trigger_id["index"]
         except ValueError:
-            if triggered.startswith("search-input") or triggered.startswith("prime-filter") or triggered.startswith("hide-completed-filter"):
-                group_changed = False
+            pass
 
-    effective_query = None if group_changed else (search_value or None)
-    hide_completed = "hide-completed" in hide_completed_value
-
-    if effective_query is None:
-        items = cached_items(active_key, prime_filter_value)
-        cards = cached_rendered_items(active_key, prime_filter_value)
-    else:
-        items = filter_items(get_items(active_key), effective_query, prime_filter_value)
-        cards = render_items(items)
-
-    # Filter out completed items if the toggle is enabled
-    if hide_completed:
-        # Load completion data from disk
-        try:
-            if DATA_FILE.exists():
-                completion_data = json.loads(DATA_FILE.read_text())
-            else:
-                completion_data = {}
-        except Exception:
-            completion_data = {}
-
-        # Filter items: keep only those where not all components are completed
-        filtered_items = []
-        for item in items:
-            components = (item.components or [])[:5]
-            if not components:
-                # Check if the main "Set as Completed" item is marked
-                main_key = item.unique_name + ":0"
-                if not completion_data.get(main_key, False):
-                    filtered_items.append(item)
-            else:
-                # Check if all components are completed
-                all_completed = all(
-                    completion_data.get(item.unique_name + f":{idx}", False)
-                    for idx in range(len(components))
-                )
-                if not all_completed:
-                    filtered_items.append(item)
-
-        items = filtered_items
-        cards = render_items(filtered_items)
-
+    cards = cached_rendered_items(active_key, "all")
     button_classes = [
         "toolbar-button active" if group_id == active_key else "toolbar-button"
         for group_id in ITEM_GROUPS
     ]
-    display_query = effective_query or ""
-    status_text = f"{ITEM_GROUPS[active_key]['label']} — {len(items)} items — Filter: {prime_filter_value} — Query: {display_query}"
+    status_text = f"{ITEM_GROUPS[active_key]['label']} — {len(cards)} items — Filter: all — Query: "
 
-    return cards, active_key, button_classes, ("" if group_changed else (search_value or "")), status_text
+    return cards, active_key, button_classes, "", status_text
 
 
 DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "warframe-tracker"
