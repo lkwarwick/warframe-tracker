@@ -368,3 +368,7 @@ html, body {
   margin-right: 6px;
   cursor: pointer;
 }
+
+.component-pill {
+  cursor: pointer;
+}
