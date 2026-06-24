@@ -16,6 +16,7 @@ server = app.server
 IMG_BASE = "https://cdn.warframestat.us/img/"
 WF_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json"
 PRIMARY_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Primary.json"
+SECONDARY_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Secondary.json"
 
 
 def load_warframes() -> list[Item]:
@@ -38,6 +39,14 @@ def load_primary_weapons() -> list[Item]:
     return [Item.model_validate(x) for x in raw]
 
 
+def load_secondary_weapons() -> list[Item]:
+    """Load secondary weapons from the remote source."""
+    logger.info("Loading secondary weapons from the remote source...")
+    raw = requests.get(SECONDARY_URL, timeout=10).json()
+    logger.info(f"Loaded {len(raw)} secondary weapons from the remote source.")
+    return [Item.model_validate(x) for x in raw]
+
+
 def load_all_items() -> list[Item]:
     """Load all items by combining known groups."""
     warframes = ITEM_GROUPS["warframes"]["items"]
@@ -47,8 +56,12 @@ def load_all_items() -> list[Item]:
     primaries = ITEM_GROUPS["primary_weapons"]["items"]
     if primaries is None:
         primaries = ITEM_GROUPS["primary_weapons"]["items"] = load_primary_weapons()
+        
+    secondaries = ITEM_GROUPS["secondary_weapons"]["items"]
+    if secondaries is None:
+        secondaries = ITEM_GROUPS["secondary_weapons"]["items"] = load_secondary_weapons()
 
-    combined = warframes + primaries
+    combined = warframes + primaries + secondaries
     # Always return a list sorted by item name for consistent display
     return sorted(combined, key=lambda it: (it.name or "").lower())
 
@@ -115,6 +128,11 @@ ITEM_GROUPS = {
     "primary_weapons": {
         "label": "Primary Weapons",
         "loader": load_primary_weapons,
+        "items": None,
+    },
+    "secondary_weapons": {
+        "label": "Secondary Weapons",
+        "loader": load_secondary_weapons,
         "items": None,
     },
 }
