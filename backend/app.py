@@ -112,7 +112,7 @@ def vertical_card(item):
         children=[
             html.Img(
                 src=LAZY_PLACEHOLDER,
-                **{"data-src": f"{IMG_BASE}{item.image_name}"},
+                **{"data-src": f"{IMG_BASE}{item.image_name}"},  # type: ignore
                 className="card-image lazy",
                 alt=item.name,
             ),
@@ -121,7 +121,7 @@ def vertical_card(item):
                 className="card-checklist",
                 children=[
                     html.Div(
-                        str(c.name if hasattr(c, "name") else c),
+                        str(getattr(c, "name") if hasattr(c, "name") else c),
                         className="component-pill",
                         **{"data-wf": item.unique_name, "data-idx": str(idx)},
                     )
