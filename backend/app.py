@@ -50,9 +50,9 @@ def load_secondary_weapons() -> list[Item]:
 
 def load_melee_weapons()  -> list[Item]:
     """Load melee weapons from the remote source."""
-    logger.info("Loading secondary weapons from the remote source...")
+    logger.info("Loading melee weapons from the remote source...")
     raw = requests.get(MELEE_URL, timeout=10).json()
-    logger.info(f"Loaded {len(raw)} secondary weapons from the remote source.")
+    logger.info(f"Loaded {len(raw)} melee weapons from the remote source.")
     return [ Item.model_validate(x) for x in raw if x.get("uniqueName") not in ITEM_BLACKLIST ]
 
 
@@ -75,7 +75,7 @@ def load_all_items() -> list[Item]:
     if melees is None:
         melees = ITEM_GROUPS["melee_weapons"]["item"] = load_melee_weapons()
 
-    combined = warframes + primaries + secondaries
+    combined = warframes + primaries + secondaries + melees
     # Always return a list sorted by item name for consistent display
     return sorted(combined, key=lambda it: (it.name or "").lower())
 
