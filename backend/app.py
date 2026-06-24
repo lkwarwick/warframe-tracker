@@ -199,10 +199,21 @@ app.layout = html.Div(
                 dcc.Store(id="active-list", data="warframes"),
                 html.Div(
                     [
-                        html.Div(
-                            cached_rendered_items("warframes", "all"),
-                            id="card-grid",
-                            className="card-grid",
+                        dcc.Loading(
+                            id="card-grid-loading",
+                            type="default",
+                            children=html.Div(
+                                cached_rendered_items("warframes", "all"),
+                                id="card-grid",
+                                className="card-grid",
+                            ),
+                            # `className`/`style` on dcc.Loading only target the
+                            # spinner's own root node (used by the .card-grid-loading
+                            # .dash-spinner rules in app.css). To size the actual
+                            # outer wrapper div that holds #card-grid, you need
+                            # `parent_className` (and `parent_style`) instead.
+                            className="card-grid-loading",
+                            parent_className="card-grid-loading-wrapper",
                         ),
                         html.Div(id="status-text", className="status"),
                     ],

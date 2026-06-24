@@ -74,20 +74,87 @@ html, body {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .main-panel > .card-grid,
-.main-panel > #card-grid {
+.main-panel > #card-grid,
+.main-panel > .card-grid-loading-wrapper {
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
+  position: relative;
+}
+
+.card-grid-loading {
+  position: relative;
+}
+
+.card-grid-loading .dash-loading,
+.card-grid-loading .dash-loading * {
+  pointer-events: none !important;
+}
+
+.card-grid-loading .dash-spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(10, 10, 11, 0.78);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.card-grid-loading .dash-spinner > div {
+  display: none !important;
+}
+
+.card-grid-loading .dash-spinner::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 84px;
+  height: 14px;
+  pointer-events: none;
+  background: transparent;
+}
+
+.card-grid-loading .dash-spinner::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 100%;
+  background: var(--gold);
+  box-shadow: 16px 0 0 0 var(--gold), 32px 0 0 0 var(--gold), 48px 0 0 0 var(--gold), 64px 0 0 0 var(--gold);
+  border-radius: 4px;
+  animation: spinner-bars 0.9s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes spinner-bars {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); opacity: 1; }
+  20% { transform: translate(-50%, -50%) translateY(-6px); opacity: 0.85; }
+  40% { transform: translate(-50%, -50%) translateY(0); opacity: 0.65; }
+  60% { transform: translate(-50%, -50%) translateY(-3px); opacity: 0.9; }
+  80% { transform: translate(-50%, -50%) translateY(0); opacity: 0.75; }
 }
 
 .card-grid {
+  /* Anchored via inset to the nearest positioned ancestor
+     (.card-grid-loading-wrapper, or .main-panel if there's no
+     loading wrapper in the way). This sidesteps any anonymous,
+     unstyled divs Dash inserts between them — a height:100%
+     percentage chain would break on those, but inset:0 doesn't
+     care what's in between. */
+  position: absolute;
+  inset: 0;
   min-width: 0;
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
 
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -197,25 +264,6 @@ html, body {
 .page-text {
   color: var(--text);
   font-size: 13px;
-}
-
-.card-grid {
-  min-width: 0;
-  flex: 1 1 auto;
-  min-height: 0;
-
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-
-  align-content: start;   /* stops vertical stretching */
-  justify-content: start; /* stops horizontal edge flush behaviour */
-
-  padding: 8px;
-  box-sizing: border-box;
-
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .card-image {
