@@ -7,8 +7,9 @@ import os
 from loguru import logger
 import signal
 
-from schemas.item import Item
-from caches import ItemCache, ItemGroup
+from backend.schemas.item import Item
+from backend.caches import ItemCache, ItemGroup
+from backend.components import ItemCard
 
 app = Dash(__name__)
 app.title = "Warframe Tracker"
@@ -28,45 +29,8 @@ def filter_items(items: list[Item], query: str | None, prime_filter: str = "all"
         items = [item for item in items if item.is_prime]
     elif prime_filter == "nonprime":
         items = [item for item in items if not item.is_prime]
-
     return items
 
-
-LAZY_PLACEHOLDER = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
-
-
-def vertical_card(item):
-    components = (item.components or [])[:5]
-    if not components:
-        components = ["Set as Completed"]
-
-    return html.Div(
-        className="card",
-        **{
-            "data-prime": "prime" if item.is_prime else "nonprime",
-            "data-name": (item.name or "").lower(),
-        },
-        children=[
-            html.Img(
-                src=LAZY_PLACEHOLDER,
-                **{"data-src": f"{IMG_BASE}{item.image_name}"},  # type: ignore
-                className="card-image lazy",
-                alt=item.name,
-            ),
-            html.H3(item.name, className="card-title"),
-            html.Div(
-                className="card-checklist",
-                children=[
-                    html.Div(
-                        str(getattr(c, "name") if hasattr(c, "name") else c),
-                        className="component-pill",
-                        **{"data-wf": item.unique_name, "data-idx": str(idx)},
-                    )
-                    for idx, c in enumerate(components)
-                ],
-            ),
-        ],
-    )
 
 
 ITEM_FILTER_CACHE: dict[tuple[ItemGroup, str], list[Item]] = {}
@@ -75,7 +39,7 @@ CARD_CACHE: dict[str, html.Div] = {}
 
 def get_card(item: Item) -> html.Div:
     if item.unique_name not in CARD_CACHE:
-        CARD_CACHE[item.unique_name] = vertical_card(item)
+        CARD_CACHE[item.unique_name] = ItemCard(item).render()
     return CARD_CACHE[item.unique_name]
 
 

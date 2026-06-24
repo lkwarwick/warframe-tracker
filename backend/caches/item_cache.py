@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import ClassVar
 
 from loguru import logger
-from schemas.item import Item
+from backend.schemas.item import Item
 
 
 class ItemGroup(StrEnum):
