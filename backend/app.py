@@ -17,6 +17,11 @@ IMG_BASE = "https://cdn.warframestat.us/img/"
 WF_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json"
 PRIMARY_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Primary.json"
 SECONDARY_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Secondary.json"
+MELEE_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Melee.json"
+
+ITEM_BLACKLIST = [
+    "/Lotus/Powersuits/PowersuitAbilities/Helminth",
+]
 
 
 def load_warframes() -> list[Item]:
@@ -24,11 +29,7 @@ def load_warframes() -> list[Item]:
     logger.info("Loading warframes from remote source...")
     raw = requests.get(WF_URL, timeout=10).json()
     logger.info(f"Loaded {len(raw)} warframes from remote source.")
-    return [
-        Item.model_validate(x)
-        for x in raw
-        if x.get("uniqueName") != "/Lotus/Powersuits/PowersuitAbilities/Helminth"
-    ]
+    return [ Item.model_validate(x) for x in raw if x.get("uniqueName") not in ITEM_BLACKLIST ]
 
 
 def load_primary_weapons() -> list[Item]:
@@ -36,7 +37,7 @@ def load_primary_weapons() -> list[Item]:
     logger.info("Loading primary weapons from remote source...")
     raw = requests.get(PRIMARY_URL, timeout=10).json()
     logger.info(f"Loaded {len(raw)} primary weapons from remote source.")
-    return [Item.model_validate(x) for x in raw]
+    return [ Item.model_validate(x) for x in raw if x.get("uniqueName") not in ITEM_BLACKLIST ]
 
 
 def load_secondary_weapons() -> list[Item]:
@@ -44,7 +45,16 @@ def load_secondary_weapons() -> list[Item]:
     logger.info("Loading secondary weapons from the remote source...")
     raw = requests.get(SECONDARY_URL, timeout=10).json()
     logger.info(f"Loaded {len(raw)} secondary weapons from the remote source.")
-    return [Item.model_validate(x) for x in raw]
+    return [ Item.model_validate(x) for x in raw if x.get("uniqueName") not in ITEM_BLACKLIST ]
+
+
+def load_melee_weapons()  -> list[Item]:
+    """Load melee weapons from the remote source."""
+    logger.info("Loading secondary weapons from the remote source...")
+    raw = requests.get(MELEE_URL, timeout=10).json()
+    logger.info(f"Loaded {len(raw)} secondary weapons from the remote source.")
+    return [ Item.model_validate(x) for x in raw if x.get("uniqueName") not in ITEM_BLACKLIST ]
+
 
 
 def load_all_items() -> list[Item]:
@@ -60,6 +70,10 @@ def load_all_items() -> list[Item]:
     secondaries = ITEM_GROUPS["secondary_weapons"]["items"]
     if secondaries is None:
         secondaries = ITEM_GROUPS["secondary_weapons"]["items"] = load_secondary_weapons()
+        
+    melees = ITEM_GROUPS["melee_weapons"]["items"]
+    if melees is None:
+        melees = ITEM_GROUPS["melee_weapons"]["item"] = load_melee_weapons()
 
     combined = warframes + primaries + secondaries
     # Always return a list sorted by item name for consistent display
@@ -135,6 +149,11 @@ ITEM_GROUPS = {
         "loader": load_secondary_weapons,
         "items": None,
     },
+    "melee_weapons": {
+        "label": "Melee Weapons",
+        "loader": load_melee_weapons,
+        "items": None,
+    }
 }
 
 ITEM_FILTER_CACHE: dict[tuple[str, str], list[Item]] = {}
