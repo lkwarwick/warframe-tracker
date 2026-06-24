@@ -73,7 +73,7 @@ def load_all_items() -> list[Item]:
         
     melees = ITEM_GROUPS["melee_weapons"]["items"]
     if melees is None:
-        melees = ITEM_GROUPS["melee_weapons"]["item"] = load_melee_weapons()
+        melees = ITEM_GROUPS["melee_weapons"]["items"] = load_melee_weapons()
 
     combined = warframes + primaries + secondaries + melees
     # Always return a list sorted by item name for consistent display
