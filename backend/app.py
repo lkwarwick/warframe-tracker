@@ -158,6 +158,12 @@ ITEM_GROUPS = {
 
 ITEM_FILTER_CACHE: dict[tuple[str, str], list[Item]] = {}
 RENDER_CACHE: dict[tuple[str, str], list[html.Div]] = {}
+CARD_CACHE: dict[str, html.Div] = {}
+
+def get_card(item: Item) -> html.Div:
+    if item.unique_name not in CARD_CACHE:
+        CARD_CACHE[item.unique_name] = vertical_card(item)
+    return CARD_CACHE[item.unique_name]
 
 
 def get_items(group_key: str) -> list[Item]:
@@ -170,7 +176,7 @@ def get_items(group_key: str) -> list[Item]:
 
 
 def render_items(items: list[Item]) -> list[html.Div]:
-    return [vertical_card(i) for i in items]
+    return [get_card(i) for i in items]
 
 
 def cached_items(group_key: str, prime_filter: str) -> list[Item]:
