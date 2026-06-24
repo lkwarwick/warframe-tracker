@@ -19,6 +19,10 @@ PRIMARY_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/
 SECONDARY_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Secondary.json"
 MELEE_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Melee.json"
 
+ARCHWING_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Archwing.json"
+ARCHGUN_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Gun.json"
+ARCHMELEE_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Melee.json"
+
 ITEM_BLACKLIST = [
     "/Lotus/Powersuits/PowersuitAbilities/Helminth",
 ]
@@ -56,6 +60,17 @@ def load_melee_weapons()  -> list[Item]:
     return [ Item.model_validate(x) for x in raw if x.get("uniqueName") not in ITEM_BLACKLIST ]
 
 
+def load_archwing() -> list[Item]:
+    """Load Archwing items from the remote sources."""
+    logger.info("Loading archwing items from the remote sources...")
+    items = []
+    for url in [ARCHWING_URL, ARCHGUN_URL, ARCHMELEE_URL]:
+        raw = requests.get(url, timeout=10).json()
+        items.extend([ Item.model_validate(x) for x in raw if x.get("uniqueName") not in ITEM_BLACKLIST ])
+    return items
+        
+
+
 
 def load_all_items() -> list[Item]:
     """Load all items by combining known groups."""
@@ -74,8 +89,12 @@ def load_all_items() -> list[Item]:
     melees = ITEM_GROUPS["melee_weapons"]["items"]
     if melees is None:
         melees = ITEM_GROUPS["melee_weapons"]["items"] = load_melee_weapons()
+    
+    archwing = ITEM_GROUPS["archwing"]["items"]
+    if archwing is None:
+        archwing = ITEM_GROUPS["archwing"]["items"] = load_archwing()
 
-    combined = warframes + primaries + secondaries + melees
+    combined = warframes + primaries + secondaries + melees + archwing
     # Always return a list sorted by item name for consistent display
     return sorted(combined, key=lambda it: (it.name or "").lower())
 
@@ -156,6 +175,11 @@ ITEM_GROUPS = {
     "melee_weapons": {
         "label": "Melee Weapons",
         "loader": load_melee_weapons,
+        "items": None,
+    },
+    "archwing": {
+        "label": "Archwing",
+        "loader": load_archwing,
         "items": None,
     }
 }
