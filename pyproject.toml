@@ -1,8 +1,8 @@
 [project]
-name = "backend"
+name = "warframe-tracker"
 version = "0.1.0"
 dependencies = [
-    "dash",
-    "loguru",
-    "pydantic"
+    "dash>=4.3,<4.4",
+    "loguru>=0.7,<0.8",
+    "pydantic>=2.13,<2.14"
 ]
