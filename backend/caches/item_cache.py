@@ -79,7 +79,7 @@ class ItemCache:
 
         items = sorted(items, key=lambda i: (i.name or "").lower())
         ItemCache._CACHE[group] = items
-        logger.debug("Loaded %s into cache", group.value)
+        logger.debug(f"Loaded {len(items):,} '{group.value}' into cache")
         return items
 
     @staticmethod
