@@ -17,7 +17,8 @@ class ItemGroup(StrEnum):
 
 class ItemCache:
     BLACKLIST: ClassVar[set[str]] = {
-        "/Lotus/Powersuits/PowersuitAbilities/Helminth",
+        "/Lotus/Powersuits/PowersuitAbilities/Helminth",  # Not an actual Item
+        "/Lotus/Powersuits/SiriusOrion/OrionSuit",  # Game uses "SiriusSuit"
     }
 
     _CACHE: ClassVar[dict[ItemGroup, list[Item]]] = {}
