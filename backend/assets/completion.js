@@ -15,8 +15,8 @@
         localStorage.setItem(KEY, JSON.stringify(data));
     };
 
-    const updateCardState = (pill) => {
-        const card = pill.closest(".card");
+    const updateCardState = (pillOrCard) => {
+        const card = pillOrCard.closest ? pillOrCard.closest(".card") : pillOrCard;
         if (!card) return;
 
         const pills = card.querySelectorAll(".component-pill");
@@ -35,6 +35,28 @@
         updateCardState(el);
     };
 
+    const setPillCompleteState = (pill, completed, store) => {
+        const key = pill.dataset.wf + ":" + pill.dataset.idx;
+        store[key] = !!completed;
+        pill.classList.toggle("complete", !!completed);
+    };
+
+    const handleCompleteAllClick = (button) => {
+        const card = button.closest(".card");
+        if (!card) return;
+
+        const pills = card.querySelectorAll(".component-pill");
+        if (!pills.length) return;
+
+        const allComplete = Array.from(pills).every((node) => node.classList.contains("complete"));
+        const store = { ...getLocalStore() };
+
+        pills.forEach((pill) => setPillCompleteState(pill, !allComplete, store));
+        setLocalStore(store);
+        updateCardState(card);
+        scheduleSave(store);
+    };
+
     function scheduleSave(store) {
         clearTimeout(saveTimer);
         saveTimer = setTimeout(() => {
@@ -47,6 +69,12 @@
     }
 
     document.addEventListener("click", function (e) {
+        const completeAllButton = e.target.closest(".complete-all-button");
+        if (completeAllButton) {
+            handleCompleteAllClick(completeAllButton);
+            return;
+        }
+
         const pill = e.target.closest(".component-pill");
         if (!pill) return;
         const key = pill.dataset.wf + ":" + pill.dataset.idx;

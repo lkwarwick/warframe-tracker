@@ -31,7 +31,18 @@ class ItemCard:
                     className="card-image lazy",
                     alt=self.item.name,
                 ),
-                html.H3(self.item.name, className="card-title"),
+                html.Div(
+                    className="card-header",
+                    children=[
+                        html.H3(self.item.name, className="card-title"),
+                        html.Button(
+                            "✔",
+                            className="complete-all-button",
+                            title="Toggle complete all components",
+                            **{"type": "button", "data-wf": self.item.unique_name},
+                        ),
+                    ],
+                ),
                 html.Div(
                     className="card-checklist",
                     children=[
