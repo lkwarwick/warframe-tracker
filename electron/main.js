@@ -129,8 +129,19 @@ async function startBackendAndWindow() {
     }
   );
 
-  py.stdout.on("data", (d) => log(`[backend] ${d}`));
-  py.stderr.on("data", (d) => log(`[backend:err] ${d}`));
+  py.stdout.on("data", (d) => {
+    d.toString()
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .forEach((line) => log(`[backend] ${line}`));
+  });
+
+  py.stderr.on("data", (d) => {
+    d.toString()
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .forEach((line) => log(`[backend:err] ${line}`));
+  });
 
   let backendExitedEarly = false;
   py.on("exit", () => {
