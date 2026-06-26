@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import requests
 from enum import StrEnum
 from typing import ClassVar
@@ -79,10 +80,10 @@ class ItemCache:
 
         items = sorted(items, key=lambda i: (i.name or "").lower())
         ItemCache._CACHE[group] = items
-        logger.debug(f"Loaded {len(items):,} '{group.value}' into cache")
+        logger.info(f"Loaded {len(items):,} '{group.value}' into cache")
         return items
 
-    @staticmethod
-    def preload() -> None:
-        for group in ItemGroup:
-            ItemCache.fetch(group)
+    @classmethod
+    def preload(cls) -> None:
+        with ThreadPoolExecutor() as executor:
+            list(executor.map(cls.fetch, (g for g in ItemGroup if g != ItemGroup.ALL)))
