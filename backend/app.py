@@ -65,7 +65,7 @@ app.layout = html.Div(
                     className="toolbar",
                 ),
                 dcc.Input(id="search-input", placeholder="Search...", className="search", debounce=True),
-                dcc.Store(id="active-list", data="warframes"),
+                dcc.Store(id="active-list", data=ItemGroup.WARFRAMES),
                 html.Div(
                     [
                         dcc.Loading(

@@ -7,12 +7,12 @@ from backend.schemas.item import Item
 
 
 class ItemGroup(StrEnum):
-    ALL = "all"
-    WARFRAMES = "warframes"
-    PRIMARIES = "primaries"
-    SECONDARIES = "secondaries"
-    MELEE = "melee"
-    ARCHWING = "archwing"
+    ALL = "All"
+    WARFRAMES = "Warframes"
+    PRIMARIES = "Primary"
+    SECONDARIES = "Secondary"
+    MELEE = "Melee"
+    ARCHWING = "Archwing"
 
 
 class ItemCache:
