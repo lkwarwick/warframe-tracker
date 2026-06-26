@@ -223,6 +223,7 @@ html, body {
   padding: 10px 14px;
   background: var(--panel);
   border: 1px solid var(--border);
+  border-radius: 4px;
   color: var(--text);
   font-size: 13px;
   cursor: pointer;
