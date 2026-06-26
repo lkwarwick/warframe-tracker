@@ -57,6 +57,21 @@
         scheduleSave(store);
     };
 
+    const openItemModal = (itemKey, itemName) => {
+        const modal = document.getElementById("item-modal");
+        const body = document.getElementById("item-modal-body");
+        if (!modal || !body) return;
+
+        body.textContent = `Modal opened for item ${itemName || itemKey} (${itemKey})`;
+        modal.classList.remove("hidden");
+    };
+
+    const closeItemModal = () => {
+        const modal = document.getElementById("item-modal");
+        if (!modal) return;
+        modal.classList.add("hidden");
+    };
+
     function scheduleSave(store) {
         clearTimeout(saveTimer);
         saveTimer = setTimeout(() => {
@@ -69,6 +84,27 @@
     }
 
     document.addEventListener("click", function (e) {
+        const modalClose = e.target.closest(".item-modal-close");
+        if (modalClose) {
+            closeItemModal();
+            return;
+        }
+
+        const modalBackdrop = e.target.closest(".item-modal");
+        if (modalBackdrop && e.target === modalBackdrop) {
+            closeItemModal();
+            return;
+        }
+
+        const infoButton = e.target.closest(".info-button");
+        if (infoButton) {
+            const card = infoButton.closest(".card");
+            const itemKey = infoButton.dataset.wf;
+            const itemName = card?.querySelector(".card-title")?.textContent || itemKey;
+            openItemModal(itemKey, itemName);
+            return;
+        }
+
         const completeAllButton = e.target.closest(".complete-all-button");
         if (completeAllButton) {
             handleCompleteAllClick(completeAllButton);

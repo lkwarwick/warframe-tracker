@@ -53,23 +53,30 @@
   gap: 10px;
 }
 
-.complete-all-button {
+.card-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-control-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: transparent;
   color: var(--text);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
+  line-height: 1;
   transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
 }
 
-.complete-all-button:hover,
-.complete-all-button:focus-visible {
+.card-control-button:hover,
+.card-control-button:focus-visible {
   border-color: var(--gold-dim);
   color: var(--gold);
   outline: none;
@@ -79,6 +86,12 @@
   border-color: #2e7d32;
   color: #2e7d32;
 }
+
+.info-button {
+  color: var(--text);
+  font-weight: bold;
+}
+
 
 .card-actions {
   display: flex;

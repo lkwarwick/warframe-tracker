@@ -8,7 +8,7 @@ from loguru import logger
 import signal
 
 from backend.caches import ItemCache, ItemGroup, ItemCardCache
-from backend.components import PrimeFilter
+from backend.components import PrimeFilter, ItemModal
 
 app = Dash(__name__)
 app.title = "Warframe Tracker"
@@ -81,7 +81,8 @@ app.layout = html.Div(
                         ),
                     ],
                     className="main-panel",
-                )
+                ),
+                ItemModal().render(),
             ],
             className="content",
         ),

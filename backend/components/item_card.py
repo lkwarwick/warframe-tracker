@@ -35,11 +35,22 @@ class ItemCard:
                     className="card-header",
                     children=[
                         html.H3(self.item.name, className="card-title"),
-                        html.Button(
-                            "✔",
-                            className="complete-all-button",
-                            title="Toggle complete all components",
-                            **{"type": "button", "data-wf": self.item.unique_name},
+                        html.Div(
+                            className="card-header-buttons",
+                            children=[
+                                html.Button(
+                                    "✔",
+                                    className="card-control-button complete-all-button",
+                                    title="Toggle complete all components",
+                                    **{"type": "button", "data-wf": self.item.unique_name},
+                                ),
+                                html.Button(
+                                    "i",
+                                    className="card-control-button info-button",
+                                    title="Info (not implemented)",
+                                    **{"type": "button", "data-wf": self.item.unique_name},
+                                ),
+                            ],
                         ),
                     ],
                 ),
