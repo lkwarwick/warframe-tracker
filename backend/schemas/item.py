@@ -14,7 +14,7 @@ class Item(BaseModel):
     unique_name: ItemUniqueName = Field(..., alias="uniqueName")
     name: str
     description: str | None = None
-    is_prime: bool = Field(..., alias="isPrime")
+    is_prime: bool = Field(default=False, alias="isPrime")
     type: str | None = None
     image_name: str = Field(..., alias="imageName")
     category: str | None = None

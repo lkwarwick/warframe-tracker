@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import requests
 from enum import StrEnum
-from typing import ClassVar
+from typing import ClassVar, Callable
 
 from loguru import logger
 from backend.schemas.item import Item
@@ -19,6 +19,10 @@ class ItemGroup(StrEnum):
 
     @classmethod
     def from_item(cls, item: Item) -> "ItemGroup":
+        # K-Drives
+        if item.type == "K-Drive Component":
+            return cls.VEHICLES
+        
         # Warframes
         if item.product_category == "Suits":
             return cls.WARFRAMES
@@ -47,7 +51,7 @@ class ItemGroup(StrEnum):
         if item.category == "Arch-Melee":
             return cls.ARCHMELEE
         
-        logger.warning(f"Failed to categorise: {item.name} ({item.unique_name})")
+        logger.warning(f"Failed to categorize: {item.name} ({item.unique_name})")
         
         return cls.ALL
 
@@ -60,34 +64,45 @@ class ItemCache:
         "/Lotus/Weapons/Tenno/Pistol/LatoPrime",  # Founders
         "/Lotus/Weapons/Tenno/Melee/LongSword/SkanaPrime",  # Founders
     }
+    
+    @staticmethod
+    def _is_relevant_misc_item(obj: dict) -> bool:
+        """Extra filter applied only to Misc.json entries."""
+        # K-Drives
+        if (obj.get("type") == "K-Drive Component") and (obj.get("masterable")):
+            return True
+        
+        return False
 
-    # Raw locations to pull items from
-    URLS: ClassVar[list[str]] = [
-        "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json",
-        "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Primary.json",
-        "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Secondary.json",
-        "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Melee.json",
-        "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Gun.json",
-        "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Melee.json",
+    # Each source is (url, extra_filter). extra_filter runs ON TOP OF the
+    # blacklist + masterable check, scoped to that source only. None = no extra filter.
+    SOURCES: ClassVar[list[tuple[str, Callable[[dict], bool] | None]]] = [
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json", None),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Primary.json", None),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Secondary.json", None),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Melee.json", None),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Gun.json", None),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Melee.json", None),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Misc.json", _is_relevant_misc_item),
     ]
 
     _ALL_ITEMS: ClassVar[list[Item] | None] = None
     _GROUP_CACHE: ClassVar[dict[ItemGroup, list[Item]]] = {}
 
     @staticmethod
-    def _fetch_url(url: str) -> list[Item]:
+    def _fetch_url(url: str, extra_filter: Callable[[dict], bool] | None) -> list[Item]:
         return [
             Item.model_validate(obj)
             for obj in requests.get(url, timeout=10).json()
             if (
-                (obj.get("uniqueName") not in ItemCache.BLACKLIST) and
-                (obj.get("masterable"))
+                (obj.get("uniqueName") not in ItemCache.BLACKLIST)
+                and (obj.get("masterable"))
+                and (extra_filter is None or extra_filter(obj))
             )
         ]
 
     @classmethod
     def fetch_all(cls) -> list[Item]:
-        """Fetch (and cache) every item from every URL, deduplicated, as one flat list."""
         if cls._ALL_ITEMS is not None:
             return cls._ALL_ITEMS
 
@@ -95,7 +110,9 @@ class ItemCache:
         all_items: list[Item] = []
 
         with ThreadPoolExecutor() as executor:
-            for items in executor.map(cls._fetch_url, cls.URLS):
+            urls = [u for u, _ in cls.SOURCES]
+            filters = [f for _, f in cls.SOURCES]
+            for items in executor.map(cls._fetch_url, urls, filters):
                 for item in items:
                     key = item.unique_name or item.name
                     if key and key not in seen:
