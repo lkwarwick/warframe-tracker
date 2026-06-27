@@ -20,6 +20,9 @@ class ItemCache:
     BLACKLIST: ClassVar[set[str]] = {
         "/Lotus/Powersuits/PowersuitAbilities/Helminth",  # Not an actual Item
         "/Lotus/Powersuits/SiriusOrion/OrionSuit",  # Game uses "SiriusSuit"
+        "/Lotus/Powersuits/Excalibur/ExcaliburPrime",  # Founders
+        "/Lotus/Weapons/Tenno/Pistol/LatoPrime",  # Founders
+        "/Lotus/Weapons/Tenno/Melee/LongSword/SkanaPrime",  # Founders
     }
 
     _CACHE: ClassVar[dict[ItemGroup, list[Item]]] = {}
