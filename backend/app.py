@@ -86,9 +86,28 @@ app.layout = html.Div(
             ],
             className="content",
         ),
-        html.Div(className="right"),
+        html.Div(
+            children=[
+                html.Div("Item Group Statistics", id="item-group-stats", className="sidebar-header"),
+                html.Div("Completed: N/A", id="item-group-stats-completed", className="filter-checkbox")
+            ],
+            className="right"),
     ],
 )
+
+
+@app.callback(
+    Output("item-group-stats", "children"),
+    Output("item-group-stats-completed", "children"),
+    Input("active-list", "data"),
+)
+def update_item_group_stats(item_group: ItemGroup) -> tuple[list, list]:
+    all_items = ItemCache.fetch(item_group)
+    
+    return (
+        [f"'{item_group}' Statistics"],
+        [f"Completed: ? / {len(all_items)}"]
+    )
 
 
 @app.callback(
