@@ -78,7 +78,10 @@ class ItemCache:
             Item.model_validate(obj)
             for url in ItemCache._URLS[group]
             for obj in requests.get(url, timeout=10).json()
-            if obj.get("uniqueName") not in ItemCache.BLACKLIST
+            if (
+                (obj.get("uniqueName") not in ItemCache.BLACKLIST) and
+                (obj.get("masterable"))
+            )
         ]
 
         items = sorted(items, key=lambda i: (i.name or "").lower())
