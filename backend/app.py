@@ -105,10 +105,28 @@ app.layout = html.Div(
 )
 def update_item_group_stats(item_group: ItemGroup) -> tuple[list, list]:
     all_items = ItemCache.fetch(item_group)
-    
+
+    # Load completion store directly from disk
+    if DATA_FILE.exists():
+        store = json.loads(DATA_FILE.read_text())
+    else:
+        store = {}
+
+    # Count items where every component pill is marked complete
+    completed = 0
+    for item in all_items:
+        if item.components is None:
+            # No components -> rendered as a single standalone pill, idx 0
+            component_keys = [f"{item.unique_name}:0"]
+        else:
+            component_keys = [f"{item.unique_name}:{idx}" for idx in range(len(item.components))]
+
+        if component_keys and all(store.get(key, False) for key in component_keys):
+            completed += 1
+
     return (
         [f"'{item_group}' Statistics"],
-        [f"Completed: ? / {len(all_items)}"]
+        [f"Completed: {completed} / {len(all_items)}"]
     )
 
 
