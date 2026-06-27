@@ -55,6 +55,10 @@ class ItemGroup(StrEnum):
         if item.category == "Arch-Melee":
             return [cls.ARCHMELEE]
         
+        # Archwing
+        if item.category == "Archwing":
+            return [cls.VEHICLES]
+        
         logger.warning(f"Failed to categorize: {item.name} ({item.unique_name})")
         
         return [cls.ALL]
@@ -98,6 +102,7 @@ class ItemCache:
         ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Gun.json", _is_masterable),
         ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Melee.json", _is_masterable),
         ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Misc.json", _is_relevant_misc_item),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Archwing.json", _is_masterable),
     ]
 
     _ALL_ITEMS: ClassVar[list[Item] | None] = None
