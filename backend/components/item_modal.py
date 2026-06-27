@@ -43,6 +43,7 @@ class ItemModal:
                     html.P(f"Type: {item.type or 'Unknown'}"),
                     html.P(f"Category: {item.category or 'Unknown'}"),
                     html.P(f"Product Category: {item.product_category or 'Unknown'}"),
+                    html.P(f"Unique Name: {item.unique_name}"),
                 ],
                 className="item-modal-meta",
             )
