@@ -1,3 +1,4 @@
+from backend.schemas import Item
 from dash import html
 
 
@@ -28,7 +29,7 @@ class ItemModal:
         )
 
     @staticmethod
-    def render_body(item):
+    def render_body(item: Item):
         if item is None:
             return "No item selected."
 
@@ -41,11 +42,7 @@ class ItemModal:
                 [
                     html.P(f"Type: {item.type or 'Unknown'}"),
                     html.P(f"Category: {item.category or 'Unknown'}"),
-                    html.P(f"Prime: {'Yes' if item.is_prime else 'No'}"),
-                    html.P(f"Mastery Req: {item.mastery_req or 'N/A'}"),
-                    html.P(f"BP Cost: {item.bp_cost or 'N/A'}"),
-                    html.P(f"Market Cost: {item.market_cost or 'N/A'}"),
-                    html.P(f"Tradable: {'Yes' if item.tradable else 'No'}"),
+                    html.P(f"Product Category: {item.product_category or 'Unknown'}"),
                 ],
                 className="item-modal-meta",
             )

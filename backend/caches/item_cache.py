@@ -13,24 +13,43 @@ class ItemGroup(StrEnum):
     PRIMARIES = "Primary"
     SECONDARIES = "Secondary"
     MELEE = "Melee"
+    VEHICLES = "Vehicles"
     ARCHGUNS = "Archguns"
     ARCHMELEE = "Archmelee"
-    
-    # @classmethod
-    # def from_item(item: Item) -> "ItemGroup":
-    #     if (item.):
-    #         return ItemGroup.WARFRAMES
 
-    #     return ItemGroup.ALL
-    
-    # def contains(self: "ItemGroup", item: Item) -> bool:
-    #     if self == ItemGroup.ALL:
-    #         return True
+    @classmethod
+    def from_item(cls, item: Item) -> "ItemGroup":
+        # Warframes
+        if item.product_category == "Suits":
+            return cls.WARFRAMES
+
+        # Primary
+        if item.category == "Primary":
+            return cls.PRIMARIES
         
-    #     if self == ItemGroup.WARFRAMES:
-            
+        # Secondary
+        if item.category == "Secondary":
+            return cls.SECONDARIES
+
+        # Melee
+        if item.category == "Melee":
+            return cls.MELEE
         
-    #     return False
+        # Vehicles
+        if item.product_category == "MechSuits":
+            return cls.VEHICLES
+        
+        # Archguns
+        if item.category == "Arch-Gun":
+            return cls.ARCHGUNS
+        
+        # Archmelee
+        if item.category == "Arch-Melee":
+            return cls.ARCHMELEE
+        
+        logger.warning(f"Failed to categorise: {item.name} ({item.unique_name})")
+        
+        return cls.ALL
 
 
 class ItemCache:
@@ -42,59 +61,23 @@ class ItemCache:
         "/Lotus/Weapons/Tenno/Melee/LongSword/SkanaPrime",  # Founders
     }
 
-    _CACHE: ClassVar[dict[ItemGroup, list[Item]]] = {}
+    # Raw locations to pull items from
+    URLS: ClassVar[list[str]] = [
+        "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json",
+        "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Primary.json",
+        "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Secondary.json",
+        "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Melee.json",
+        "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Gun.json",
+        "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Melee.json",
+    ]
 
-    _URLS: ClassVar[dict[ItemGroup, list[str]]] = {
-        ItemGroup.WARFRAMES: [
-            "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json"
-        ],
-        ItemGroup.PRIMARIES: [
-            "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Primary.json"
-        ],
-        ItemGroup.SECONDARIES: [
-            "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Secondary.json"
-        ],
-        ItemGroup.MELEE: [
-            "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Melee.json"
-        ],
-        ItemGroup.ARCHGUNS: [
-            "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Gun.json",
-        ],
-        ItemGroup.ARCHMELEE: [
-            "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Melee.json",
-        ],
-    }
+    _ALL_ITEMS: ClassVar[list[Item] | None] = None
+    _GROUP_CACHE: ClassVar[dict[ItemGroup, list[Item]]] = {}
 
     @staticmethod
-    def fetch(group: ItemGroup) -> list[Item]:
-        if group == ItemGroup.ALL:
-            if ItemGroup.ALL in ItemCache._CACHE:
-                return ItemCache._CACHE[ItemGroup.ALL]
-
-            seen: set[str] = set()
-            all_items: list[Item] = []
-
-            for g in ItemGroup:
-                if g == ItemGroup.ALL:
-                    continue
-
-                items = ItemCache.fetch(g)
-                for item in items:
-                    key = item.unique_name or item.name
-                    if key and key not in seen:
-                        seen.add(key)
-                        all_items.append(item)
-
-            all_items = sorted(all_items, key=lambda i: (i.name or "").lower())
-            ItemCache._CACHE[ItemGroup.ALL] = all_items
-            return all_items
-
-        if group in ItemCache._CACHE:
-            return ItemCache._CACHE[group]
-
-        items = [
+    def _fetch_url(url: str) -> list[Item]:
+        return [
             Item.model_validate(obj)
-            for url in ItemCache._URLS[group]
             for obj in requests.get(url, timeout=10).json()
             if (
                 (obj.get("uniqueName") not in ItemCache.BLACKLIST) and
@@ -102,19 +85,49 @@ class ItemCache:
             )
         ]
 
-        items = sorted(items, key=lambda i: (i.name or "").lower())
-        ItemCache._CACHE[group] = items
-        logger.info(f"Loaded {len(items):,} '{group.value}' into cache")
+    @classmethod
+    def fetch_all(cls) -> list[Item]:
+        """Fetch (and cache) every item from every URL, deduplicated, as one flat list."""
+        if cls._ALL_ITEMS is not None:
+            return cls._ALL_ITEMS
+
+        seen: set[str] = set()
+        all_items: list[Item] = []
+
+        with ThreadPoolExecutor() as executor:
+            for items in executor.map(cls._fetch_url, cls.URLS):
+                for item in items:
+                    key = item.unique_name or item.name
+                    if key and key not in seen:
+                        seen.add(key)
+                        all_items.append(item)
+
+        all_items = sorted(all_items, key=lambda i: (i.name or "").lower())
+        cls._ALL_ITEMS = all_items
+        logger.info(f"Loaded {len(all_items):,} items into cache")
+        return all_items
+
+    @classmethod
+    def fetch(cls, group: ItemGroup) -> list[Item]:
+        """Get items belonging to a given group, classifying via ItemGroup.from_item."""
+        if group == ItemGroup.ALL:
+            return cls.fetch_all()
+
+        if group in cls._GROUP_CACHE:
+            return cls._GROUP_CACHE[group]
+
+        items = [item for item in cls.fetch_all() if ItemGroup.from_item(item) == group]
+        cls._GROUP_CACHE[group] = items
+        logger.info(f"Loaded {len(items):,} '{group}' into cache")
         return items
 
     @staticmethod
     def fetch_by_unique_name(unique_name: str) -> Item | None:
         return next(
-            (item for item in ItemCache.fetch(ItemGroup.ALL) if item.unique_name == unique_name),
+            (item for item in ItemCache.fetch_all() if item.unique_name == unique_name),
             None,
         )
 
     @classmethod
     def preload(cls) -> None:
-        with ThreadPoolExecutor() as executor:
-            list(executor.map(cls.fetch, (g for g in ItemGroup if g != ItemGroup.ALL)))
+        cls.fetch_all()
