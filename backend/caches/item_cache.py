@@ -75,12 +75,10 @@ class ItemCache:
         """Extra filter applied only to Misc.json entries."""
         # K-Drives
         if (obj.get("type") == "K-Drive Component") and (obj.get("masterable")):
-            logger.success(obj.get("name"))
             return True
         
         # Kitguns
         if (("InfKitGun" in obj.get("uniqueName", "")) or (obj.get("type") == "Kitgun Component")) and ("Barrel" in obj.get("uniqueName", "")):
-            logger.success(obj.get("name"))
             return True
         
         return False
