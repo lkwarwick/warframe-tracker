@@ -72,3 +72,32 @@ npm start --prefix electron
 - Electron waits for the Dash server (localhost).
 - Dash runs as the local UI backend.
 - Electron provides the desktop shell around it.
+
+### Adding as an Application (Linux)
+
+Once the repository has been cloned and exists on your local device, you can add a new desktop entry file:
+
+Create:
+
+```
+~/.local/share/applications/warframe-tracker.desktop
+```
+
+```
+[Desktop Entry]
+Type=Application
+Name=Warframe Tracker
+Exec=npm start --prefix /full/path/to/your/project/electron
+Icon=/full/path/to/your/project/electron/assets/favicon.png
+Terminal=false
+Categories=Game;Utility
+StartupNotify=True
+```
+
+Then run:
+
+```
+update-desktop-database ~/.local/share/applications
+```
+
+And it show now appear in your application launcher
