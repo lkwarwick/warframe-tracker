@@ -23,6 +23,10 @@ class ItemGroup(StrEnum):
         if item.type == "K-Drive Component":
             return cls.VEHICLES
         
+        # Kitguns
+        if (("InfKitGun" in item.unique_name) or (item.type == "Kitgun Component")) and ("Barrel" in item.unique_name):
+            return cls.PRIMARIES
+        
         # Warframes
         if item.product_category == "Suits":
             return cls.WARFRAMES
@@ -70,19 +74,30 @@ class ItemCache:
         """Extra filter applied only to Misc.json entries."""
         # K-Drives
         if (obj.get("type") == "K-Drive Component") and (obj.get("masterable")):
+            logger.success(obj.get("name"))
+            return True
+        
+        # Kitguns
+        if (("InfKitGun" in obj.get("uniqueName", "")) or (obj.get("type") == "Kitgun Component")) and ("Barrel" in obj.get("uniqueName", "")):
+            logger.success(obj.get("name"))
             return True
         
         return False
+    
+    @staticmethod
+    def _is_masterable(obj: dict) -> bool:
+        """Extra filter applied to the cleaner sources."""
+        return obj.get("masterable", False)
 
     # Each source is (url, extra_filter). extra_filter runs ON TOP OF the
     # blacklist + masterable check, scoped to that source only. None = no extra filter.
     SOURCES: ClassVar[list[tuple[str, Callable[[dict], bool] | None]]] = [
-        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json", None),
-        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Primary.json", None),
-        ("https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Secondary.json", None),
-        ("https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Melee.json", None),
-        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Gun.json", None),
-        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Melee.json", None),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Warframes.json", _is_masterable),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Primary.json", _is_masterable),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Secondary.json", _is_masterable),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Melee.json", _is_masterable),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Gun.json", _is_masterable),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Melee.json", _is_masterable),
         ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Misc.json", _is_relevant_misc_item),
     ]
 
@@ -96,7 +111,6 @@ class ItemCache:
             for obj in requests.get(url, timeout=10).json()
             if (
                 (obj.get("uniqueName") not in ItemCache.BLACKLIST)
-                and (obj.get("masterable"))
                 and (extra_filter is None or extra_filter(obj))
             )
         ]
