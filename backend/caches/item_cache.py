@@ -67,6 +67,7 @@ class ItemCache:
         "/Lotus/Powersuits/Excalibur/ExcaliburPrime",  # Founders
         "/Lotus/Weapons/Tenno/Pistol/LatoPrime",  # Founders
         "/Lotus/Weapons/Tenno/Melee/LongSword/SkanaPrime",  # Founders
+        "/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire",  # Doppelganger Grimoire
     }
     
     @staticmethod
