@@ -13,7 +13,8 @@ class ItemGroup(StrEnum):
     PRIMARIES = "Primary"
     SECONDARIES = "Secondary"
     MELEE = "Melee"
-    ARCHWING = "Archwing"
+    ARCHGUNS = "Archguns"
+    ARCHMELEE = "Archmelee"
 
 
 class ItemCache:
@@ -40,9 +41,10 @@ class ItemCache:
         ItemGroup.MELEE: [
             "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/Melee.json"
         ],
-        ItemGroup.ARCHWING: [
-            "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Archwing.json",
+        ItemGroup.ARCHGUNS: [
             "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Gun.json",
+        ],
+        ItemGroup.ARCHMELEE: [
             "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Melee.json",
         ],
     }
