@@ -46,8 +46,10 @@ class ItemCard:
                                 ),
                                 html.Button(
                                     "i",
+                                    id={"type": "info-button", "index": self.item.unique_name},
+                                    n_clicks=0,
                                     className="card-control-button info-button",
-                                    title="Info (not implemented)",
+                                    title="Info",
                                     **{"type": "button", "data-wf": self.item.unique_name},
                                 ),
                             ],

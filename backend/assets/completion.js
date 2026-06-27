@@ -57,19 +57,17 @@
         scheduleSave(store);
     };
 
-    const openItemModal = (itemKey, itemName) => {
+    const updateBodyScroll = () => {
         const modal = document.getElementById("item-modal");
-        const body = document.getElementById("item-modal-body");
-        if (!modal || !body) return;
-
-        body.textContent = `Modal opened for item ${itemName || itemKey} (${itemKey})`;
-        modal.classList.remove("hidden");
+        const isOpen = !!modal && !modal.classList.contains("hidden");
+        document.body.classList.toggle("modal-open", isOpen);
     };
 
     const closeItemModal = () => {
         const modal = document.getElementById("item-modal");
         if (!modal) return;
         modal.classList.add("hidden");
+        updateBodyScroll();
     };
 
     function scheduleSave(store) {
@@ -93,15 +91,6 @@
         const modalBackdrop = e.target.closest(".item-modal");
         if (modalBackdrop && e.target === modalBackdrop) {
             closeItemModal();
-            return;
-        }
-
-        const infoButton = e.target.closest(".info-button");
-        if (infoButton) {
-            const card = infoButton.closest(".card");
-            const itemKey = infoButton.dataset.wf;
-            const itemName = card?.querySelector(".card-title")?.textContent || itemKey;
-            openItemModal(itemKey, itemName);
             return;
         }
 
@@ -228,6 +217,18 @@
         }
     });
 
+    function observeModalOpenState() {
+        const modal = document.getElementById("item-modal");
+        if (!modal) {
+            requestAnimationFrame(observeModalOpenState);
+            return;
+        }
+
+        const modalObserver = new MutationObserver(updateBodyScroll);
+        modalObserver.observe(modal, { attributes: true, attributeFilter: ["class"] });
+        updateBodyScroll();
+    }
+
     function restore() {
         const pills = document.querySelectorAll(".component-pill");
         if (!pills.length) { requestAnimationFrame(restore); return; }
@@ -246,6 +247,7 @@
 
     restore();
     observeChanges();
+    observeModalOpenState();
     initLazyImages();
     applyFilters();
 })();

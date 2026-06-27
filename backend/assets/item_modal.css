@@ -48,3 +48,16 @@
   margin-top: 16px;
   color: var(--text);
 }
+
+body.modal-open .card-grid,
+body.modal-open .card-grid-loading-wrapper {
+  overflow: hidden !important;
+}
+
+body.modal-open .card-grid {
+  overscroll-behavior: none;
+}
+
+body.modal-open {
+  overflow: hidden;
+}

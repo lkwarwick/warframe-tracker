@@ -15,6 +15,22 @@ class ItemGroup(StrEnum):
     MELEE = "Melee"
     ARCHGUNS = "Archguns"
     ARCHMELEE = "Archmelee"
+    
+    # @classmethod
+    # def from_item(item: Item) -> "ItemGroup":
+    #     if (item.):
+    #         return ItemGroup.WARFRAMES
+
+    #     return ItemGroup.ALL
+    
+    # def contains(self: "ItemGroup", item: Item) -> bool:
+    #     if self == ItemGroup.ALL:
+    #         return True
+        
+    #     if self == ItemGroup.WARFRAMES:
+            
+        
+    #     return False
 
 
 class ItemCache:
@@ -90,6 +106,13 @@ class ItemCache:
         ItemCache._CACHE[group] = items
         logger.info(f"Loaded {len(items):,} '{group.value}' into cache")
         return items
+
+    @staticmethod
+    def fetch_by_unique_name(unique_name: str) -> Item | None:
+        return next(
+            (item for item in ItemCache.fetch(ItemGroup.ALL) if item.unique_name == unique_name),
+            None,
+        )
 
     @classmethod
     def preload(cls) -> None:

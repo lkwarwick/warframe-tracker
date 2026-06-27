@@ -1,7 +1,8 @@
 import json
 from flask import jsonify, request
 from pathlib import Path
-from dash import Dash, html, dcc, callback_context
+import time
+from dash import Dash, html, dcc, callback_context, no_update
 from dash.dependencies import ALL, Input, Output, State
 import os
 from loguru import logger
@@ -137,6 +138,39 @@ def update_item_list(button_clicks, active_list):
     ]
 
     return cards, active_key, button_classes, ""
+
+
+@app.callback(
+    Output("item-modal-body", "children"),
+    Output("item-modal-title", "children"),
+    Output("item-modal", "className"),
+    Input({"type": "info-button", "index": ALL}, "n_clicks_timestamp"),
+)
+def show_item_modal(info_click_timestamps):
+    triggered = callback_context.triggered[0] if callback_context.triggered else {}
+    prop_id = triggered.get("prop_id", "")
+    value = triggered.get("value")
+
+    if not prop_id or prop_id == "." or not value:
+        return no_update, no_update, no_update
+
+    try:
+        trigger_id = json.loads(prop_id.split(".")[0])
+    except ValueError:
+        return no_update, no_update, no_update
+
+    if trigger_id.get("type") != "info-button":
+        return no_update, no_update, no_update
+
+    item = ItemCache.fetch_by_unique_name(trigger_id["index"])
+    if item is None:
+        return f"Item not found: {trigger_id['index']}", "Item Info", f"item-modal item-modal-open-{int(time.time() * 1000)}"
+
+    return (
+        ItemModal().render_body(item),
+        item.name or "Item Info",
+        f"item-modal item-modal-open-{int(time.time() * 1000)}",
+    )
 
 
 DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "warframe-tracker"
