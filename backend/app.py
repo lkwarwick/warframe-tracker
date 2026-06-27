@@ -62,6 +62,7 @@ app.layout = html.Div(
                             n_clicks=0,
                         )
                         for item_group in ItemGroup
+                        if len(ItemCache.fetch(item_group)) > 0
                     ],
                     className="toolbar",
                 ),
@@ -135,6 +136,7 @@ def update_item_list(button_clicks, active_list):
     button_classes = [
         "toolbar-button active" if item_group == active_key else "toolbar-button"
         for item_group in ItemGroup
+        if len(ItemCache.fetch(item_group)) > 0
     ]
 
     return cards, active_key, button_classes, ""

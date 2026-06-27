@@ -13,10 +13,12 @@ class ItemGroup(StrEnum):
     PRIMARIES = "Primary"
     SECONDARIES = "Secondary"
     MELEE = "Melee"
+    ROBOTIC = "Robotic"
     VEHICLES = "Vehicles"
     ARCHGUNS = "Archguns"
     ARCHMELEE = "Archmelee"
     AMPS = "Amps"
+    UNCATEGORIZED = "Uncategorized"
 
     @classmethod
     def from_item(cls, item: Item) -> list["ItemGroup"]:
@@ -31,6 +33,10 @@ class ItemGroup(StrEnum):
         # Amps
         if ((item.type == "Amp") and ("Barrel" in item.unique_name)) or (item.name == "Sirocco"):
             return [cls.AMPS]
+        
+        # Robotic
+        if (item.product_category in ["SentinelWeapons", "Sentinels"]):
+            return [cls.ROBOTIC]
         
         # Warframes
         if item.product_category == "Suits":
@@ -66,7 +72,7 @@ class ItemGroup(StrEnum):
         
         logger.warning(f"Failed to categorize: {item.name} ({item.unique_name})")
         
-        return [cls.ALL]
+        return [cls.UNCATEGORIZED]
 
 
 class ItemCache:
@@ -112,6 +118,9 @@ class ItemCache:
         ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arch-Melee.json", _is_masterable),
         ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Misc.json", _is_relevant_misc_item),
         ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Archwing.json", _is_masterable),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Sentinels.json", _is_masterable),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/SentinelWeapons.json", _is_masterable),
+        ("https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Pets.json", _is_masterable),
     ]
 
     _ALL_ITEMS: ClassVar[list[Item] | None] = None
