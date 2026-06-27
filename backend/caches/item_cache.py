@@ -16,6 +16,7 @@ class ItemGroup(StrEnum):
     VEHICLES = "Vehicles"
     ARCHGUNS = "Archguns"
     ARCHMELEE = "Archmelee"
+    AMPS = "Amps"
 
     @classmethod
     def from_item(cls, item: Item) -> list["ItemGroup"]:
@@ -26,6 +27,10 @@ class ItemGroup(StrEnum):
         # Kitguns
         if (("InfKitGun" in item.unique_name) or (item.type == "Kitgun Component")) and ("Barrel" in item.unique_name):
             return [cls.PRIMARIES, cls.SECONDARIES]
+        
+        # Amps
+        if ((item.type == "Amp") and ("Barrel" in item.unique_name)) or (item.name == "Sirocco"):
+            return [cls.AMPS]
         
         # Warframes
         if item.product_category == "Suits":
@@ -83,6 +88,10 @@ class ItemCache:
         
         # Kitguns
         if (("InfKitGun" in obj.get("uniqueName", "")) or (obj.get("type") == "Kitgun Component")) and ("Barrel" in obj.get("uniqueName", "")):
+            return True
+        
+        # Amps
+        if (obj.get("type") == "Amp") and ("Barrel") in obj.get("uniqueName", ""):
             return True
         
         return False
