@@ -228,7 +228,14 @@ html, body {
   color: var(--text);
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  font-weight: bold;
+}
+
+.toolbar-button:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold-dim);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--gold-dim);
 }
 
 .toolbar-button.active,
@@ -347,6 +354,15 @@ html, body {
 .filter-group label {
   color: var(--text);
   font-size: 13px;
+  transition: color 0.2s ease, transform 120ms ease;
+}
+
+.filter-group label:hover {
+  transform: translateY(-2px);
+}
+
+.filter-group label:hover * {
+  color: var(--gold) !important;
 }
 
 .filter-group input[type="radio"] {
@@ -360,9 +376,18 @@ html, body {
 }
 
 #hide-completed-filter label {
-  color: var(--text) !important;
+  color: var(--text);
   font-size: 13px !important;
   cursor: pointer !important;
+  transition: color 0.2s ease, transform 120ms ease;
+}
+
+#hide-completed-filter label:hover {
+  transform: translateY(-2px);
+}
+
+#hide-completed-filter label:hover * {
+  color: var(--gold) !important;
 }
 
 .filter-checkbox input[type="checkbox"] {
