@@ -14,6 +14,7 @@ class ItemGroup(StrEnum):
     SECONDARIES = "Secondary"
     MELEE = "Melee"
     ROBOTIC = "Robotic"
+    COMPANIONS = "Companions"
     VEHICLES = "Vehicles"
     ARCHGUNS = "Archguns"
     ARCHMELEE = "Archmelee"
@@ -35,8 +36,12 @@ class ItemGroup(StrEnum):
             return [cls.AMPS]
         
         # Robotic
-        if (item.product_category in ["SentinelWeapons", "Sentinels"]):
+        if (item.product_category in ["SentinelWeapons", "Sentinels"]) or ((item.type == "Pets") and ("ZanukaPets" in item.unique_name)) or ((item.type == "Pets") and ("MoaPets" in item.unique_name)):
             return [cls.ROBOTIC]
+        
+        # Companions
+        if ((item.type == "Pets") and (item.product_category == "KubrowPets")):
+            return [cls.COMPANIONS]
         
         # Warframes
         if item.product_category == "Suits":
