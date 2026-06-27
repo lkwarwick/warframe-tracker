@@ -18,46 +18,46 @@ class ItemGroup(StrEnum):
     ARCHMELEE = "Archmelee"
 
     @classmethod
-    def from_item(cls, item: Item) -> "ItemGroup":
+    def from_item(cls, item: Item) -> list["ItemGroup"]:
         # K-Drives
         if item.type == "K-Drive Component":
-            return cls.VEHICLES
+            return [cls.VEHICLES]
         
         # Kitguns
         if (("InfKitGun" in item.unique_name) or (item.type == "Kitgun Component")) and ("Barrel" in item.unique_name):
-            return cls.PRIMARIES
+            return [cls.PRIMARIES, cls.SECONDARIES]
         
         # Warframes
         if item.product_category == "Suits":
-            return cls.WARFRAMES
+            return [cls.WARFRAMES]
 
         # Primary
         if item.category == "Primary":
-            return cls.PRIMARIES
+            return [cls.PRIMARIES]
         
         # Secondary
         if item.category == "Secondary":
-            return cls.SECONDARIES
+            return [cls.SECONDARIES]
 
         # Melee
         if item.category == "Melee":
-            return cls.MELEE
+            return [cls.MELEE]
         
         # Vehicles
         if item.product_category == "MechSuits":
-            return cls.VEHICLES
+            return [cls.VEHICLES]
         
         # Archguns
         if item.category == "Arch-Gun":
-            return cls.ARCHGUNS
+            return [cls.ARCHGUNS]
         
         # Archmelee
         if item.category == "Arch-Melee":
-            return cls.ARCHMELEE
+            return [cls.ARCHMELEE]
         
         logger.warning(f"Failed to categorize: {item.name} ({item.unique_name})")
         
-        return cls.ALL
+        return [cls.ALL]
 
 
 class ItemCache:
@@ -147,7 +147,7 @@ class ItemCache:
         if group in cls._GROUP_CACHE:
             return cls._GROUP_CACHE[group]
 
-        items = [item for item in cls.fetch_all() if ItemGroup.from_item(item) == group]
+        items = [item for item in cls.fetch_all() if group in ItemGroup.from_item(item)]
         cls._GROUP_CACHE[group] = items
         logger.info(f"Loaded {len(items):,} '{group}' into cache")
         return items
