@@ -1,3 +1,6 @@
+/* @import url("https://unpkg.com/@phosphor-icons/web@2.1.1/src/light/style.css"); */
+@import url("https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css");
+
 :root {
   --bg: #0a0a0b;
   --panel: #111113;

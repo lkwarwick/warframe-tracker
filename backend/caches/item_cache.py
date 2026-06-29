@@ -78,6 +78,43 @@ class ItemGroup(StrEnum):
         logger.warning(f"Failed to categorize: {item.name} ({item.unique_name})")
         
         return [cls.UNCATEGORIZED]
+    
+    def to_icon(self) -> str:
+        """Grab a phosphor icon, based on the item group."""
+        if self == ItemGroup.ALL:
+            return "ph-squares-four"
+        
+        if self == ItemGroup.WARFRAMES:
+            return "ph-user"
+        
+        if self == ItemGroup.PRIMARIES:
+            return "ph-crosshair"
+        
+        if self == ItemGroup.SECONDARIES:
+            return "ph-circle"
+        
+        if self == ItemGroup.MELEE:
+            return "ph-sword"
+        
+        if self == ItemGroup.ROBOTIC:
+            return "ph-cpu"
+        
+        if self == ItemGroup.COMPANIONS:
+            return "ph-paw-print"
+        
+        if self == ItemGroup.VEHICLES:
+            return "ph-car"
+        
+        if self == ItemGroup.ARCHGUNS:
+            return "ph-target"
+        
+        if self == ItemGroup.ARCHMELEE:
+            return "ph-axe"
+        
+        if self == ItemGroup.AMPS:
+            return "ph-lightning"
+        
+        return "ph-question"
 
 
 class ItemCache:

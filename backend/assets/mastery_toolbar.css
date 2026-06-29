@@ -23,6 +23,10 @@
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
 }
 
 .toolbar-button:hover {

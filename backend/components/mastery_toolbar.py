@@ -15,7 +15,15 @@ class MasteryToolbar:
                 html.Div(
                     children=[
                         *[
-                            html.Button(item_group, id={"type": "group-btn", "index": item_group}, className=("toolbar-button active" if item_group == ItemGroup.WARFRAMES else "toolbar-button"), n_clicks=0)
+                            html.Button(
+                                children=[
+                                    html.I(className=f"ph {item_group.to_icon()}", style={"fontSize": "20px"}),
+                                    item_group
+                                ],
+                                id={"type": "group-btn", "index": item_group}, 
+                                className=("toolbar-button active" if item_group == ItemGroup.WARFRAMES else "toolbar-button"),
+                                n_clicks=0,
+                            )
                             for item_group in ItemGroup
                             if len(ItemCache.fetch(item_group)) > 0
                         ],
@@ -23,8 +31,14 @@ class MasteryToolbar:
                 ),
                 # ---------------------------------- Filters --------------------------------- #
                 html.Div(
-                    children=[
-                        html.Button("Filters", id="filters-button", className="toolbar-button"),
+                    children=[                        
+                        html.Div(
+                            children=[
+                                html.I(className="ph ph-funnel", style={"fontSize": "20px"}),
+                                "Filters",
+                            ],
+                            id="filters-button", className="toolbar-button",
+                        ),
                         html.Div(
                             children=[
                                 html.Div(
