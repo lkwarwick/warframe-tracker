@@ -1,28 +1,27 @@
 # Warframe Tracker
 
-> Local Warframe mastery tracker application, built for Linux.
-
+> A local Warframe progress tracker built for Linux.
 
 ## Overview
 
-I built this application for a number of reasons, but to summarise: moved to Linux, couldn't run Alecaframe without a bunch of other dependencies, and I hate ads. So I built this in a tech stack I'm fairly used to (apologies):
+This application exists for a few reasons: I moved to Linux, couldn't get Alecaframe running without pulling in a pile of extra dependencies, and I'm not a fan of ads. So I built something myself, using a stack I'm comfortable with:
 
-- Plotly Dash (Python) for the web-app.
-- Electron to host the web-app as it's own application
+- **Plotly Dash** (Python) for the web app
+- **Electron** to host the web app as a standalone desktop application
 
-Below showcases what the app looks like. It allows for quick overviews of all the item's in Warframe, and fitlering by pre-defined options (i.e., Prime Only, Hide Completed).
+The app gives a quick overview of every item in Warframe, with filtering options such as "Prime Only" and "Hide Completed".
 
 <p align="center"> <img src="docs/main.png" alt="Main application window"> </p>
 
 ## Limitations
 
-Other trackers (such as AlecaFrame) are in a gray area when it comes to how they access your Warframe account's data (some people have said they've been banned for it).
+Other trackers (such as AlecaFrame) sit in a gray area when it comes to how they access your Warframe account data — some users have reported being banned as a result.
 
-Because of this, this application does not access your accounts data, meaning you must manually check off the progress of the items (annoying I know).
+To avoid this, Warframe Tracker does not access your account data at all. This means progress has to be checked off manually, which is admittedly a bit more tedious, but keeps your account safe.
 
 ## Scope
 
-The app contains tabs for the following groups of items:
+The app organizes items into the following tabs:
 
 - Warframes
 - Primary Weapons
@@ -33,28 +32,19 @@ The app contains tabs for the following groups of items:
 
 ### Prerequisites
 
-- Python + `uv` installed
+- Python with [`uv`](https://github.com/astral-sh/uv) installed
 - Node.js installed
 
-### Project Structure
+### Installation
 
-```
-root/
-    backend/        # Dash (Python)
-    electron/       # Electron app
-    pyproject.toml
-```
-
-### Install Dependencies
-
-Backend:
+**Backend:**
 
 ```bash
 cd backend
 uv sync
 ```
 
-Electron:
+**Electron:**
 
 ```bash
 cd electron
@@ -63,30 +53,50 @@ npm install
 
 ### Run
 
+Start the application with:
+
 ```bash
 npm start --prefix electron
 ```
 
-### Behaviour
+#### Debug Mode
 
-- Electron waits for the Dash server (localhost).
+You can optionally enable debug mode with a `--debug=true`/`--debug=false` flag (defaults to `false`):
+
+```bash
+npm start --prefix electron -- -- --debug=true
+```
+
+A couple of details on the syntax:
+
+- The flag must be written as a single token with an equals sign (`--debug=true`), not as two separate arguments (`--debug true`).
+- The double `--` is required: the first tells npm to forward the remaining arguments to the underlying `electron .` command, and the second tells Electron to stop parsing flags itself, since `--debug` on its own is a reserved (and deprecated) Node/Electron flag.
+
+Electron reads this flag and forwards it as a command-line argument to the Python backend (`uv run python app.py --debug=true`). When enabled, the Plotly Dash server runs in debug mode (e.g. hot-reloading, verbose error output).
+
+### Behavior
+
+- Electron waits for the Dash server to come up on `localhost`.
 - Dash runs as the local UI backend.
-- Electron provides the desktop shell around it.
+- Electron wraps it in a desktop shell.
 
 ### Adding as an Application (Linux)
 
-Once the repository has been cloned and exists on your local device, you can add a new desktop entry file:
+Once the repository is cloned to your local machine, you can register it as a desktop application.
 
-Create:
+Create the file:
 
 ```
 ~/.local/share/applications/warframe-tracker.desktop
 ```
 
-```
+With the following contents:
+
+```ini
 [Desktop Entry]
 Type=Application
 Name=Warframe Tracker
+Comment=Local tracker for Warframe
 Exec=npm start --prefix /full/path/to/your/project/electron
 Icon=/full/path/to/your/project/electron/assets/favicon.png
 Terminal=false
@@ -94,10 +104,10 @@ Categories=Game;Utility
 StartupNotify=True
 ```
 
-Then run:
+Then refresh the desktop database:
 
-```
+```bash
 update-desktop-database ~/.local/share/applications
 ```
 
-And it show now appear in your application launcher
+Warframe Tracker should now appear in your application launcher.

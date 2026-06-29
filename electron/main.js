@@ -120,9 +120,17 @@ async function startBackendAndWindow() {
 
   freePort(DASH_PORT);
 
+  const debugArg =
+  process.argv.find((arg) => arg.startsWith("--debug=")) ?? "--debug=false";
+
   py = spawn(
     "uv",
-    ["run", "python", path.join(__dirname, "..", "backend", "app.py")],
+    [
+      "run",
+      "python",
+      path.join(__dirname, "..", "backend", "app.py"),
+      debugArg,
+    ],
     {
       detached: process.platform !== "win32",
       stdio: ["ignore", "pipe", "pipe"],

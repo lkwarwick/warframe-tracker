@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import json
 from flask import jsonify, request
 from pathlib import Path
@@ -225,7 +226,15 @@ def shutdown():
 
 
 if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--debug",
+        type=lambda x: x.lower() == "true",
+        default=False,
+    )
+    args = parser.parse_args()
+    
     # Cache warmups
     ItemCache.preload()
     
-    app.run(debug=True, port=8050)
+    app.run(debug=args.debug, port=8050)
