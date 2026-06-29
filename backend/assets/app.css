@@ -51,6 +51,8 @@ html, body {
 
 .right {
   border-right: none;
+  position: relative;
+  z-index: 1;
   border-left: 1px solid var(--border);
 }
 
@@ -213,46 +215,6 @@ html, body {
   outline: none !important;
 }
 
-.toolbar {
-  display: flex;
-  gap: 8px;
-  padding: 6px 8px 0;
-  flex-wrap: wrap;
-}
-
-.toolbar-button {
-  padding: 10px 14px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
-  font-weight: bold;
-}
-
-.toolbar-button:hover {
-  transform: translateY(-2px);
-  border-color: var(--gold-dim);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--gold-dim);
-}
-
-.toolbar-button.active,
-.toolbar-button:hover {
-  background: linear-gradient(90deg, rgba(200, 164, 77, 0.1), rgba(200, 164, 77, 0.02));
-  border-color: var(--gold);
-  color: var(--gold);
-}
-
-#prime-filter label {
-  color: var(--text);
-}
-
-#prime-filter input[type="radio"] {
-  accent-color: var(--gold);
-}
-
 .status {
   padding: 6px 8px;
   color: var(--muted);
@@ -264,10 +226,6 @@ html, body {
   align-items: center;
   gap: 10px;
   padding: 8px;
-}
-
-.pager .toolbar-button {
-  padding: 8px 12px;
 }
 
 .page-text {
@@ -297,7 +255,6 @@ html, body {
   flex-direction: column;
 }
 
-
 /* Firefox */
 .card-grid {
   scrollbar-width: thin;
@@ -321,79 +278,6 @@ html, body {
 
 .card-grid::-webkit-scrollbar-thumb:hover {
   background: var(--gold);
-}
-
-.sidebar-header {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--gold);
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.filter-section {
-  margin-bottom: 20px;
-}
-
-.filter-group-header {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.filter-group label {
-  color: var(--text);
-  font-size: 13px;
-  transition: color 0.2s ease, transform 120ms ease;
-}
-
-.filter-group label:hover {
-  transform: translateY(-2px);
-}
-
-.filter-group label:hover * {
-  color: var(--gold) !important;
-}
-
-.filter-group input[type="radio"] {
-  accent-color: var(--gold);
-  margin-right: 6px;
-}
-
-.filter-checkbox {
-  display: flex;
-  flex-direction: column;
-}
-
-#hide-completed-filter label {
-  color: var(--text);
-  font-size: 13px !important;
-  cursor: pointer !important;
-  transition: color 0.2s ease, transform 120ms ease;
-}
-
-#hide-completed-filter label:hover {
-  transform: translateY(-2px);
-}
-
-#hide-completed-filter label:hover * {
-  color: var(--gold) !important;
-}
-
-.filter-checkbox input[type="checkbox"] {
-  accent-color: var(--gold);
-  margin-right: 6px;
-  cursor: pointer;
 }
 
 .component-pill {

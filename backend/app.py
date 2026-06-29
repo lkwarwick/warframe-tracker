@@ -10,7 +10,7 @@ from loguru import logger
 import signal
 
 from backend.caches import ItemCache, ItemGroup, ItemCardCache
-from backend.components import PrimeFilter, ItemModal
+from backend.components import ItemModal, MasteryToolbar
 
 app = Dash(__name__)
 app.title = "Warframe Tracker"
@@ -21,52 +21,10 @@ app.layout = html.Div(
     className="app-grid",
     children=[
         html.Div("Warframe Tracker", className="header"),
+        html.Div(children=[], className="left"),
         html.Div(
             [
-                html.Div("Filters", className="sidebar-header"),
-                html.Div(
-                    [
-                        html.Div("Prime Status", className="filter-group-header"),
-                        dcc.RadioItems(
-                            id="prime-filter",
-                            options=[{"label": pf, "value": pf} for pf in PrimeFilter],
-                            value="all",
-                            labelStyle={"display": "block"},
-                            className="filter-group",
-                        ),
-                    ],
-                    className="filter-section",
-                ),
-                html.Div(
-                    [
-                        html.Div("Visibility", className="filter-group-header"),
-                        dcc.Checklist(
-                            id="hide-completed-filter",
-                            options=[{"label": " Hide Completed", "value": "hide-completed"}],
-                            value=[],
-                            className="filter-checkbox",
-                        ),
-                    ],
-                    className="filter-section",
-                ),
-            ],
-            className="left",
-        ),
-        html.Div(
-            [
-                html.Div(
-                    [
-                        html.Button(
-                            item_group,
-                            id={"type": "group-btn", "index": item_group},
-                            className=("toolbar-button active" if item_group == ItemGroup.WARFRAMES else "toolbar-button"),
-                            n_clicks=0,
-                        )
-                        for item_group in ItemGroup
-                        if len(ItemCache.fetch(item_group)) > 0
-                    ],
-                    className="toolbar",
-                ),
+                MasteryToolbar.render(),
                 dcc.Input(id="search-input", placeholder="Search...", className="search", debounce=True),
                 dcc.Store(id="active-list", data=ItemGroup.WARFRAMES),
                 html.Div(
@@ -97,6 +55,9 @@ app.layout = html.Div(
             className="right"),
     ],
 )
+
+# Component Callbacks
+MasteryToolbar.callbacks(app)
 
 
 @app.callback(
