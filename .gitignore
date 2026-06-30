@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-electron
+.vite
+.DS_Store
+
+# logs
+*.log
+
+# env
+.env
+.env.*
+
+# OS / IDE
+.idea
+.vscode
