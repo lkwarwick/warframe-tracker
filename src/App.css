@@ -46,7 +46,7 @@ h1, h2, h3, h4, h5, h6, p {
 }
 
 .header {
-  flex: 0 0 10%;
+  flex: 0 0 7.5%;
 }
 
 .main {
@@ -55,12 +55,12 @@ h1, h2, h3, h4, h5, h6, p {
 }
 
 .footer {
-  flex: 0 0 5%;
+  flex: 0 0 3%;
 }
 
 .left,
 .right {
-  flex: 0 0 20%;
+  flex: 0 0 12.5%;
 }
 
 .middle {
