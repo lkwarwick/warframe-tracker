@@ -1,20 +1,21 @@
 {
-  "main": "electron/main.ts",
-  "type": "module",
+  "main": "out/main/main.js",
   "scripts": {
-    "dev": "node run.mts"
+    "dev": "electron-vite dev",
+    "build": "electron-vite build"
   },
   "dependencies": {
+    "@wfcd/items": "^1.1274.68",
     "electron": "latest",
     "react": "latest",
-    "react-dom": "latest",
-    "vite": "latest"
+    "react-dom": "latest"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "latest",
-    "tsx": "latest",
-    "typescript": "latest"
+    "@vitejs/plugin-react": "^5.0.0",
+    "electron-vite": "latest",
+    "typescript": "latest",
+    "vite": "^7.0.0"
   }
 }
