@@ -16,7 +16,7 @@ export default function MasterTracker() {
 
     useEffect(() => {
         window.api.getWarframes().then(setWarframes);
-    })
+    }, [])
 
     return (
         <div className="item-card-grid-container">
