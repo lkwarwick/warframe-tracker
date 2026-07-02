@@ -12,11 +12,15 @@ declare global {
 }
 
 export default function MasteryTracker() {
-    const [warframes, setWarframes] = useState<Warframe[]>([])
+    const [warframes, setWarframes] = useState<Warframe[]>([]);
+
+    const [itemSearchText, setItemSearchText] = useState<string>("");
 
     useEffect(() => {
         window.api.getWarframes().then(setWarframes);
-    }, [])
+    }, []);
+
+    const filteredWarframes = warframes.filter(warframe => warframe.name.toLowerCase().includes(itemSearchText.toLowerCase()));
 
     return (
         <div className="item-card-grid-container">
@@ -30,12 +34,13 @@ export default function MasteryTracker() {
                     </div>
                 </div>
                 <div className="item-card-toolbar-search">
-                    <input type="search" placeholder="Search items..." />
+                    <input type="search" onChange={(e) => setItemSearchText(e.target.value)} placeholder="Search items..." />
+                    <p>{itemSearchText}</p>
                 </div>
             </div>
             <div className="item-card-grid">
                 {
-                    warframes.map(warframe => (
+                    filteredWarframes.map(warframe => (
                         <ItemCard item={warframe} />
                     ))
                 }
