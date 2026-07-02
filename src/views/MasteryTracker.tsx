@@ -1,5 +1,6 @@
 import type{ Warframe } from "@wfcd/items";
 import { useEffect, useState } from "react";
+import { User } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 
@@ -27,7 +28,7 @@ export default function MasteryTracker() {
             <div className="item-card-toolbar">
                 <div className="item-card-toolbar-top">
                     <div className="item-card-toolbar-left">
-                        <button>Warframes</button>
+                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Warframes"><User size={18} weight="bold" /></button>
                     </div>
                     <div className="item-card-toolbar-right">
                         <button>Filters</button>
