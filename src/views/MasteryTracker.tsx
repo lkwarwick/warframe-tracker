@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { User, Crosshair, SquaresFour } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
+import { AnimatePresence, motion } from "framer-motion";
 
 declare global {
     interface Window {
@@ -63,11 +64,19 @@ export default function MasteryTracker() {
                 </div>
             </div>
             <div className="item-card-grid">
-                {
-                    filteredItems.map(item => (
+                <AnimatePresence mode="wait">
+                    {filteredItems.map(item => (
+                    <motion.div
+                        key={item.uniqueName}
+                        layout
+                        initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.97 }}
+                        transition={{ duration: 0.1 }}>
                         <ItemCard item={item} />
-                    ))
-                }
+                    </motion.div>
+                    ))}
+                </AnimatePresence>
             </div>
         </div>
     )

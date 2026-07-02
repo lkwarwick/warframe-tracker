@@ -7,6 +7,7 @@
   "dependencies": {
     "@wfcd/items": "^1.1274.68",
     "electron": "latest",
+    "framer-motion": "^12.42.2",
     "phosphor-react": "^1.4.1",
     "react": "latest",
     "react-dom": "latest"
