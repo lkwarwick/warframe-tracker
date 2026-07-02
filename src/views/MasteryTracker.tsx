@@ -20,31 +20,42 @@ declare global {
 export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee"
 
 export default function MasteryTracker() {
-    const [warframes, setWarframes] = useState<BaseItem[]>([]);
-    const [primaries, setPrimaries] = useState<BaseItem[]>([]);
-    const [secondaries, setSecondaries] = useState<BaseItem[]>([]);
-    const [melee, setMelee] = useState<BaseItem[]>([]);
-
-    const [itemGroup, setItemGroup] = useState<ItemGroup>("warframes");
     const [itemSearchText, setItemSearchText] = useState<string>("");
+    const [itemGroup, setItemGroup] = useState<ItemGroup>("warframes");
+    const [itemsByGroup, setItemsByGroup] = useState<Record<ItemGroup, BaseItem[]>>({
+        all: [],
+        warframes: [],
+        primaries: [],
+        secondaries: [],
+        melee: [],
+    });
 
     useEffect(() => {
-        window.api.getWarframes().then(setWarframes);
-        window.api.getPrimaries().then(setPrimaries);
-        window.api.getSecondaries().then(setSecondaries);
-        window.api.getMelee().then(setMelee);
+        Promise.all([
+            window.api.getWarframes(),
+            window.api.getPrimaries(),
+            window.api.getSecondaries(),
+            window.api.getMelee(),
+        ]).then(([warframes, primaries, secondaries, melee]) => {
+            setItemsByGroup({
+                all: [...warframes, ...primaries, ...secondaries, ...melee],
+                warframes,
+                primaries,
+                secondaries,
+                melee,
+            });
+        });
     }, []);
 
-    
-    function toTitleCase(str: string) {
-        return str.replace(
-            /\w\S*/g,
-            text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
-        );
-    }
+    const groups: { key: ItemGroup; label: string; icon: any }[] = [
+        { key: "all", label: "All", icon: SquaresFour },
+        { key: "warframes", label: "Warframes", icon: User },
+        { key: "primaries", label: "Primaries", icon: Crosshair },
+        { key: "secondaries", label: "Secondaries", icon: Circle },
+        { key: "melee", label: "Melee", icon: Sword },
+    ];
 
-    const itemSources: Record<ItemGroup, BaseItem[]> = { all: [...warframes, ...primaries, ...secondaries, ...melee],  warframes, primaries, secondaries, melee };
-    const items = itemSources[itemGroup];
+    const items = itemsByGroup[itemGroup];
     const filteredItems = items
         .filter(item =>
             item.name.toLowerCase().includes(itemSearchText.toLowerCase())
@@ -56,29 +67,14 @@ export default function MasteryTracker() {
             <div className="item-card-toolbar">
                 <div className="item-card-toolbar-top">
                     <div className="item-card-toolbar-left">
-                        <button className="item-card-toolbar-icon-button" type="button" aria-label="All" onClick={() => setItemGroup("all")}>
-                            <SquaresFour size={18} weight="bold" />
-                            <span className="tooltip">All</span>
-                        </button>
-                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Warframes" onClick={() => setItemGroup("warframes")}>
-                            <User size={18} weight="bold" />
-                            <span className="tooltip">Warframes</span>
-                        </button>
-                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Primaries" onClick={() => setItemGroup("primaries")}>
-                            <Crosshair size={18} weight="bold" />
-                            <span className="tooltip">Primaries</span>
-                        </button>
-                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Secondaries" onClick={() => setItemGroup("secondaries")}>
-                            <Circle size={18} weight="bold" />
-                            <span className="tooltip">Secondaries</span>
-                        </button>
-                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Melee" onClick={() => setItemGroup("melee")}>
-                            <Sword size={18} weight="bold" />
-                            <span className="tooltip">Melee</span>
-                        </button>
+                        {groups.map(({ key, label, icon: Icon }) => (
+                            <button key={key} className="item-card-toolbar-icon-button" type="button" aria-label={label} onClick={() => setItemGroup(key)}>
+                                <Icon size={18} weight="bold" />
+                                <span className="tooltip">{label}</span>
+                            </button>
+                        ))}
                     </div>
                     <div className="item-card-toolbar-right">
-                        <ProgressBar name={toTitleCase(itemGroup)} value={items.length * 0.75} max={items.length} />
                         <button>Filters</button>
                     </div>
                 </div>
