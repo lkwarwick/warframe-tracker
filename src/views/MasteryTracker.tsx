@@ -36,8 +36,14 @@ export default function MasteryTracker() {
             <div className="item-card-toolbar">
                 <div className="item-card-toolbar-top">
                     <div className="item-card-toolbar-left">
-                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Warframes" onClick={() => setItemGroup("warframes")}><User size={18} weight="bold" /></button>
-                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Primaries" onClick={() => setItemGroup("primaries")}><Crosshair size={18} weight="bold" /></button>
+                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Warframes" onClick={() => setItemGroup("warframes")}>
+                            <User size={18} weight="bold" />
+                            <span className="tooltip">Warframes</span>
+                        </button>
+                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Primaries" onClick={() => setItemGroup("primaries")}>
+                            <Crosshair size={18} weight="bold" />
+                            <span className="tooltip">Primaries</span>
+                        </button>
                     </div>
                     <div className="item-card-toolbar-right">
                         <button>Filters</button>
