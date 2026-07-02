@@ -8,8 +8,8 @@ type ItemCardProps = {
 export default function ItemCard({ item }: ItemCardProps) {
     return (
         <div className="item-card">
-            <h3>{item.name}</h3>
-            <p>{item.uniqueName}</p>
+            <img className="item-card-image" src={`https://cdn.warframestat.us/img/${item.imageName}`}></img>
+            <h3 className="item-card-title">{item.name}</h3>
         </div>
     )
 }

@@ -24,6 +24,9 @@ body,
   background-color: var(--bg);
   font-family: "Rajdhani", sans-serif;
   overflow: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-dim) transparent;
 }
 
 * {
