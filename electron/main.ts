@@ -4,10 +4,19 @@ import path from "path";
 
 let warframesCache: any[] | null = null;
 
+const unique_name_blacklist: string[] = [
+  "/Lotus/Powersuits/PowersuitAbilities/Helminth",  // Not an actual Item
+  "/Lotus/Powersuits/SiriusOrion/OrionSuit",  // Game uses "SiriusSuit"
+  "/Lotus/Powersuits/Excalibur/ExcaliburPrime",  // Founders
+  "/Lotus/Weapons/Tenno/Pistol/LatoPrime",  // Founders
+  "/Lotus/Weapons/Tenno/Melee/LongSword/SkanaPrime",  // Founders
+  "/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire",  // Doppelganger Grimoire
+];
+
 ipcMain.handle('get-warframes', async () => {
   if (!warframesCache) {
     const items = new Items({ category: ['Warframes'] });
-    warframesCache = items.filter((w: any) => w.category === 'Warframes');
+    warframesCache = items.filter((w: any) => (w.category === 'Warframes') && (!unique_name_blacklist.includes(w.uniqueName)));
   }
   return warframesCache;
 });
