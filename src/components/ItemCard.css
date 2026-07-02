@@ -1,19 +1,19 @@
 .item-card {
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
 
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
 
-    padding: 12px;
-    transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  padding: 12px;
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .item-card:hover {
