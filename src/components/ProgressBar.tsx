@@ -13,7 +13,7 @@ export default function ProgressBar({ name, value, max}: ProgressBarProps) {
         <div className="progress-card">
             <div className="progress-header">
                 <span className="progress-left">{name}</span>
-                <span className="progress-right">{value}/{max} ({pct})</span>
+                <span className="progress-right">{Math.floor(value)}/{max} ({pct}%)</span>
             </div>
             <div className="progress-bar">
                 <div className="progress-fill" style={{ width: `${pct}%`}}></div>

@@ -64,7 +64,7 @@ export default function MasteryTracker() {
                         </button>
                     </div>
                     <div className="item-card-toolbar-right">
-                        <ProgressBar name={toTitleCase(itemGroup)} value={0} max={items.length} />
+                        <ProgressBar name={toTitleCase(itemGroup)} value={items.length * 0.75} max={items.length} />
                         <button>Filters</button>
                     </div>
                 </div>

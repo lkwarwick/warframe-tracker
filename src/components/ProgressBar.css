@@ -33,7 +33,7 @@
 .progress-fill {
     height: 100%;
     width: 0;
-    background: #6aa7ff;
+    background: var(--gold);
     border-radius: inherit;
     transition: width 0.3s ease;
 }
