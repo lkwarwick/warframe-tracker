@@ -7,6 +7,7 @@ let primariesCache: any[] | null = null;
 let secondariesCache: any[] | null = null;
 let meleeCache: any[] | null = null;
 let archwingCache: any[] | null = null;
+let companionsCache: any[] | null = null;
 
 const unique_name_blacklist: string[] = [
   "/Lotus/Powersuits/PowersuitAbilities/Helminth",  // Not an actual Item
@@ -55,6 +56,14 @@ ipcMain.handle('get-archwing', async () => {
     archwingCache = items.filter((i: any) => !unique_name_blacklist.includes(i.uniqueName))
   }
   return archwingCache;
+})
+
+ipcMain.handle('get-companions', async () => {
+  if (!companionsCache) {
+    const items = new Items({ category: ["Pets", "Sentinels", "SentinelWeapons"] });
+    companionsCache = items.filter((i: any) => !unique_name_blacklist.includes(i.uniqueName))
+  }
+  return companionsCache;
 })
 
 app.whenReady().then(() => {

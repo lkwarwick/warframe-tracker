@@ -1,10 +1,9 @@
 import type{ BaseItem } from "@wfcd/items";
 import { useEffect, useState } from "react";
-import { User, Crosshair, SquaresFour, Circle, Sword, Rocket } from "phosphor-react";
+import { User, Crosshair, SquaresFour, Circle, Sword, Rocket, PawPrint } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
-import ProgressBar from "../components/ProgressBar";
 
 declare global {
     interface Window {
@@ -14,11 +13,12 @@ declare global {
             getSecondaries: () => Promise<BaseItem[]>;
             getMelee: () => Promise<BaseItem[]>;
             getArchwing: () => Promise<BaseItem[]>;
+            getCompanions: () => Promise<BaseItem[]>;
         }
     }
 }
 
-export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing"
+export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing" | "companions"
 
 export default function MasteryTracker() {
     const [itemSearchText, setItemSearchText] = useState<string>("");
@@ -30,6 +30,7 @@ export default function MasteryTracker() {
         secondaries: [],
         melee: [],
         archwing: [],
+        companions: [],
     });
 
     useEffect(() => {
@@ -39,14 +40,16 @@ export default function MasteryTracker() {
             window.api.getSecondaries(),
             window.api.getMelee(),
             window.api.getArchwing(),
-        ]).then(([warframes, primaries, secondaries, melee, archwing]) => {
+            window.api.getCompanions(),
+        ]).then(([warframes, primaries, secondaries, melee, archwing, companions]) => {
             setItemsByGroup({
-                all: [...warframes, ...primaries, ...secondaries, ...melee, ...archwing],
+                all: [...warframes, ...primaries, ...secondaries, ...melee, ...archwing, ...companions],
                 warframes,
                 primaries,
                 secondaries,
                 melee,
                 archwing,
+                companions,
             });
         });
     }, []);
@@ -58,6 +61,7 @@ export default function MasteryTracker() {
         { key: "secondaries", label: "Secondaries", icon: Circle },
         { key: "melee", label: "Melee", icon: Sword },
         { key: "archwing", label: "Archwing", icon: Rocket },
+        { key: "companions", label: "Companions", icon: PawPrint },
     ];
 
     const items = itemsByGroup[itemGroup];

@@ -6,4 +6,5 @@ contextBridge.exposeInMainWorld('api', {
   getSecondaries: () => ipcRenderer.invoke('get-secondaries'),
   getMelee: () => ipcRenderer.invoke('get-melee'),
   getArchwing: () => ipcRenderer.invoke('get-archwing'),
+  getCompanions: () => ipcRenderer.invoke('get-companions'),
 });
