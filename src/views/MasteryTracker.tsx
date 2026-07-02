@@ -1,6 +1,6 @@
-import type{ BaseItem, Warframe } from "@wfcd/items";
+import type{ BaseItem } from "@wfcd/items";
 import { useEffect, useState } from "react";
-import { User, Crosshair, SquaresFour } from "phosphor-react";
+import { User, Crosshair, SquaresFour, Circle, Sword } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
@@ -9,17 +9,21 @@ import ProgressBar from "../components/ProgressBar";
 declare global {
     interface Window {
         api: {
-            getWarframes: () => Promise<Warframe[]>;
+            getWarframes: () => Promise<BaseItem[]>;
             getPrimaries: () => Promise<BaseItem[]>;
+            getSecondaries: () => Promise<BaseItem[]>;
+            getMelee: () => Promise<BaseItem[]>;
         }
     }
 }
 
-export type ItemGroup = "all" | "warframes" | "primaries"
+export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee"
 
 export default function MasteryTracker() {
-    const [warframes, setWarframes] = useState<Warframe[]>([]);
-    const [primaries, setPrimaries] = useState<BaseItem[]>([])
+    const [warframes, setWarframes] = useState<BaseItem[]>([]);
+    const [primaries, setPrimaries] = useState<BaseItem[]>([]);
+    const [secondaries, setSecondaries] = useState<BaseItem[]>([]);
+    const [melee, setMelee] = useState<BaseItem[]>([]);
 
     const [itemGroup, setItemGroup] = useState<ItemGroup>("warframes");
     const [itemSearchText, setItemSearchText] = useState<string>("");
@@ -27,6 +31,8 @@ export default function MasteryTracker() {
     useEffect(() => {
         window.api.getWarframes().then(setWarframes);
         window.api.getPrimaries().then(setPrimaries);
+        window.api.getSecondaries().then(setSecondaries);
+        window.api.getMelee().then(setMelee);
     }, []);
 
     
@@ -37,7 +43,7 @@ export default function MasteryTracker() {
         );
     }
 
-    const itemSources: Record<ItemGroup, BaseItem[]> = { all: [...warframes, ...primaries],  warframes, primaries };
+    const itemSources: Record<ItemGroup, BaseItem[]> = { all: [...warframes, ...primaries, ...secondaries, ...melee],  warframes, primaries, secondaries, melee };
     const items = itemSources[itemGroup];
     const filteredItems = items
         .filter(item =>
@@ -61,6 +67,14 @@ export default function MasteryTracker() {
                         <button className="item-card-toolbar-icon-button" type="button" aria-label="Primaries" onClick={() => setItemGroup("primaries")}>
                             <Crosshair size={18} weight="bold" />
                             <span className="tooltip">Primaries</span>
+                        </button>
+                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Secondaries" onClick={() => setItemGroup("secondaries")}>
+                            <Circle size={18} weight="bold" />
+                            <span className="tooltip">Secondaries</span>
+                        </button>
+                        <button className="item-card-toolbar-icon-button" type="button" aria-label="Melee" onClick={() => setItemGroup("melee")}>
+                            <Sword size={18} weight="bold" />
+                            <span className="tooltip">Melee</span>
                         </button>
                     </div>
                     <div className="item-card-toolbar-right">

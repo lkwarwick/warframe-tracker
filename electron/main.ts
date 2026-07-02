@@ -4,6 +4,8 @@ import path from "path";
 
 let warframesCache: any[] | null = null;
 let primariesCache: any[] | null = null;
+let secondariesCache: any[] | null = null;
+let meleeCache: any[] | null = null;
 
 const unique_name_blacklist: string[] = [
   "/Lotus/Powersuits/PowersuitAbilities/Helminth",  // Not an actual Item
@@ -28,6 +30,22 @@ ipcMain.handle('get-primaries', async () => {
     primariesCache = items.filter((i: any) => (i.category === "Primary") && (!unique_name_blacklist.includes(i.uniqueName)))
   }
   return primariesCache;
+})
+
+ipcMain.handle('get-secondaries', async () => {
+  if (!secondariesCache) {
+    const items = new Items({ category: ["Secondary"] });
+    secondariesCache = items.filter((i: any) => (i.category === "Secondary") && (!unique_name_blacklist.includes(i.uniqueName)))
+  }
+  return secondariesCache;
+})
+
+ipcMain.handle('get-melee', async () => {
+  if (!meleeCache) {
+    const items = new Items({ category: ["Melee"] });
+    meleeCache = items.filter((i: any) => (i.category === "Melee") && (!unique_name_blacklist.includes(i.uniqueName)))
+  }
+  return meleeCache;
 })
 
 app.whenReady().then(() => {
