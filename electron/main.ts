@@ -6,6 +6,7 @@ let warframesCache: any[] | null = null;
 let primariesCache: any[] | null = null;
 let secondariesCache: any[] | null = null;
 let meleeCache: any[] | null = null;
+let archwingCache: any[] | null = null;
 
 const unique_name_blacklist: string[] = [
   "/Lotus/Powersuits/PowersuitAbilities/Helminth",  // Not an actual Item
@@ -46,6 +47,14 @@ ipcMain.handle('get-melee', async () => {
     meleeCache = items.filter((i: any) => (i.category === "Melee") && (!unique_name_blacklist.includes(i.uniqueName)))
   }
   return meleeCache;
+})
+
+ipcMain.handle('get-archwing', async () => {
+  if (!archwingCache) {
+    const items = new Items({ category: ["Archwing", "Arch-Gun", "Arch-Melee"] });
+    archwingCache = items.filter((i: any) => !unique_name_blacklist.includes(i.uniqueName))
+  }
+  return archwingCache;
 })
 
 app.whenReady().then(() => {

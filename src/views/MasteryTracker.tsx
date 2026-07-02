@@ -1,6 +1,6 @@
 import type{ BaseItem } from "@wfcd/items";
 import { useEffect, useState } from "react";
-import { User, Crosshair, SquaresFour, Circle, Sword } from "phosphor-react";
+import { User, Crosshair, SquaresFour, Circle, Sword, Rocket } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
@@ -13,11 +13,12 @@ declare global {
             getPrimaries: () => Promise<BaseItem[]>;
             getSecondaries: () => Promise<BaseItem[]>;
             getMelee: () => Promise<BaseItem[]>;
+            getArchwing: () => Promise<BaseItem[]>;
         }
     }
 }
 
-export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee"
+export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing"
 
 export default function MasteryTracker() {
     const [itemSearchText, setItemSearchText] = useState<string>("");
@@ -28,6 +29,7 @@ export default function MasteryTracker() {
         primaries: [],
         secondaries: [],
         melee: [],
+        archwing: [],
     });
 
     useEffect(() => {
@@ -36,13 +38,15 @@ export default function MasteryTracker() {
             window.api.getPrimaries(),
             window.api.getSecondaries(),
             window.api.getMelee(),
-        ]).then(([warframes, primaries, secondaries, melee]) => {
+            window.api.getArchwing(),
+        ]).then(([warframes, primaries, secondaries, melee, archwing]) => {
             setItemsByGroup({
-                all: [...warframes, ...primaries, ...secondaries, ...melee],
+                all: [...warframes, ...primaries, ...secondaries, ...melee, ...archwing],
                 warframes,
                 primaries,
                 secondaries,
                 melee,
+                archwing,
             });
         });
     }, []);
@@ -53,6 +57,7 @@ export default function MasteryTracker() {
         { key: "primaries", label: "Primaries", icon: Crosshair },
         { key: "secondaries", label: "Secondaries", icon: Circle },
         { key: "melee", label: "Melee", icon: Sword },
+        { key: "archwing", label: "Archwing", icon: Rocket },
     ];
 
     const items = itemsByGroup[itemGroup];
