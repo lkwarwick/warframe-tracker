@@ -1,4 +1,6 @@
 import { View } from "../types/view";
+import MasterTracker from "../views/MasteryTracker";
+import PrimeJunk from "../views/PrimeJunk";
 import "./MiddlePanel.css";
 
 type Props = {
@@ -6,9 +8,14 @@ type Props = {
 };
 
 export default function MiddlePanel({activeView}: Props) {
+    const CurrentView = {
+        "mastery-checklist": MasterTracker,
+        "prime-junk": PrimeJunk,
+    }[activeView];
+
     return (
         <div className="middle-panel">
-            <h2>{activeView}</h2>
+            <CurrentView />
         </div>
     )
 }
