@@ -1,0 +1,5 @@
+.item-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}

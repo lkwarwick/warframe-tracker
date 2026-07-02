@@ -23,6 +23,7 @@ body,
   height: 100%;
   background-color: var(--bg);
   font-family: "Rajdhani", sans-serif;
+  overflow: hidden;
 }
 
 * {
@@ -52,6 +53,8 @@ h1, h2, h3, h4, h5, h6, p {
 .main {
   flex: 1;
   display: flex;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .footer {
@@ -65,4 +68,7 @@ h1, h2, h3, h4, h5, h6, p {
 
 .middle {
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }

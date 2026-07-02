@@ -1,5 +1,7 @@
 import type{ Warframe } from "@wfcd/items";
 import { useEffect, useState } from "react";
+import ItemCard from "../components/ItemCard";
+import "./MasterTracker.css";
 
 declare global {
     interface Window {
@@ -17,9 +19,14 @@ export default function MasterTracker() {
     })
 
     return (
-        <div>
-            <h2>Mastery Checklist</h2>
-            <p>{warframes.length}</p>
+        <div className="item-card-grid-container">
+            <div className="item-card-grid">
+                {
+                    warframes.map(warframe => (
+                        <ItemCard item={warframe} />
+                    ))
+                }
+            </div>
         </div>
     )
 }
