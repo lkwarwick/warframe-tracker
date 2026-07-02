@@ -1,20 +1,25 @@
 import { createRoot } from "react-dom/client";
-import LeftPanel from "./panels/LeftPanel";
-import MiddlePanel from "./panels/MiddlePanel";
-import RightPanel from "./panels/RightPanel";
-import HeaderPanel from "./panels/HeaderPanel";
+import Navigation from "./layout/Navigation";
+import RightPanel from "./layout/RightPanel";
+import HeaderPanel from "./layout/HeaderPanel";
 import "./App.css"
-import FooterPanel from "./panels/FooterPanel";
+import FooterPanel from "./layout/FooterPanel";
+import MiddlePanel from "./layout/MiddlePanel";
+import { useState } from "react";
+import { View } from "./types/view";
 
 function App() {
+
+  const [activeView, setActiveView] = useState<View>("mastery-checklist");
+
   return (
     <div className="app">
       <header className="header">
         <HeaderPanel />
       </header>
       <main className="main">
-        <div className="left"><LeftPanel /></div>
-        <div className="middle"><MiddlePanel /></div>
+        <div className="left"><Navigation setActiveView={setActiveView} /></div>
+        <div className="middle"><MiddlePanel activeView={activeView} /></div>
         <div className="right"><RightPanel /></div>
       </main>
       <footer className="footer">

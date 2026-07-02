@@ -1,0 +1,1 @@
+export type View = "mastery-checklist" | "prime-junk";
