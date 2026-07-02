@@ -4,6 +4,7 @@ import { User, Crosshair, SquaresFour } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
+import ProgressBar from "../components/ProgressBar";
 
 declare global {
     interface Window {
@@ -28,9 +29,17 @@ export default function MasteryTracker() {
         window.api.getPrimaries().then(setPrimaries);
     }, []);
 
+    
+    function toTitleCase(str: string) {
+        return str.replace(
+            /\w\S*/g,
+            text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+        );
+    }
 
     const itemSources: Record<ItemGroup, BaseItem[]> = { all: [...warframes, ...primaries],  warframes, primaries };
-    const filteredItems = itemSources[itemGroup]
+    const items = itemSources[itemGroup];
+    const filteredItems = items
         .filter(item =>
             item.name.toLowerCase().includes(itemSearchText.toLowerCase())
         )
@@ -55,6 +64,7 @@ export default function MasteryTracker() {
                         </button>
                     </div>
                     <div className="item-card-toolbar-right">
+                        <ProgressBar name={toTitleCase(itemGroup)} value={0} max={items.length} />
                         <button>Filters</button>
                     </div>
                 </div>
