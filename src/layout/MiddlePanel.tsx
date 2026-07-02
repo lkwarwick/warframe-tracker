@@ -1,5 +1,5 @@
 import { View } from "../types/view";
-import MasterTracker from "../views/MasteryTracker";
+import MasteryTracker from "../views/MasteryTracker";
 import PrimeJunk from "../views/PrimeJunk";
 import "./MiddlePanel.css";
 
@@ -9,7 +9,7 @@ type Props = {
 
 export default function MiddlePanel({activeView}: Props) {
     const CurrentView = {
-        "mastery-checklist": MasterTracker,
+        "mastery-checklist": MasteryTracker,
         "prime-junk": PrimeJunk,
     }[activeView];
 

@@ -1,7 +1,7 @@
 import type{ Warframe } from "@wfcd/items";
 import { useEffect, useState } from "react";
 import ItemCard from "../components/ItemCard";
-import "./MasterTracker.css";
+import "./MasteryTracker.css";
 
 declare global {
     interface Window {
@@ -11,7 +11,7 @@ declare global {
     }
 }
 
-export default function MasterTracker() {
+export default function MasteryTracker() {
     const [warframes, setWarframes] = useState<Warframe[]>([])
 
     useEffect(() => {
