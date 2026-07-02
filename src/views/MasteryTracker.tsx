@@ -20,6 +20,19 @@ export default function MasterTracker() {
 
     return (
         <div className="item-card-grid-container">
+            <div className="item-card-toolbar">
+                <div className="item-card-toolbar-top">
+                    <div className="item-card-toolbar-left">
+                        <button>Warframes</button>
+                    </div>
+                    <div className="item-card-toolbar-right">
+                        <button>Filters</button>
+                    </div>
+                </div>
+                <div className="item-card-toolbar-search">
+                    <input type="search" placeholder="Search items..." />
+                </div>
+            </div>
             <div className="item-card-grid">
                 {
                     warframes.map(warframe => (
