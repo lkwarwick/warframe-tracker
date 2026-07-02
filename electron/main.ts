@@ -3,6 +3,7 @@ import Items from "@wfcd/items";
 import path from "path";
 
 let warframesCache: any[] | null = null;
+let primariesCache: any[] | null = null;
 
 const unique_name_blacklist: string[] = [
   "/Lotus/Powersuits/PowersuitAbilities/Helminth",  // Not an actual Item
@@ -20,6 +21,14 @@ ipcMain.handle('get-warframes', async () => {
   }
   return warframesCache;
 });
+
+ipcMain.handle('get-primaries', async () => {
+  if (!primariesCache) {
+    const items = new Items({ category: ["Primary"] });
+    primariesCache = items.filter((i: any) => (i.category === "Primary") && (!unique_name_blacklist.includes(i.uniqueName)))
+  }
+  return primariesCache;
+})
 
 app.whenReady().then(() => {
   new BrowserWindow({
