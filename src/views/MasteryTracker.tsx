@@ -1,6 +1,6 @@
 import type{ BaseItem, Warframe } from "@wfcd/items";
 import { useEffect, useState } from "react";
-import { User, Crosshair } from "phosphor-react";
+import { User, Crosshair, SquaresFour } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 
@@ -13,7 +13,7 @@ declare global {
     }
 }
 
-export type ItemGroup = "warframes" | "primaries"
+export type ItemGroup = "all" | "warframes" | "primaries"
 
 export default function MasteryTracker() {
     const [warframes, setWarframes] = useState<Warframe[]>([]);
@@ -28,14 +28,22 @@ export default function MasteryTracker() {
     }, []);
 
 
-    const itemSources: Record<ItemGroup, BaseItem[]> = { warframes, primaries };
-    const filteredItems = itemSources[itemGroup].filter(item => item.name.toLowerCase().includes(itemSearchText.toLowerCase()));
+    const itemSources: Record<ItemGroup, BaseItem[]> = { all: [...warframes, ...primaries],  warframes, primaries };
+    const filteredItems = itemSources[itemGroup]
+        .filter(item =>
+            item.name.toLowerCase().includes(itemSearchText.toLowerCase())
+        )
+        .sort((a, b) => a.name.localeCompare(b.name));
 
     return (
         <div className="item-card-grid-container">
             <div className="item-card-toolbar">
                 <div className="item-card-toolbar-top">
                     <div className="item-card-toolbar-left">
+                        <button className="item-card-toolbar-icon-button" type="button" aria-label="All" onClick={() => setItemGroup("all")}>
+                            <SquaresFour size={18} weight="bold" />
+                            <span className="tooltip">All</span>
+                        </button>
                         <button className="item-card-toolbar-icon-button" type="button" aria-label="Warframes" onClick={() => setItemGroup("warframes")}>
                             <User size={18} weight="bold" />
                             <span className="tooltip">Warframes</span>
