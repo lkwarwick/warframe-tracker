@@ -1,6 +1,9 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import Items from "@wfcd/items";
 import path from "path";
+import Store from 'electron-store';
+
+/* ------------------------- Mastery Checklist Items ------------------------ */
 
 let warframesCache: any[] | null = null;
 let primariesCache: any[] | null = null;
@@ -65,6 +68,29 @@ ipcMain.handle('get-companions', async () => {
   }
   return companionsCache;
 })
+
+/* -------------------------------- App Data -------------------------------- */
+
+interface AppData {
+  masteryProgress: { selectedComponents: Record<string, true> };
+}
+
+const store = new Store<AppData>({
+  defaults: { masteryProgress: { selectedComponents: {} } },
+});
+
+ipcMain.handle("get-progress", () => store.get("masteryProgress"));  // Get all progression
+ipcMain.handle("toggle-component", (_e, parentId: string, componentId: string) => {  // ?
+  const progress = store.get("masteryProgress");
+  const key = `${parentId}:${componentId}`;
+  const selected = { ...progress.selectedComponents };
+  selected[key] ? delete selected[key] : (selected[key] = true);
+  const updated = { selectedComponents: selected };
+  store.set("masteryProgress", updated);
+  return updated;
+});
+
+/* ---------------------------- Browser + Preload --------------------------- */
 
 app.whenReady().then(() => {
   new BrowserWindow({
