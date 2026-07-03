@@ -1,0 +1,39 @@
+.context-menu {
+  position: fixed;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  z-index: 1000;
+  color: var(--gold-dim);
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: inherit;
+}
+
+.context-menu-item:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.context-menu-item-danger {
+  color: crimson;
+}
+
+.context-menu-divider {
+  height: 1px;
+  background: #eee;
+  margin: 4px 0;
+}

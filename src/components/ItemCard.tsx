@@ -6,9 +6,10 @@ type ItemCardProps = {
     item: BaseItem & Buildable;
     progress: MasteryProgress;
     onToggleComponent: (parentId: string, componentId: string) => void;
+    onContextMenu: (e: React.MouseEvent) => void;
 }
 
-export default function ItemCard({ item, progress, onToggleComponent }: ItemCardProps) {
+export default function ItemCard({ item, progress, onToggleComponent, onContextMenu }: ItemCardProps) {
     const hasComponents = !!item.components && item.components.length > 0;
     const trackableIDs = hasComponents
         ? item.components!.map(c => `${item.uniqueName}:${c.uniqueName}`)
@@ -26,7 +27,7 @@ export default function ItemCard({ item, progress, onToggleComponent }: ItemCard
     }
 
     return (
-        <div className={`item-card ${isItemComplete ? "item-card-completed" : ""}`}>
+        <div className={`item-card ${isItemComplete ? "item-card-completed" : ""}`} onContextMenu={onContextMenu}>
             <img className="item-card-image" src={getImageUrl(item)}></img>
             <h3 className="item-card-title">{item.name}</h3>
             <div className="item-card-components">

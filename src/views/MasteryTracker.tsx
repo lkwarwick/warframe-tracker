@@ -5,6 +5,7 @@ import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
 import ProgressBar from "../components/ProgressBar";
+import { useContextMenu, ContextMenu, ContextMenuItem, ContextMenuDivider } from "../components/ContextMenu";
 
 export type MasteryProgress = { selectedComponents: Record<string, true> };
 
@@ -31,6 +32,20 @@ export default function MasteryTracker() {
 
     function handleToggleComponent(parentId: string, componentId: string) {
         window.api.toggleComponent(parentId, componentId).then(setProgress);
+    }
+
+    function markAllAsComplete(item: BaseItem & Buildable) {
+        const hasComponents = !!item.components && item.components.length > 0;
+        const trackableIDs = hasComponents
+            ? item.components!.map(c => `${item.uniqueName}:${c.uniqueName}`)
+            : [`${item.uniqueName}:${item.uniqueName}`];
+
+        trackableIDs.forEach(id => {
+            if (!progress.selectedComponents[id]) {
+                const [parentId, componentId] = id.split(":");
+                handleToggleComponent(parentId, componentId);
+            }
+        });
     }
 
     // Filters
@@ -116,6 +131,8 @@ export default function MasteryTracker() {
         .sort((a, b) => a.item.name.localeCompare(b.item.name))
         .map(x => x.item);
 
+    const { menu, open, close } = useContextMenu<BaseItem>();
+
     return (
         <div className="item-card-grid-container">
             <div className="item-card-toolbar">
@@ -175,11 +192,16 @@ export default function MasteryTracker() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.97 }}
                         transition={{ duration: 0.1 }}>
-                        <ItemCard item={item} progress={progress} onToggleComponent={handleToggleComponent} />
+                        <ItemCard onContextMenu={(e) => open(e, item)} item={item} progress={progress} onToggleComponent={handleToggleComponent} />
                     </motion.div>
                     ))}
                 </AnimatePresence>
             </div>
+            {menu && (
+                <ContextMenu x={menu.x} y={menu.y} onClose={close}>
+                    <ContextMenuItem onClick={() => markAllAsComplete(menu.data)}>Mark as Complete</ContextMenuItem>
+                </ContextMenu>
+            )}
             <div className="item-card-toolbar">
                 <ProgressBar name={itemGroup} value={items.filter(item => isItemComplete(item as BaseItem & Buildable, progress)).length} max={items.length} />
             </div>
