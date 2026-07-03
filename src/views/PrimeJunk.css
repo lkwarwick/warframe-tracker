@@ -1,0 +1,22 @@
+.prime-junk-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.prime-junk-view-grid {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: grid;
+  min-height: 0;
+
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-auto-rows: auto;
+  gap: 12px;
+  align-content: start;
+  padding: 8px;
+  align-items: stretch;
+}

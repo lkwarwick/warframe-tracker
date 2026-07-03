@@ -9,21 +9,6 @@ import { useContextMenu, ContextMenu, ContextMenuItem, ContextMenuDivider } from
 
 export type MasteryProgress = { selectedComponents: Record<string, true> };
 
-declare global {
-    interface Window {
-        api: {
-            getWarframes: () => Promise<BaseItem[]>;
-            getPrimaries: () => Promise<BaseItem[]>;
-            getSecondaries: () => Promise<BaseItem[]>;
-            getMelee: () => Promise<BaseItem[]>;
-            getArchwing: () => Promise<BaseItem[]>;
-            getCompanions: () => Promise<BaseItem[]>;
-            getProgress: () => Promise<{ selectedComponents: Record<string, true> }>;
-            toggleComponent: (parentId: string, componentId: string) => Promise<{ selectedComponents: Record<string, true> }>;
-        }
-    }
-}
-
 export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing" | "companions"
 export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
 
@@ -137,19 +122,19 @@ export default function MasteryTracker() {
 
     return (
         <div className="item-card-grid-container">
-            <div className="item-card-toolbar">
-                <div className="item-card-toolbar-top">
-                    <div className="item-card-toolbar-left">
+            <div className="toolbar-high">
+                <div className="toolbar-top">
+                    <div className="toolbar-left">
                         {groups.map(({ key, label, icon: Icon }) => (
-                            <button key={key} className="item-card-toolbar-icon-button" type="button" aria-label={label} onClick={() => setItemGroup(key)}>
+                            <button key={key} className="toolbar-icon-button" type="button" aria-label={label} onClick={() => setItemGroup(key)}>
                                 <Icon size={18} weight="bold" />
                                 <span className="tooltip">{label}</span>
                             </button>
                         ))}
                     </div>
-                    <div className="item-card-toolbar-right">
+                    <div className="toolbar-right">
                         <div className="filters-wrapper" style={{ position: "relative" }}>
-                            <button key="filters" className="item-card-toolbar-icon-button" type="button" aria-label="filters" onClick={() => setShowFilters(!showFilters)}>
+                            <button key="filters" className="toolbar-icon-button" type="button" aria-label="filters" onClick={() => setShowFilters(!showFilters)}>
                                 <Funnel size={18} weight="bold" />
                                 <span className="tooltip">Filters</span>
                             </button>
@@ -179,9 +164,8 @@ export default function MasteryTracker() {
                         </div>
                     </div>
                 </div>
-                <div className="item-card-toolbar-search">
+                <div className="toolbar-search">
                     <input type="search" onChange={(e) => setItemSearchText(e.target.value)} placeholder="Search items..." />
-                    <p>{itemSearchText}</p>
                 </div>
             </div>
             <div className="item-card-grid">
@@ -204,7 +188,7 @@ export default function MasteryTracker() {
                     <ContextMenuItem onClick={() => markAllAsComplete(menu.data)}>Mark as Complete</ContextMenuItem>
                 </ContextMenu>
             )}
-            <div className="item-card-toolbar">
+            <div className="toolbar-low">
                 <ProgressBar name={itemGroup} value={items.filter(item => isItemComplete(item as BaseItem & Buildable, progress)).length} max={items.length} />
             </div>
         </div>

@@ -7,6 +7,27 @@ import FooterPanel from "./layout/FooterPanel";
 import MiddlePanel from "./layout/MiddlePanel";
 import { useState } from "react";
 import { View } from "./types/view";
+import { BaseItem } from "@wfcd/items";
+
+declare global {
+    interface Window {
+        api: {
+            getWarframes: () => Promise<BaseItem[]>;
+            getPrimaries: () => Promise<BaseItem[]>;
+            getSecondaries: () => Promise<BaseItem[]>;
+            getMelee: () => Promise<BaseItem[]>;
+            getArchwing: () => Promise<BaseItem[]>;
+            getCompanions: () => Promise<BaseItem[]>;
+            getProgress: () => Promise<{ selectedComponents: Record<string, true> }>;
+            toggleComponent: (parentId: string, componentId: string) => Promise<{ selectedComponents: Record<string, true> }>;
+            
+            getPrimeParts: () => Promise<Record<string, number>>;
+            incrementPrimePart: (partId: string) => Promise<Record<string, number>>;
+            decrementPrimePart: (partId: string) => Promise<Record<string, number>>;
+            removePrimePart: (partId: string) => Promise<Record<string, number>>;
+          }
+    }
+}
 
 function App() {
 

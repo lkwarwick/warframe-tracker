@@ -24,7 +24,7 @@ const unique_name_blacklist: string[] = [
 ipcMain.handle('get-warframes', async () => {
   if (!warframesCache) {
     const items = new Items({ category: ['Warframes'] });
-    warframesCache = items.filter((w: any) => (w.category === 'Warframes') && (!unique_name_blacklist.includes(w.uniqueName)));
+    warframesCache = items.filter((w: any) => (w.category === 'Warframes') && (!unique_name_blacklist.includes(w.uniqueName)) && (w.masterable));
   }
   return warframesCache;
 });
@@ -32,7 +32,7 @@ ipcMain.handle('get-warframes', async () => {
 ipcMain.handle('get-primaries', async () => {
   if (!primariesCache) {
     const items = new Items({ category: ["Primary"] });
-    primariesCache = items.filter((i: any) => (i.category === "Primary") && (!unique_name_blacklist.includes(i.uniqueName)))
+    primariesCache = items.filter((i: any) => (i.category === "Primary") && (!unique_name_blacklist.includes(i.uniqueName)) && (i.masterable))
   }
   return primariesCache;
 })
@@ -40,7 +40,7 @@ ipcMain.handle('get-primaries', async () => {
 ipcMain.handle('get-secondaries', async () => {
   if (!secondariesCache) {
     const items = new Items({ category: ["Secondary"] });
-    secondariesCache = items.filter((i: any) => (i.category === "Secondary") && (!unique_name_blacklist.includes(i.uniqueName)))
+    secondariesCache = items.filter((i: any) => (i.category === "Secondary") && (!unique_name_blacklist.includes(i.uniqueName)) && (i.masterable))
   }
   return secondariesCache;
 })
@@ -48,7 +48,7 @@ ipcMain.handle('get-secondaries', async () => {
 ipcMain.handle('get-melee', async () => {
   if (!meleeCache) {
     const items = new Items({ category: ["Melee"] });
-    meleeCache = items.filter((i: any) => (i.category === "Melee") && (!unique_name_blacklist.includes(i.uniqueName)))
+    meleeCache = items.filter((i: any) => (i.category === "Melee") && (!unique_name_blacklist.includes(i.uniqueName)) && (i.masterable))
   }
   return meleeCache;
 })
@@ -56,7 +56,7 @@ ipcMain.handle('get-melee', async () => {
 ipcMain.handle('get-archwing', async () => {
   if (!archwingCache) {
     const items = new Items({ category: ["Archwing", "Arch-Gun", "Arch-Melee"] });
-    archwingCache = items.filter((i: any) => !unique_name_blacklist.includes(i.uniqueName))
+    archwingCache = items.filter((i: any) => !unique_name_blacklist.includes(i.uniqueName) && (i.masterable))
   }
   return archwingCache;
 })
@@ -64,7 +64,7 @@ ipcMain.handle('get-archwing', async () => {
 ipcMain.handle('get-companions', async () => {
   if (!companionsCache) {
     const items = new Items({ category: ["Pets", "Sentinels", "SentinelWeapons"] });
-    companionsCache = items.filter((i: any) => !unique_name_blacklist.includes(i.uniqueName))
+    companionsCache = items.filter((i: any) => !unique_name_blacklist.includes(i.uniqueName) && (i.masterable))
   }
   return companionsCache;
 })
@@ -73,6 +73,7 @@ ipcMain.handle('get-companions', async () => {
 
 interface AppData {
   masteryProgress: { selectedComponents: Record<string, true> };
+  primeJunk: { primeParts: Record<string, number> };
   windowBounds: WindowBounds;
 }
 
@@ -87,6 +88,7 @@ interface WindowBounds {
 const store = new Store<AppData>({
   defaults: { 
     masteryProgress: { selectedComponents: {} },
+    primeJunk: { primeParts: {} },
     windowBounds: { width: 1000, height: 700 },
   },
 });
@@ -100,6 +102,31 @@ ipcMain.handle("toggle-component", (_e, parentId: string, componentId: string) =
   const updated = { selectedComponents: selected };
   store.set("masteryProgress", updated);
   return updated;
+});
+ipcMain.handle("get-prime-parts", () => store.get("primeJunk").primeParts);  // Get all prime parts
+ipcMain.handle("increment-prime-part", (_e, partId: string) => {
+  const primeJunk = store.get("primeJunk") ?? { primeParts: {} };
+  const current = primeJunk.primeParts?.[partId] ?? 0;
+  const next = current + 1;
+  const updatedParts = { ...primeJunk.primeParts, [partId]: next };
+  store.set("primeJunk", { primeParts: updatedParts });
+  return updatedParts;
+});
+ipcMain.handle("decrement-prime-part", (_e, partId: string) => {
+  const primeJunk = store.get("primeJunk") ?? { primeParts: {} };
+  const current = primeJunk.primeParts?.[partId] ?? 0;
+  const next = current - 1;
+  const { [partId]: _, ...rest } = primeJunk.primeParts;
+  const updatedParts =
+    next > 0 ? { ...primeJunk.primeParts, [partId]: next } : rest;
+  store.set("primeJunk", { primeParts: updatedParts });
+  return updatedParts;
+});
+ipcMain.handle("remove-prime-part", (_e, partId: string) => {
+  const primeJunk = store.get("primeJunk") ?? { primeParts: {} };
+  const { [partId]: _, ...rest } = primeJunk.primeParts;
+  store.set("primeJunk", { primeParts: rest });
+  return rest;
 });
 
 console.log('electron-store path:', store.path);
