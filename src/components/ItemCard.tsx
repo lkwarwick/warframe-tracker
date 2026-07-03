@@ -26,7 +26,7 @@ export default function ItemCard({ item, progress, onToggleComponent }: ItemCard
     }
 
     return (
-        <div className="item-card">
+        <div className={`item-card ${isItemComplete ? "item-card-completed" : ""}`}>
             <img className="item-card-image" src={getImageUrl(item)}></img>
             <h3 className="item-card-title">{item.name}</h3>
             <div className="item-card-components">
