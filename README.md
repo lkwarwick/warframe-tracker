@@ -1,113 +1,159 @@
 # Warframe Tracker
 
-> A local Warframe progress tracker built for Linux.
+Track your mastery progress and keep tabs on your Prime parts. A lightweight desktop companion for Warframe enthusiasts who want to stay on top of their grind.
 
-## Overview
+![App Screenshot - Mastery Tracker View](./docs/mastery-tracker.png)
 
-This application exists for a few reasons: I moved to Linux, couldn't get Alecaframe running without pulling in a pile of extra dependencies, and I'm not a fan of ads. So I built something myself, using a stack I'm comfortable with:
+## What It Does
 
-- **Plotly Dash** (Python) for the web app
-- **Electron** to host the web app as a standalone desktop application
+Warframe Tracker helps you manage two key aspects of your Warframe progression:
 
-The app gives a quick overview of every item in Warframe, with filtering options such as "Prime Only" and "Hide Completed".
-
-<p align="center"> <img src="docs/main.png" alt="Main application window"> </p>
-
-## Limitations
-
-Other trackers (such as AlecaFrame) sit in a gray area when it comes to how they access your Warframe account data — some users have reported being banned as a result.
-
-To avoid this, Warframe Tracker does not access your account data at all. This means progress has to be checked off manually, which is admittedly a bit more tedious, but keeps your account safe.
-
-## Scope
-
-The app organizes items into the following tabs:
-
+### Mastery Checklist
+Keep track of all the equipment you've mastered across every category:
 - Warframes
 - Primary Weapons
 - Secondary Weapons
 - Melee Weapons
+- Archwings
+- Companions
 
-## Running the Application
+Never lose progress wondering what you've already leveled. The app remembers exactly where you left off.
+
+### Prime Parts Inventory
+Track your Prime parts collection and their ducat values at a glance. Perfect for keeping organized when you're racking up parts for prime vaulted items or just managing your farm haul.
+
+![App Screenshot - Prime Junk View](./docs/prime-junk.png)
+
+## Getting Started (Users)
+
+### How to Run
+
+Since this is still in pre-release, you'll need to run it as a development build. Head over to the [developer setup section](#for-developers) below and follow the instructions to clone, install dependencies, and start the dev server.
+
+### Usage
+
+**Mastery Tracker:**
+- Click on any item to check it off as mastered
+- Use the filters to focus on specific weapon types
+- Right-click for quick actions like "Mark All Complete"
+
+**Prime Parts:**
+- Add parts as you collect them
+- Track ducat values for each component
+- Search to find specific parts quickly
+
+All your progress is saved automatically and synced between sessions.
+
+## For Developers
+
+Want to contribute or just get it running? Here's how to set up the project.
 
 ### Prerequisites
 
-- Python with [`uv`](https://github.com/astral-sh/uv) installed
-- Node.js installed
+- **Node.js** 18+ (LTS recommended)
+- **npm** or **yarn**
+- **Linux** with X11 support
 
-### Installation
+### Setup & Running
 
-**Backend:**
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/warframe-tracker.git
+   cd warframe-tracker
+   ```
 
-```bash
-cd backend
-uv sync
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-**Electron:**
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-```bash
-cd electron
-npm install
-```
+The app will launch in development mode with hot reload enabled. Any changes to the code will automatically refresh the window.
 
-### Run
+### Desktop Integration (Optional)
 
-Start the application with:
-
-```bash
-npm start --prefix electron
-```
-
-#### Debug Mode
-
-You can optionally enable debug mode with a `--debug=true`/`--debug=false` flag (defaults to `false`):
+To add Warframe Tracker to your applications menu, create a desktop entry:
 
 ```bash
-npm start --prefix electron -- -- --debug=true
-```
-
-A couple of details on the syntax:
-
-- The flag must be written as a single token with an equals sign (`--debug=true`), not as two separate arguments (`--debug true`).
-- The double `--` is required: the first tells npm to forward the remaining arguments to the underlying `electron .` command, and the second tells Electron to stop parsing flags itself, since `--debug` on its own is a reserved (and deprecated) Node/Electron flag.
-
-Electron reads this flag and forwards it as a command-line argument to the Python backend (`uv run python app.py --debug=true`). When enabled, the Plotly Dash server runs in debug mode (e.g. hot-reloading, verbose error output).
-
-### Behavior
-
-- Electron waits for the Dash server to come up on `localhost`.
-- Dash runs as the local UI backend.
-- Electron wraps it in a desktop shell.
-
-### Adding as an Application (Linux)
-
-Once the repository is cloned to your local machine, you can register it as a desktop application.
-
-Create the file:
-
-```
-~/.local/share/applications/warframe-tracker.desktop
-```
-
-With the following contents:
-
-```ini
+mkdir -p ~/.local/share/applications
+cat > ~/.local/share/applications/warframe-tracker.desktop << EOF
 [Desktop Entry]
 Type=Application
 Name=Warframe Tracker
-Comment=Local tracker for Warframe
-Exec=npm start --prefix /full/path/to/your/project/electron
-Icon=/full/path/to/your/project/electron/assets/favicon.png
+Comment=Track your Warframe mastery and Prime parts
+Exec=npm run dev --prefix /path/to/warframe-tracker
+Icon=/path/to/warframe-tracker/electron/assets/icon.png
 Terminal=false
-Categories=Game;Utility
-StartupNotify=True
-```
+Categories=Utility;Games;
+EOF
 
-Then refresh the desktop database:
-
-```bash
 update-desktop-database ~/.local/share/applications
 ```
 
-Warframe Tracker should now appear in your application launcher.
+Replace `/path/to/warframe-tracker` with the full path to your project directory. Your application launcher will now show Warframe Tracker.
+
+### Project Structure
+
+```
+warframe-tracker/
+├── electron/           # Electron main process & IPC handlers
+│   ├── main.ts         # App initialization, window setup, data storage
+│   ├── preload.ts      # IPC bridge for renderer process
+│   └── assets/         # Electron-specific resources
+├── src/                # React frontend
+│   ├── views/          # Main app views (Mastery Tracker, Prime Junk)
+│   ├── components/     # Reusable UI components
+│   ├── layout/         # App layout structure
+│   ├── types/          # TypeScript types
+│   └── App.tsx         # Root app component
+├── electron.vite.config.ts  # Build configuration
+└── tsconfig.json       # TypeScript configuration
+```
+
+### Tech Stack
+
+- **Electron** – Desktop framework
+- **React** – UI library
+- **TypeScript** – Type safety
+- **Vite** – Build tool
+- **@wfcd/items** – Warframe game items database
+- **electron-store** – Local data persistence
+- **Framer Motion** – Smooth animations
+- **phosphor-react** – Icon library
+
+### Key Files to Know
+
+- [main.ts](./electron/main.ts) – Handles IPC communication and data persistence
+- [App.tsx](./src/App.tsx) – Root component and view management
+- [MasteryTracker.tsx](./src/views/MasteryTracker.tsx) – Mastery progress tracking logic
+- [PrimeJunk.tsx](./src/views/PrimeJunk.tsx) – Prime parts inventory logic
+
+### Development Tips
+
+- **Data is persisted** using `electron-store` (typically located at `~/.config/warframe-tracker/` on Linux)
+- **IPC handlers** in `main.ts` bridge the React frontend with Electron backend
+- **Items data** is fetched from `@wfcd/items` and cached for performance
+- The app uses a **three-panel layout**: navigation (left), content (center), and info panel (right)
+
+### Troubleshooting
+
+**App won't start in development:**
+```bash
+# Try clearing the Vite cache and reinstalling
+rm -rf node_modules/.vite
+npm install
+npm run dev
+```
+
+**X11 display issues on WSL/remote environments:**
+The dev command includes `--ozone-platform=x11` to ensure compatibility. Make sure your `DISPLAY` variable is set correctly.
+
+---
+
+**Have questions or want to contribute?** Feel free to open an issue or submit a pull request!
+
+Happy tracking, Tenno.

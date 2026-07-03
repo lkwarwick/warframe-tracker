@@ -1,0 +1,86 @@
+.item-card-grid-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.item-card-grid {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: grid;
+  min-height: 0;
+
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  grid-auto-rows: auto;
+  gap: 12px;
+  align-content: start;
+  padding: 8px;
+  align-items: stretch;
+}
+
+/* --------------------------------- Tooltip -------------------------------- */
+
+.toolbar-icon-button {
+  position: relative;
+}
+
+.toolbar-icon-button .tooltip {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 4px;
+
+  background: #000;
+  color: var(--gold);
+  padding: 4px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  border-radius: 4px;
+  z-index: 10;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.toolbar-icon-button:hover .tooltip,
+.toolbar-icon-button:focus-visible .tooltip {
+  display: block;
+}
+
+/* --------------------------------- Filters -------------------------------- */
+
+.filters-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  min-width: 180px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 8px;
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+}
+
+.filters-dropdown h4 {
+  color: var(--gold);
+}
+
+.filters-dropdown p {
+  color: var(--text);
+}
+
+.filters-dropdown label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}

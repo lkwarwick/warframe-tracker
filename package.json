@@ -1,0 +1,25 @@
+{
+  "name": "warframe-tracker",
+  "main": "out/main/main.js",
+  "scripts": {
+    "dev": "electron-vite dev -- --ozone-platform=x11",
+    "build": "electron-vite build"
+  },
+  "dependencies": {
+    "@wfcd/items": "^1.1274.68",
+    "electron": "latest",
+    "electron-store": "^8.2.0",
+    "framer-motion": "^12.42.2",
+    "phosphor-react": "^1.4.1",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.0",
+    "electron-vite": "latest",
+    "typescript": "latest",
+    "vite": "^7.0.0"
+  }
+}
