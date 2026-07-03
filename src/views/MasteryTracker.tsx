@@ -1,6 +1,6 @@
 import type{ BaseItem, Buildable } from "@wfcd/items";
 import { useEffect, useState } from "react";
-import { User, Crosshair, SquaresFour, Circle, Sword, Rocket, PawPrint } from "phosphor-react";
+import { User, Crosshair, SquaresFour, Circle, Sword, Rocket, PawPrint, Funnel } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
@@ -24,6 +24,7 @@ declare global {
 }
 
 export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing" | "companions"
+export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
 
 export default function MasteryTracker() {
     const [progress, setProgress] = useState<MasteryProgress>({ selectedComponents: {} });
@@ -32,7 +33,12 @@ export default function MasteryTracker() {
         window.api.toggleComponent(parentId, componentId).then(setProgress);
     }
 
+    // Filters
     const [itemSearchText, setItemSearchText] = useState<string>("");
+    const [showFilters, setShowFilters] = useState(false);
+    const [hideCompleted, setHideCompleted] = useState(false);
+    const [primeFilter, setPrimeFilter] = useState<PrimeFilter>("all");
+
     const [itemGroup, setItemGroup] = useState<ItemGroup>("warframes");
     const [itemsByGroup, setItemsByGroup] = useState<Record<ItemGroup, BaseItem[]>>({
         all: [],
@@ -89,12 +95,26 @@ export default function MasteryTracker() {
 
     const items = itemsByGroup[itemGroup];
     const filteredItems = items
-        .filter(item =>
-            item.name.toLowerCase().includes(itemSearchText.toLowerCase())
-        )
-        .sort((a, b) => a.name.localeCompare(b.name));
+        .map(item => ({
+            item,
+            complete: isItemComplete(item, progress),
+        }))
+        .filter(({ item, complete }) => {
+            const matchesSearch = item.name
+            .toLowerCase()
+            .includes(itemSearchText.toLowerCase());
 
-    
+            const matchesCompleted = !hideCompleted || !complete;
+
+            const matchesPrime =
+            primeFilter === "all" ||
+            (primeFilter === "prime-only" && item.isPrime) ||
+            (primeFilter === "non-prime-only" && !item.isPrime);
+
+            return matchesSearch && matchesCompleted && matchesPrime;
+        })
+        .sort((a, b) => a.item.name.localeCompare(b.item.name))
+        .map(x => x.item);
 
     return (
         <div className="item-card-grid-container">
@@ -109,7 +129,35 @@ export default function MasteryTracker() {
                         ))}
                     </div>
                     <div className="item-card-toolbar-right">
-                        <button>Filters</button>
+                        <div className="filters-wrapper" style={{ position: "relative" }}>
+                            <button key="filters" className="item-card-toolbar-icon-button" type="button" aria-label="filters" onClick={() => setShowFilters(!showFilters)}>
+                                <Funnel size={18} weight="bold" />
+                                <span className="tooltip">Filters</span>
+                            </button>
+                            {showFilters && (
+                            <div className="filters-dropdown">
+                                {/* filter list will go here */}
+                                <h4>Prime Status</h4>
+                                <label key="prime-filter-all">
+                                    <input type="radio" name="group" value="all" checked={primeFilter == "all"} onChange={() => setPrimeFilter("all")} />
+                                    <span><p>All</p></span>
+                                </label>
+                                <label key="prime-filter-prime">
+                                    <input type="radio" name="group" value="prime-only" checked={primeFilter == "prime-only"} onChange={() => setPrimeFilter("prime-only")} />
+                                    <span><p>Prime Only</p></span>
+                                </label>
+                                <label key="prime-filter-non-prime">
+                                    <input type="radio" name="group" value="non-prime-only" checked={primeFilter == "non-prime-only"} onChange={() => setPrimeFilter("non-prime-only")} />
+                                    <span><p>Non-Prime Only</p></span>
+                                </label>
+                                <h4>Visibility</h4>
+                                <label key="hide-completed-filter">
+                                    <input type="checkbox" checked={hideCompleted} onChange={() => setHideCompleted(!hideCompleted)}></input>
+                                    <span><p>Non-Prime Only</p></span>
+                                </label>
+                            </div>
+                            )}
+                        </div>
                     </div>
                 </div>
                 <div className="item-card-toolbar-search">

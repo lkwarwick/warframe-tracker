@@ -33,7 +33,6 @@ export default function ItemCard({ item, progress, onToggleComponent }: ItemCard
                 {
                     item.components?.map((component: Component) => {
                         const isDone = !!progress.selectedComponents[`${item.uniqueName}:${component.uniqueName}`];
-                        console.log(`${item.uniqueName}:${component.uniqueName} = ${isDone}`);
                         return (
                             <button key={component.uniqueName} className={`item-card-component ${isDone ? "item-card-component-completed" : ""}`} onClick={() => onToggleComponent(item.uniqueName, component.uniqueName)} type="button">
                                 <img className="item-card-component-image" src={getImageUrl(component)} alt={component.name} />

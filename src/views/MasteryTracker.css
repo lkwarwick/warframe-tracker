@@ -99,3 +99,37 @@
 .item-card-toolbar-icon-button:focus-visible .tooltip {
   display: block;
 }
+
+/* --------------------------------- Filters -------------------------------- */
+
+.filters-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  min-width: 180px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 8px;
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+}
+
+.filters-dropdown h4 {
+  color: var(--gold);
+}
+
+.filters-dropdown p {
+  color: var(--text);
+}
+
+.filters-dropdown label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
