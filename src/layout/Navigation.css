@@ -10,12 +10,12 @@
 }
 
 button {
-    padding: 10px 14px;
+    padding: 18px 14px;
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 4px;
     color: var(--text);
-    font-size: 13px;
+    font-size: 16px;
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease, transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
     font-weight: bold;
@@ -23,7 +23,9 @@ button {
     align-items: center;
     gap: 6px;
     line-height: 1;
-    color: var(--gold-dim)
+    color: var(--gold-dim);
+    width: 100%;
+    justify-content: center;
 }
 
 button:hover {
