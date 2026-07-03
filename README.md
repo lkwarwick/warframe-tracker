@@ -86,10 +86,12 @@ Type=Application
 Name=Warframe Tracker
 Comment=Track your Warframe mastery and Prime parts
 Exec=npm run dev --prefix /path/to/warframe-tracker
-Icon=gamepad
+Icon=/path/to/warframe-tracker/electron/assets/icon.png
 Terminal=false
 Categories=Utility;Games;
 EOF
+
+update-desktop-database ~/.local/share/applications
 ```
 
 Replace `/path/to/warframe-tracker` with the full path to your project directory. Your application launcher will now show Warframe Tracker.
