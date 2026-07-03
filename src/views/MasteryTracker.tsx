@@ -40,7 +40,9 @@ export default function MasteryTracker() {
             ? item.components!.map(c => `${item.uniqueName}:${c.uniqueName}`)
             : [`${item.uniqueName}:${item.uniqueName}`];
 
-        trackableIDs.forEach(id => {
+        const uniqueTrackableIDs = new Set(trackableIDs);
+
+        uniqueTrackableIDs.forEach(id => {
             if (!progress.selectedComponents[id]) {
                 const [parentId, componentId] = id.split(":");
                 handleToggleComponent(parentId, componentId);
@@ -170,7 +172,7 @@ export default function MasteryTracker() {
                                 <h4>Visibility</h4>
                                 <label key="hide-completed-filter">
                                     <input type="checkbox" checked={hideCompleted} onChange={() => setHideCompleted(!hideCompleted)}></input>
-                                    <span><p>Non-Prime Only</p></span>
+                                    <span><p>Hide Completed</p></span>
                                 </label>
                             </div>
                             )}
