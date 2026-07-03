@@ -20,3 +20,17 @@
   padding: 8px;
   align-items: stretch;
 }
+
+.prime-junk-total {
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.prime-junk-unique {
+  color: var(--gold-dim);
+}
+
+.prime-junk-ducats {
+  color: var(--gold);
+  font-weight: bold;
+}
