@@ -17,7 +17,7 @@ export default function PrimeJunkCard({ part, partData, onDecrement, onIncrement
     return (
         <div className="prime-junk-card" data-nonzero={nonzero}>
             <img className="prime-junk-image" data-nonzero={nonzero} src={`https://cdn.warframestat.us/img/${part.imageName}`}></img>
-            <h3 className="prime-junk-title" data-nonzero={nonzero}><strong>{part.parentName}</strong> {part.componentName}</h3>
+            <h3 className="prime-junk-title" data-nonzero={nonzero}><strong>{part.parentName}</strong> {part.componentName} ({part.ducats})</h3>
             <div className="prime-junk-counter">
                 <button className="prime-junk-decrement" disabled={!nonzero} onClick={() => onDecrement(part)}>-</button>
                 <h4 className="prime-junk-value" data-nonzero={nonzero}>{count}</h4>
