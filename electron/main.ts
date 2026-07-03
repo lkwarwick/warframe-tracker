@@ -124,6 +124,8 @@ app.whenReady().then(() => {
       contextIsolation: true,
       nodeIntegration: false,
     },
+    title: "Warframe Tracker",
+    icon: path.join(__dirname, "assets/favicon.png"),
   });
 
   if (saved.isMaximized) win.maximize();
