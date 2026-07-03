@@ -1,5 +1,6 @@
 import { BaseItem, Buildable, Component } from "@wfcd/items";
 import { useEffect, useMemo, useState } from "react";
+import type { MasteryProgress } from "./MasteryTracker";
 import "./PrimeJunk.css";
 import PrimeJunkCard from "../components/PrimeJunkCard";
 import { AnimatePresence, motion } from "framer-motion";
@@ -8,12 +9,15 @@ type FullItem = BaseItem & Buildable;
 export type PrimePart = BaseItem & Buildable & Component & {
     parentName: string;
     componentName: string;
+    parentUniqueName: string;
+    componentUniqueName: string;
 };
 
 export default function PrimeJunk() {
 
     const [parts, setParts] = useState<PrimePart[]>([]);
     const [partData, setPartData] = useState<Record<string, number>>({});
+    const [progress, setProgress] = useState<MasteryProgress>({ selectedComponents: {} });
 
     const [itemSearchText, setItemSearchText] = useState<string>("");
 
@@ -45,12 +49,18 @@ export default function PrimeJunk() {
                         ...c,
                         parentName: item.name,
                         componentName: c.name,
+                        parentUniqueName: item.uniqueName,
+                        componentUniqueName: c.uniqueName,
                     }))
             );
 
             setParts(primeParts);
             setPartData(primeJunk)
         });
+    }, []);
+
+    useEffect(() => {
+        window.api.getProgress().then(setProgress);
     }, []);
 
     const sortedParts = useMemo(() => {
@@ -127,7 +137,13 @@ export default function PrimeJunk() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.97 }}
                         transition={{ duration: 0.1 }}>
-                        <PrimeJunkCard part={part} partData={partData} onDecrement={handleDecrement} onIncrement={handleIncrement}/>
+                        <PrimeJunkCard
+                            isCompleted={!!progress.selectedComponents[`${part.parentUniqueName}:${part.componentUniqueName}`]}
+                            part={part}
+                            partData={partData}
+                            onDecrement={handleDecrement}
+                            onIncrement={handleIncrement}
+                        />
                     </motion.div>
                     ))}
                 </AnimatePresence>

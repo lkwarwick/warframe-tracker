@@ -31,6 +31,15 @@
   color: var(--gold);
 }
 
+.prime-completed-icon {
+  color: #354745;
+  vertical-align: -0.2em;
+}
+
+.prime-completed-icon[data-nonzero="true"] {
+  color: #6F8D88;
+}
+
 .prime-junk-counter {
   display: flex;
   flex-direction: row;
