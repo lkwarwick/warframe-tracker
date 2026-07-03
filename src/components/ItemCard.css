@@ -82,9 +82,14 @@
   position: relative;
 }
 
-.item-card-component:hover {
+.item-card-component:hover:not(.item-card-component-completed) {
   border-color: var(--gold-dim);
   box-shadow: 0 0 0 1px var(--gold-dim);
+}
+
+.item-card-component-completed:hover {
+  border-color: #6F8D88;
+  transform: translateY(-3px);
 }
 
 .item-card-component-image {
@@ -97,8 +102,11 @@
 }
 
 .item-card-component-completed {
-  border: 2px solid #6F8D88;
+  border: 2px solid #4C6360;
   background: #34635C3D;
+  box-shadow:
+    0 0 5px rgba(111, 141, 136, 0.26),
+    0 0 30px rgba(111, 141, 136, 0.08);
 }
 
 .item-card-component .tooltip {
