@@ -7,7 +7,7 @@ type ProgressBarProps = {
 }
 
 export default function ProgressBar({ name, value, max}: ProgressBarProps) {
-    const pct = Math.min(100, (value / max) * 100);
+    const pct = Math.round(Math.min(100, (value / max) * 100) * 10) / 10;
 
     return (
         <div className="progress-card">

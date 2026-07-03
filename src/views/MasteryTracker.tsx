@@ -1,9 +1,10 @@
-import type{ BaseItem } from "@wfcd/items";
+import type{ BaseItem, Buildable } from "@wfcd/items";
 import { useEffect, useState } from "react";
 import { User, Crosshair, SquaresFour, Circle, Sword, Rocket, PawPrint } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
+import ProgressBar from "../components/ProgressBar";
 
 export type MasteryProgress = { selectedComponents: Record<string, true> };
 
@@ -78,12 +79,22 @@ export default function MasteryTracker() {
         { key: "companions", label: "Companions", icon: PawPrint },
     ];
 
+    function isItemComplete(item: BaseItem & Buildable, progress: MasteryProgress): boolean {
+        const hasComponents = !!item.components && item.components.length > 0;
+        const trackableIDs = hasComponents
+            ? item.components!.map(c => `${item.uniqueName}:${c.uniqueName}`)
+            : [`${item.uniqueName}:${item.uniqueName}`];
+        return trackableIDs.every(id => progress.selectedComponents[id]);
+    }
+
     const items = itemsByGroup[itemGroup];
     const filteredItems = items
         .filter(item =>
             item.name.toLowerCase().includes(itemSearchText.toLowerCase())
         )
         .sort((a, b) => a.name.localeCompare(b.name));
+
+    
 
     return (
         <div className="item-card-grid-container">
@@ -120,6 +131,9 @@ export default function MasteryTracker() {
                     </motion.div>
                     ))}
                 </AnimatePresence>
+            </div>
+            <div className="item-card-toolbar">
+                <ProgressBar name={itemGroup} value={items.filter(item => isItemComplete(item as BaseItem & Buildable, progress)).length} max={items.length} />
             </div>
         </div>
     )
