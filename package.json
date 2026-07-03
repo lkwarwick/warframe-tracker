@@ -1,4 +1,5 @@
 {
+  "name": "warframe-tracker",
   "main": "out/main/main.js",
   "scripts": {
     "dev": "electron-vite dev",

@@ -90,6 +90,8 @@ ipcMain.handle("toggle-component", (_e, parentId: string, componentId: string) =
   return updated;
 });
 
+console.log('electron-store path:', store.path);
+
 /* ---------------------------- Browser + Preload --------------------------- */
 
 app.whenReady().then(() => {

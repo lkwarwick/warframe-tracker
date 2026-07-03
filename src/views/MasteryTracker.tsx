@@ -5,6 +5,8 @@ import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
 
+export type MasteryProgress = { selectedComponents: Record<string, true> };
+
 declare global {
     interface Window {
         api: {
@@ -23,6 +25,12 @@ declare global {
 export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing" | "companions"
 
 export default function MasteryTracker() {
+    const [progress, setProgress] = useState<MasteryProgress>({ selectedComponents: {} });
+
+    function handleToggleComponent(parentId: string, componentId: string) {
+        window.api.toggleComponent(parentId, componentId).then(setProgress);
+    }
+
     const [itemSearchText, setItemSearchText] = useState<string>("");
     const [itemGroup, setItemGroup] = useState<ItemGroup>("warframes");
     const [itemsByGroup, setItemsByGroup] = useState<Record<ItemGroup, BaseItem[]>>({
@@ -54,6 +62,10 @@ export default function MasteryTracker() {
                 companions,
             });
         });
+    }, []);
+
+    useEffect(() => {
+        window.api.getProgress().then(setProgress);
     }, []);
 
     const groups: { key: ItemGroup; label: string; icon: any }[] = [
@@ -95,7 +107,7 @@ export default function MasteryTracker() {
                 </div>
             </div>
             <div className="item-card-grid">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="popLayout">
                     {filteredItems.map(item => (
                     <motion.div
                         key={item.uniqueName}
@@ -104,7 +116,7 @@ export default function MasteryTracker() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.97 }}
                         transition={{ duration: 0.1 }}>
-                        <ItemCard item={item} />
+                        <ItemCard item={item} progress={progress} onToggleComponent={handleToggleComponent} />
                     </motion.div>
                     ))}
                 </AnimatePresence>

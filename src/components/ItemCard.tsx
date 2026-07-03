@@ -1,14 +1,19 @@
 import type { BaseItem, Buildable, Component } from "@wfcd/items"
 import "./ItemCard.css"
+import type { MasteryProgress } from "../views/MasteryTracker";
 
 type ItemCardProps = {
-    item: BaseItem & Buildable
+    item: BaseItem & Buildable;
+    progress: MasteryProgress;
+    onToggleComponent: (parentId: string, componentId: string) => void;
 }
 
-export default function ItemCard({ item }: ItemCardProps) {
-    function handleComponentClick(component: Component) {
-        console.log(`${component.uniqueName}, ${component.imageName}`);
-    }
+export default function ItemCard({ item, progress, onToggleComponent }: ItemCardProps) {
+    const hasComponents = !!item.components && item.components.length > 0;
+    const trackableIDs = hasComponents
+        ? item.components!.map(c => `${item.uniqueName}:${c.uniqueName}`)
+        : [`${item.uniqueName}:${item.uniqueName}`];
+    const isItemComplete = trackableIDs.every(id => progress.selectedComponents[id]);
 
     const IMAGE_OVERRIDES: Record<string, string> = {
         '/Lotus/Types/Items/MiscItems/Forma': 'Forma.png',
@@ -25,12 +30,18 @@ export default function ItemCard({ item }: ItemCardProps) {
             <img className="item-card-image" src={getImageUrl(item)}></img>
             <h3 className="item-card-title">{item.name}</h3>
             <div className="item-card-components">
-                {item.components?.map((component: Component) => (
-                <button key={component.uniqueName} className="item-card-component" onClick={() => handleComponentClick(component)} type="button">
-                    <img className="item-card-component-image" src={getImageUrl(component)} alt={component.name} />
-                    <span className="tooltip">{component.name}</span>
-                </button>
-                ))}
+                {
+                    item.components?.map((component: Component) => {
+                        const isDone = !!progress.selectedComponents[`${item.uniqueName}:${component.uniqueName}`];
+                        console.log(`${item.uniqueName}:${component.uniqueName} = ${isDone}`);
+                        return (
+                            <button key={component.uniqueName} className={`item-card-component ${isDone ? "item-card-component-completed" : ""}`} onClick={() => onToggleComponent(item.uniqueName, component.uniqueName)} type="button">
+                                <img className="item-card-component-image" src={getImageUrl(component)} alt={component.name} />
+                                <span className="tooltip">{component.name}</span>
+                            </button>
+                        )
+                    })
+                }
             </div>
         </div>
     )
