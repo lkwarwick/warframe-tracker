@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, screen } from "electron";
 import Items from "@wfcd/items";
 import path from "path";
 import Store from 'electron-store';
@@ -73,10 +73,22 @@ ipcMain.handle('get-companions', async () => {
 
 interface AppData {
   masteryProgress: { selectedComponents: Record<string, true> };
+  windowBounds: WindowBounds;
+}
+
+interface WindowBounds {
+  x?: number;
+  y?: number;
+  width: number;
+  height: number;
+  isMaximized?: boolean;
 }
 
 const store = new Store<AppData>({
-  defaults: { masteryProgress: { selectedComponents: {} } },
+  defaults: { 
+    masteryProgress: { selectedComponents: {} },
+    windowBounds: { width: 1000, height: 700 },
+  },
 });
 
 ipcMain.handle("get-progress", () => store.get("masteryProgress"));  // Get all progression
@@ -94,14 +106,40 @@ console.log('electron-store path:', store.path);
 
 /* ---------------------------- Browser + Preload --------------------------- */
 
+let win: BrowserWindow | null = null;
+
 app.whenReady().then(() => {
-  new BrowserWindow({
-    width: 1000,
-    height: 700,
+  const saved = store.get("windowBounds");
+  const x = typeof saved.x === "number" ? saved.x : undefined;
+  const y = typeof saved.y === "number" ? saved.y : undefined;
+
+  win = new BrowserWindow({
+    width: saved.width ?? 1000,
+    height: saved.height ?? 700,
+    x,
+    y,
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, "../preload/preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
-  }).loadURL("http://localhost:5173");
+  });
+
+  if (saved.isMaximized) win.maximize();
+  win.once("ready-to-show", () => win?.show());
+
+  win.on("close", () => {
+    if (!win) return;
+    const b = win.getNormalBounds();
+    store.set("windowBounds", {
+      x: b.x,
+      y: b.y,
+      width: b.width,
+      height: b.height,
+      isMaximized: win.isMaximized(),
+    });
+  });
+
+  win.loadURL("http://localhost:5173");
 });

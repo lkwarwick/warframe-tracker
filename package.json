@@ -2,7 +2,7 @@
   "name": "warframe-tracker",
   "main": "out/main/main.js",
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "electron-vite dev -- --ozone-platform=x11",
     "build": "electron-vite build"
   },
   "dependencies": {
