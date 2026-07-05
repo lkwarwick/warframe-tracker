@@ -33,6 +33,7 @@
   transform: translateY(-3px);
   border-color: var(--gold-dim);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--gold-dim);
+  cursor: pointer;
 }
 .item-card[data-is-mastered="true"]:hover {
   border-color: #6F8D88;

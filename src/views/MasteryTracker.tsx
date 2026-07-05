@@ -1,11 +1,11 @@
-import type{ BaseItem, Buildable } from "@wfcd/items";
-import { useEffect, useState } from "react";
+import type { BaseItem } from "@wfcd/items";
+import { useEffect, useState, MouseEvent } from "react";
 import { User, Crosshair, SquaresFour, Circle, Sword, Rocket, PawPrint, Funnel } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
 import ProgressBar from "../components/ProgressBar";
-import { useContextMenu, ContextMenu, ContextMenuItem, ContextMenuDivider } from "../components/ContextMenu";
+import ItemModal from "../components/ItemModal";
 
 export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing" | "companions"
 export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
@@ -13,7 +13,8 @@ export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
 export default function MasteryTracker() {
     const [mastered, setMastered] = useState<Record<string, true>>({});
 
-    function toggleMastered(item: BaseItem) {
+    const toggleMastered = (e: MouseEvent<HTMLButtonElement>, item: BaseItem) => {
+        e.stopPropagation();
         window.api.toggleMastered(item.uniqueName).then(setMastered);
     }
 
@@ -22,6 +23,16 @@ export default function MasteryTracker() {
     const [showFilters, setShowFilters] = useState(false);
     const [hideCompleted, setHideCompleted] = useState(false);
     const [primeFilter, setPrimeFilter] = useState<PrimeFilter>("all");
+
+    const [selectedItem, setSelectedItem] = useState<BaseItem | null>(null);
+
+    const openItemModal = (item: BaseItem) => {
+        setSelectedItem(item);
+    };
+
+    const closeItemModal = () => {
+        setSelectedItem(null);
+    };
 
     const [itemGroup, setItemGroup] = useState<ItemGroup>("warframes");
     const [itemsByGroup, setItemsByGroup] = useState<Record<ItemGroup, BaseItem[]>>({
@@ -92,8 +103,6 @@ export default function MasteryTracker() {
         .sort((a, b) => a.item.name.localeCompare(b.item.name))
         .map(x => x.item);
 
-    const { menu, open, close } = useContextMenu<BaseItem>();
-
     return (
         <div className="item-card-grid-container">
             <div className="toolbar-high">
@@ -152,19 +161,15 @@ export default function MasteryTracker() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.97 }}
                         transition={{ duration: 0.1 }}>
-                        <ItemCard onContextMenu={(e) => open(e, item)} item={item} isMastered={mastered[item.uniqueName]} toggleMastered={toggleMastered} />
+                        <ItemCard item={item} isMastered={mastered[item.uniqueName]} toggleMastered={toggleMastered} onItemModal={openItemModal} />
                     </motion.div>
                     ))}
                 </AnimatePresence>
             </div>
-            {menu && (
-                <ContextMenu x={menu.x} y={menu.y} onClose={close}>
-                    <ContextMenuItem onClick={() => toggleMastered(menu.data)}>Toggle Mastered</ContextMenuItem>
-                </ContextMenu>
-            )}
             <div className="toolbar-low">
                 <ProgressBar name={itemGroup} value={items.filter(item => mastered[item.uniqueName]).length} max={items.length} />
             </div>
+            <ItemModal item={selectedItem} isOpen={selectedItem !== null} onClose={closeItemModal} />
         </div>
     )
 }

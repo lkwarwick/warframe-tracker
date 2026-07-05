@@ -1,15 +1,16 @@
 import type { BaseItem, Buildable, Component } from "@wfcd/items"
 import "./ItemCard.css"
 import { FlowerLotus } from "phosphor-react";
+import { MouseEvent } from 'react';
 
 type ItemCardProps = {
     item: BaseItem & Buildable;
     isMastered: boolean;
-    toggleMastered: (item: BaseItem) => void;
-    onContextMenu: (e: React.MouseEvent) => void;
+    toggleMastered: (e: MouseEvent<HTMLButtonElement>, item: BaseItem) => void;
+    onItemModal: (item: BaseItem) => void;
 }
 
-export default function ItemCard({ item, isMastered, toggleMastered, onContextMenu }: ItemCardProps) {
+export default function ItemCard({ item, isMastered, toggleMastered, onItemModal }: ItemCardProps) {
     const IMAGE_OVERRIDES: Record<string, string> = {'/Lotus/Types/Items/MiscItems/Forma': 'Forma.png'};
 
     function getImageUrl(item: BaseItem | Component): string {
@@ -19,10 +20,10 @@ export default function ItemCard({ item, isMastered, toggleMastered, onContextMe
     }
 
     return (
-        <div className="item-card" data-is-mastered={isMastered} onContextMenu={onContextMenu}>
+        <div role="button" onClick={(() => onItemModal(item))} className="item-card" data-is-mastered={isMastered}>
             <img className="item-card-image" data-is-mastered={isMastered} src={getImageUrl(item)}></img>
             <h3 className="item-card-title"><FlowerLotus data-is-mastered={isMastered} className="mastery-icon" size={26} weight="bold" />{item.name}</h3>
-            <button className="mastery-button" data-is-mastered={isMastered} onClick={() => toggleMastered(item)}>{isMastered ? "Mastered" : "Not Mastered"}</button>
+            <button className="mastery-button" data-is-mastered={isMastered} onClick={(e) => toggleMastered(e, item)}>{isMastered ? "Mastered" : "Not Mastered"}</button>
         </div>
     )
 }
