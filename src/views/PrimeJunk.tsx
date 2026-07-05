@@ -16,7 +16,7 @@ export default function PrimeJunk() {
 
     const [parts, setParts] = useState<PrimePart[]>([]);
     const [partData, setPartData] = useState<Record<string, number>>({});
-    const [progress, setProgress] = useState<Record<string, true>>({});
+    const [mastered, setMastered] = useState<Record<string, true>>({});
 
     const [itemSearchText, setItemSearchText] = useState<string>("");
 
@@ -59,7 +59,7 @@ export default function PrimeJunk() {
     }, []);
 
     useEffect(() => {
-        window.api.getProgress().then(setProgress);
+        window.api.getMastered().then(setMastered);
     }, []);
 
     const sortedParts = useMemo(() => {
@@ -137,7 +137,7 @@ export default function PrimeJunk() {
                         exit={{ opacity: 0, scale: 0.97 }}
                         transition={{ duration: 0.1 }}>
                         <PrimeJunkCard
-                            isCompleted={!!progress[`${part.parentUniqueName}:${part.componentUniqueName}`]}
+                            isCompleted={mastered[part.parentUniqueName]}
                             part={part}
                             partData={partData}
                             onDecrement={handleDecrement}
