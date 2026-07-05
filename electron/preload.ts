@@ -1,14 +1,17 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('api', {
+  // Item Categories
   getWarframes: () => ipcRenderer.invoke('get-warframes'),
   getPrimaries: () => ipcRenderer.invoke('get-primaries'),
   getSecondaries: () => ipcRenderer.invoke('get-secondaries'),
   getMelee: () => ipcRenderer.invoke('get-melee'),
   getArchwing: () => ipcRenderer.invoke('get-archwing'),
   getCompanions: () => ipcRenderer.invoke('get-companions'),
-  getProgress: () => ipcRenderer.invoke('get-progress'),
-  toggleComponent: (parentId: string, componentId: string) => ipcRenderer.invoke('toggle-component', parentId, componentId),
+  // New Save Data
+  getMastered: () => ipcRenderer.invoke('get-mastered'),
+  toggleMastered: (uniqueName: string) => ipcRenderer.invoke("toggle-mastered", uniqueName),
+  // Old Save Data
   getPrimeParts: () => ipcRenderer.invoke('get-prime-parts'),
   incrementPrimePart: (partId: string) => ipcRenderer.invoke("increment-prime-part", partId),
   decrementPrimePart: (partId: string) => ipcRenderer.invoke("decrement-prime-part", partId),

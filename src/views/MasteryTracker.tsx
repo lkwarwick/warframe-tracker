@@ -11,26 +11,10 @@ export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "mel
 export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
 
 export default function MasteryTracker() {
-    const [progress, setProgress] = useState<Record<string, true>>({});
+    const [mastered, setMastered] = useState<Record<string, true>>({});
 
-    function handleToggleComponent(parentId: string, componentId: string) {
-        window.api.toggleComponent(parentId, componentId).then(setProgress);
-    }
-
-    function markAllAsComplete(item: BaseItem & Buildable) {
-        const hasComponents = !!item.components && item.components.length > 0;
-        const trackableIDs = hasComponents
-            ? item.components!.map(c => `${item.uniqueName}:${c.uniqueName}`)
-            : [`${item.uniqueName}:${item.uniqueName}`];
-
-        const uniqueTrackableIDs = new Set(trackableIDs);
-
-        uniqueTrackableIDs.forEach(id => {
-            if (!progress[id]) {          // was progress.selectedComponents[id]
-            const [parentId, componentId] = id.split(":");
-            handleToggleComponent(parentId, componentId);
-            }
-        });
+    function toggleMastered(item: BaseItem) {
+        window.api.toggleMastered(item.uniqueName).then(setMastered);
     }
 
     // Filters
@@ -72,7 +56,7 @@ export default function MasteryTracker() {
     }, []);
 
     useEffect(() => {
-        window.api.getProgress().then(setProgress);
+        window.api.getMastered().then(setMastered);
     }, []);
 
     const groups: { key: ItemGroup; label: string; icon: any }[] = [
@@ -85,19 +69,11 @@ export default function MasteryTracker() {
         { key: "companions", label: "Companions", icon: PawPrint },
     ];
 
-    function isItemComplete(item: BaseItem & Buildable, progress: Record<string, true>): boolean {
-        const hasComponents = !!item.components && item.components.length > 0;
-        const trackableIDs = hasComponents
-            ? item.components!.map(c => `${item.uniqueName}:${c.uniqueName}`)
-            : [`${item.uniqueName}:${item.uniqueName}`];
-        return trackableIDs.every(id => progress[id]);
-    }
-
     const items = itemsByGroup[itemGroup];
     const filteredItems = items
         .map(item => ({
             item,
-            complete: isItemComplete(item, progress),
+            complete: mastered[item.uniqueName],
         }))
         .filter(({ item, complete }) => {
             const matchesSearch = item.name
@@ -176,18 +152,18 @@ export default function MasteryTracker() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.97 }}
                         transition={{ duration: 0.1 }}>
-                        <ItemCard onContextMenu={(e) => open(e, item)} item={item} progress={progress} onToggleComponent={handleToggleComponent} />
+                        <ItemCard onContextMenu={(e) => open(e, item)} item={item} isMastered={mastered[item.uniqueName]} toggleMastered={toggleMastered} />
                     </motion.div>
                     ))}
                 </AnimatePresence>
             </div>
             {menu && (
                 <ContextMenu x={menu.x} y={menu.y} onClose={close}>
-                    <ContextMenuItem onClick={() => markAllAsComplete(menu.data)}>Mark as Complete</ContextMenuItem>
+                    <ContextMenuItem onClick={() => toggleMastered(menu.data)}>Toggle Mastered</ContextMenuItem>
                 </ContextMenu>
             )}
             <div className="toolbar-low">
-                <ProgressBar name={itemGroup} value={items.filter(item => isItemComplete(item as BaseItem & Buildable, progress)).length} max={items.length} />
+                <ProgressBar name={itemGroup} value={items.filter(item => mastered[item.uniqueName]).length} max={items.length} />
             </div>
         </div>
     )

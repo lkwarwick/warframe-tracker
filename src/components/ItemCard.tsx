@@ -1,23 +1,16 @@
 import type { BaseItem, Buildable, Component } from "@wfcd/items"
 import "./ItemCard.css"
+import { FlowerLotus } from "phosphor-react";
 
 type ItemCardProps = {
     item: BaseItem & Buildable;
-    progress: Record<string, true>;
-    onToggleComponent: (parentId: string, componentId: string) => void;
+    isMastered: boolean;
+    toggleMastered: (item: BaseItem) => void;
     onContextMenu: (e: React.MouseEvent) => void;
 }
 
-export default function ItemCard({ item, progress, onToggleComponent, onContextMenu }: ItemCardProps) {
-    const hasComponents = !!item.components && item.components.length > 0;
-    const trackableIDs = hasComponents
-        ? item.components!.map(c => `${item.uniqueName}:${c.uniqueName}`)
-        : [`${item.uniqueName}:${item.uniqueName}`];
-    const isItemComplete = trackableIDs.every(id => progress[id]);
-
-    const IMAGE_OVERRIDES: Record<string, string> = {
-        '/Lotus/Types/Items/MiscItems/Forma': 'Forma.png',
-    };
+export default function ItemCard({ item, isMastered, toggleMastered, onContextMenu }: ItemCardProps) {
+    const IMAGE_OVERRIDES: Record<string, string> = {'/Lotus/Types/Items/MiscItems/Forma': 'Forma.png'};
 
     function getImageUrl(item: BaseItem | Component): string {
         const override = IMAGE_OVERRIDES[item.uniqueName];
@@ -26,22 +19,10 @@ export default function ItemCard({ item, progress, onToggleComponent, onContextM
     }
 
     return (
-        <div className={`item-card ${isItemComplete ? "item-card-completed" : ""}`} onContextMenu={onContextMenu}>
-            <img className="item-card-image" src={getImageUrl(item)}></img>
-            <h3 className="item-card-title">{item.name}</h3>
-            <div className="item-card-components">
-                {
-                    item.components?.map((component: Component) => {
-                        const isDone = !!progress[`${item.uniqueName}:${component.uniqueName}`];
-                        return (
-                            <button key={component.uniqueName} className={`item-card-component ${isDone ? "item-card-component-completed" : ""}`} onClick={() => onToggleComponent(item.uniqueName, component.uniqueName)} type="button">
-                                <img className="item-card-component-image" src={getImageUrl(component)} alt={component.name} />
-                                <span className="tooltip">{component.name}</span>
-                            </button>
-                        )
-                    })
-                }
-            </div>
+        <div className="item-card" data-is-mastered={isMastered} onContextMenu={onContextMenu}>
+            <img className="item-card-image" data-is-mastered={isMastered} src={getImageUrl(item)}></img>
+            <h3 className="item-card-title"><FlowerLotus data-is-mastered={isMastered} className="mastery-icon" size={26} weight="bold" />{item.name}</h3>
+            <button className="mastery-button" data-is-mastered={isMastered} onClick={() => toggleMastered(item)}>{isMastered ? "Mastered" : "Not Mastered"}</button>
         </div>
     )
 }

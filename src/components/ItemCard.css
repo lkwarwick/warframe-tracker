@@ -1,3 +1,5 @@
+/* ---------------------------------- Card ---------------------------------- */
+
 .item-card {
   width: 100%;
   height: 100%;
@@ -17,7 +19,7 @@
   transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
-.item-card-completed {
+.item-card[data-is-mastered="true"] {
   border: 2px solid #4C6360;
   background: #34635C3D;
   box-shadow:
@@ -27,15 +29,18 @@
     0 0 30px rgba(111, 141, 136, 0.08);
 }
 
-.item-card:hover:not(.item-card-completed) {
+.item-card:hover {
   transform: translateY(-3px);
   border-color: var(--gold-dim);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--gold-dim);
 }
-.item-card-completed:hover {
+.item-card[data-is-mastered="true"]:hover {
   border-color: #6F8D88;
   transform: translateY(-3px);
 }
+
+/* ---------------------------------- Image --------------------------------- */
+
 .item-card:hover .item-card-image {
   filter: brightness(1.05) contrast(1.05);
 }
@@ -49,6 +54,13 @@
   border-radius: 4px;
 }
 
+.item-card-image[data-is-mastered="true"] {
+  background: linear-gradient(135deg, #0E201D, #07110F);
+  border: 1px solid #17302C;
+}
+
+/* ---------------------------------- Title --------------------------------- */
+
 .item-card-title {
   margin: 0;
   font-size: 14px;
@@ -56,84 +68,29 @@
   letter-spacing: 1px;
 }
 
-/* ------------------------------- Components ------------------------------- */
+/* ------------------------------ Mastery Icon ------------------------------ */
 
-.item-card-components {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
+.mastery-icon {
+  color: #414141;
+  margin-right: 8px;
+  vertical-align: -0.6em;
 }
 
-.item-card-component {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  box-sizing: border-box;
-  background: linear-gradient(135deg, #1a1a1c, #0f0f11);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
-  position: relative;
+.mastery-icon[data-is-mastered="true"] {
+  color: #6F8D88;
 }
 
-.item-card-component:hover:not(.item-card-component-completed) {
-  border-color: var(--gold-dim);
-  box-shadow: 0 0 0 1px var(--gold-dim);
+/* ----------------------------- Mastery Button ----------------------------- */
+
+.mastery-button[data-is-mastered="true"] {
+  background: #081412;
+  border: 1px solid #2F4441;
+  color: #425C58;
 }
 
-.item-card-component-completed:hover {
-  border-color: #6F8D88;
-  transform: translateY(-3px);
-}
-
-.item-card-component-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-  position: relative;
-  z-index: 1;
-}
-
-.item-card-component-completed {
-  border: 2px solid #4C6360;
-  background: #34635C3D;
-  box-shadow:
-    0 0 5px rgba(111, 141, 136, 0.26),
-    0 0 30px rgba(111, 141, 136, 0.08);
-}
-
-.item-card-component .tooltip {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: 4px;
-
-  background: #000;
-  color: var(--gold);
-  padding: 4px 8px;
-  font-size: 12px;
-  white-space: nowrap;
-  border-radius: 4px;
-  z-index: 10;
-  user-select: none;
-  -webkit-user-select: none;
-  pointer-events: none;
-}
-
-.item-card-component:hover {
-  z-index: 100;
-}
-
-.item-card-component:hover .tooltip,
-.item-card-component:focus-visible .tooltip {
-  display: block;
+.mastery-button:hover[data-is-mastered="true"] {
+  transform: translateY(-2px);
+  background: #0E201D;
+  border: 1px solid #6F8D88;
+  color: #6F8D88;
 }

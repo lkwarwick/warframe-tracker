@@ -18,9 +18,10 @@ declare global {
             getMelee: () => Promise<BaseItem[]>;
             getArchwing: () => Promise<BaseItem[]>;
             getCompanions: () => Promise<BaseItem[]>;
-            getProgress: () => Promise<Record<string, true>>;
-            toggleComponent: (parentId: string, componentId: string) => Promise<Record<string, true>>;
-            
+            // Save Data API
+            getMastered: () => Promise<Record<string, true>>;
+            toggleMastered: (uniqueName: string) => Promise<Record<string, true>>;
+            // ! Old Save Data API
             getPrimeParts: () => Promise<Record<string, number>>;
             incrementPrimePart: (partId: string) => Promise<Record<string, number>>;
             decrementPrimePart: (partId: string) => Promise<Record<string, number>>;

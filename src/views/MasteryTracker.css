@@ -21,6 +21,10 @@
   align-items: stretch;
 }
 
+p {
+  color: white;
+}
+
 /* --------------------------------- Tooltip -------------------------------- */
 
 .toolbar-icon-button {

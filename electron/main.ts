@@ -72,8 +72,11 @@ ipcMain.handle('get-companions', async () => {
 /* -------------------------------- App Data -------------------------------- */
 
 interface AppData {
-  selectedComponents: Record<string, true>;
+  // Warframe
+  mastered: Record<string, true>;
+  // ! Old
   primeParts: Record<string, number>;
+  // Misc
   windowBounds: WindowBounds;
 }
 
@@ -87,21 +90,39 @@ interface WindowBounds {
 
 const store = new Store<AppData>({
   defaults: {
-    selectedComponents: {},
+    // Warframe
+    mastered: {},
+    // ! Old
     primeParts: {},
+    // Misc
     windowBounds: { width: 1000, height: 700 },
   },
 });
 
-ipcMain.handle("get-progress", () => store.get("selectedComponents"));  // Get all progression
+/* ------------------------------ Save Data API ----------------------------- */
 
-ipcMain.handle("toggle-component", (_e, parentId: string, componentId: string) => {
-  const selected = { ...store.get("selectedComponents") };
-  const key = `${parentId}:${componentId}`;
-  selected[key] ? delete selected[key] : (selected[key] = true);
-  store.set("selectedComponents", selected);
-  return selected;
+ipcMain.handle("get-mastered", () => store.get("mastered"));
+
+ipcMain.handle("toggle-mastered", (_e, uniqueName: string) => {
+  // Grab local copy
+  const mastered = store.get("mastered");
+
+  // Remove if present
+  if (mastered[uniqueName]) {
+    console.log(`Removing "${uniqueName}" from mastered`);
+    const { [uniqueName]: _, ...rest } = mastered;
+    store.set("mastered", rest);
+    return rest;
+  }
+
+  // Add if missing
+  console.log(`Adding "${uniqueName}" to mastered`);
+  const updated = { ...mastered, [uniqueName]: true };
+  store.set("mastered", updated);
+  return updated;
 });
+
+/* ---------------------------- Old Save Data API --------------------------- */
 
 ipcMain.handle("get-prime-parts", () => store.get("primeParts"));  // Get all prime parts
 
