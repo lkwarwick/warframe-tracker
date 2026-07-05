@@ -18,8 +18,8 @@ declare global {
             getMelee: () => Promise<BaseItem[]>;
             getArchwing: () => Promise<BaseItem[]>;
             getCompanions: () => Promise<BaseItem[]>;
-            getProgress: () => Promise<{ selectedComponents: Record<string, true> }>;
-            toggleComponent: (parentId: string, componentId: string) => Promise<{ selectedComponents: Record<string, true> }>;
+            getProgress: () => Promise<Record<string, true>>;
+            toggleComponent: (parentId: string, componentId: string) => Promise<Record<string, true>>;
             
             getPrimeParts: () => Promise<Record<string, number>>;
             incrementPrimePart: (partId: string) => Promise<Record<string, number>>;

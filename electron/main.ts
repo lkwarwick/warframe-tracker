@@ -72,8 +72,8 @@ ipcMain.handle('get-companions', async () => {
 /* -------------------------------- App Data -------------------------------- */
 
 interface AppData {
-  masteryProgress: { selectedComponents: Record<string, true> };
-  primeJunk: { primeParts: Record<string, number> };
+  selectedComponents: Record<string, true>;
+  primeParts: Record<string, number>;
   windowBounds: WindowBounds;
 }
 
@@ -86,50 +86,48 @@ interface WindowBounds {
 }
 
 const store = new Store<AppData>({
-  defaults: { 
-    masteryProgress: { selectedComponents: {} },
-    primeJunk: { primeParts: {} },
+  defaults: {
+    selectedComponents: {},
+    primeParts: {},
     windowBounds: { width: 1000, height: 700 },
   },
 });
 
-ipcMain.handle("get-progress", () => store.get("masteryProgress"));  // Get all progression
-ipcMain.handle("toggle-component", (_e, parentId: string, componentId: string) => {  // ?
-  const progress = store.get("masteryProgress");
+ipcMain.handle("get-progress", () => store.get("selectedComponents"));  // Get all progression
+
+ipcMain.handle("toggle-component", (_e, parentId: string, componentId: string) => {
+  const selected = { ...store.get("selectedComponents") };
   const key = `${parentId}:${componentId}`;
-  const selected = { ...progress.selectedComponents };
   selected[key] ? delete selected[key] : (selected[key] = true);
-  const updated = { selectedComponents: selected };
-  store.set("masteryProgress", updated);
-  return updated;
-});
-ipcMain.handle("get-prime-parts", () => store.get("primeJunk").primeParts);  // Get all prime parts
-ipcMain.handle("increment-prime-part", (_e, partId: string) => {
-  const primeJunk = store.get("primeJunk") ?? { primeParts: {} };
-  const current = primeJunk.primeParts?.[partId] ?? 0;
-  const next = current + 1;
-  const updatedParts = { ...primeJunk.primeParts, [partId]: next };
-  store.set("primeJunk", { primeParts: updatedParts });
-  return updatedParts;
-});
-ipcMain.handle("decrement-prime-part", (_e, partId: string) => {
-  const primeJunk = store.get("primeJunk") ?? { primeParts: {} };
-  const current = primeJunk.primeParts?.[partId] ?? 0;
-  const next = current - 1;
-  const { [partId]: _, ...rest } = primeJunk.primeParts;
-  const updatedParts =
-    next > 0 ? { ...primeJunk.primeParts, [partId]: next } : rest;
-  store.set("primeJunk", { primeParts: updatedParts });
-  return updatedParts;
-});
-ipcMain.handle("remove-prime-part", (_e, partId: string) => {
-  const primeJunk = store.get("primeJunk") ?? { primeParts: {} };
-  const { [partId]: _, ...rest } = primeJunk.primeParts;
-  store.set("primeJunk", { primeParts: rest });
-  return rest;
+  store.set("selectedComponents", selected);
+  return selected;
 });
 
-console.log('electron-store path:', store.path);
+ipcMain.handle("get-prime-parts", () => store.get("primeParts"));  // Get all prime parts
+
+ipcMain.handle("increment-prime-part", (_e, partId: string) => {
+  const parts = store.get("primeParts");
+  const next = (parts[partId] ?? 0) + 1;
+  const updated = { ...parts, [partId]: next };
+  store.set("primeParts", updated);
+  return updated;
+});
+
+ipcMain.handle("decrement-prime-part", (_e, partId: string) => {
+  const parts = store.get("primeParts");
+  const next = (parts[partId] ?? 0) - 1;
+  const { [partId]: _, ...rest } = parts;
+  const updated = next > 0 ? { ...parts, [partId]: next } : rest;
+  store.set("primeParts", updated);
+  return updated;
+});
+
+ipcMain.handle("remove-prime-part", (_e, partId: string) => {
+  const parts = store.get("primeParts");
+  const { [partId]: _, ...rest } = parts;
+  store.set("primeParts", rest);
+  return rest;
+});
 
 /* ---------------------------- Browser + Preload --------------------------- */
 

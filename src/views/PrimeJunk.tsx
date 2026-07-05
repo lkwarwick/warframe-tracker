@@ -1,6 +1,5 @@
 import { BaseItem, Buildable, Component } from "@wfcd/items";
 import { useEffect, useMemo, useState } from "react";
-import type { MasteryProgress } from "./MasteryTracker";
 import "./PrimeJunk.css";
 import PrimeJunkCard from "../components/PrimeJunkCard";
 import { AnimatePresence, motion } from "framer-motion";
@@ -17,7 +16,7 @@ export default function PrimeJunk() {
 
     const [parts, setParts] = useState<PrimePart[]>([]);
     const [partData, setPartData] = useState<Record<string, number>>({});
-    const [progress, setProgress] = useState<MasteryProgress>({ selectedComponents: {} });
+    const [progress, setProgress] = useState<Record<string, true>>({});
 
     const [itemSearchText, setItemSearchText] = useState<string>("");
 
@@ -138,7 +137,7 @@ export default function PrimeJunk() {
                         exit={{ opacity: 0, scale: 0.97 }}
                         transition={{ duration: 0.1 }}>
                         <PrimeJunkCard
-                            isCompleted={!!progress.selectedComponents[`${part.parentUniqueName}:${part.componentUniqueName}`]}
+                            isCompleted={!!progress[`${part.parentUniqueName}:${part.componentUniqueName}`]}
                             part={part}
                             partData={partData}
                             onDecrement={handleDecrement}

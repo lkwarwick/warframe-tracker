@@ -7,13 +7,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import ProgressBar from "../components/ProgressBar";
 import { useContextMenu, ContextMenu, ContextMenuItem, ContextMenuDivider } from "../components/ContextMenu";
 
-export type MasteryProgress = { selectedComponents: Record<string, true> };
-
 export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing" | "companions"
 export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
 
 export default function MasteryTracker() {
-    const [progress, setProgress] = useState<MasteryProgress>({ selectedComponents: {} });
+    const [progress, setProgress] = useState<Record<string, true>>({});
 
     function handleToggleComponent(parentId: string, componentId: string) {
         window.api.toggleComponent(parentId, componentId).then(setProgress);
@@ -28,9 +26,9 @@ export default function MasteryTracker() {
         const uniqueTrackableIDs = new Set(trackableIDs);
 
         uniqueTrackableIDs.forEach(id => {
-            if (!progress.selectedComponents[id]) {
-                const [parentId, componentId] = id.split(":");
-                handleToggleComponent(parentId, componentId);
+            if (!progress[id]) {          // was progress.selectedComponents[id]
+            const [parentId, componentId] = id.split(":");
+            handleToggleComponent(parentId, componentId);
             }
         });
     }
@@ -87,12 +85,12 @@ export default function MasteryTracker() {
         { key: "companions", label: "Companions", icon: PawPrint },
     ];
 
-    function isItemComplete(item: BaseItem & Buildable, progress: MasteryProgress): boolean {
+    function isItemComplete(item: BaseItem & Buildable, progress: Record<string, true>): boolean {
         const hasComponents = !!item.components && item.components.length > 0;
         const trackableIDs = hasComponents
             ? item.components!.map(c => `${item.uniqueName}:${c.uniqueName}`)
             : [`${item.uniqueName}:${item.uniqueName}`];
-        return trackableIDs.every(id => progress.selectedComponents[id]);
+        return trackableIDs.every(id => progress[id]);
     }
 
     const items = itemsByGroup[itemGroup];

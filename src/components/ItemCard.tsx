@@ -1,10 +1,9 @@
 import type { BaseItem, Buildable, Component } from "@wfcd/items"
 import "./ItemCard.css"
-import type { MasteryProgress } from "../views/MasteryTracker";
 
 type ItemCardProps = {
     item: BaseItem & Buildable;
-    progress: MasteryProgress;
+    progress: Record<string, true>;
     onToggleComponent: (parentId: string, componentId: string) => void;
     onContextMenu: (e: React.MouseEvent) => void;
 }
@@ -14,7 +13,7 @@ export default function ItemCard({ item, progress, onToggleComponent, onContextM
     const trackableIDs = hasComponents
         ? item.components!.map(c => `${item.uniqueName}:${c.uniqueName}`)
         : [`${item.uniqueName}:${item.uniqueName}`];
-    const isItemComplete = trackableIDs.every(id => progress.selectedComponents[id]);
+    const isItemComplete = trackableIDs.every(id => progress[id]);
 
     const IMAGE_OVERRIDES: Record<string, string> = {
         '/Lotus/Types/Items/MiscItems/Forma': 'Forma.png',
@@ -33,7 +32,7 @@ export default function ItemCard({ item, progress, onToggleComponent, onContextM
             <div className="item-card-components">
                 {
                     item.components?.map((component: Component) => {
-                        const isDone = !!progress.selectedComponents[`${item.uniqueName}:${component.uniqueName}`];
+                        const isDone = !!progress[`${item.uniqueName}:${component.uniqueName}`];
                         return (
                             <button key={component.uniqueName} className={`item-card-component ${isDone ? "item-card-component-completed" : ""}`} onClick={() => onToggleComponent(item.uniqueName, component.uniqueName)} type="button">
                                 <img className="item-card-component-image" src={getImageUrl(component)} alt={component.name} />
