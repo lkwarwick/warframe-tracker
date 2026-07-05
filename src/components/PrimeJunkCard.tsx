@@ -1,4 +1,4 @@
-import { CheckCircle } from "phosphor-react";
+import { FlowerLotus } from "phosphor-react";
 import { PrimePart } from "../views/PrimeJunk";
 import "./PrimeJunkCard.css"
 
@@ -36,7 +36,7 @@ export default function PrimeJunkCard({ isCompleted, part, partData, onDecrement
                 onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/fallback-icon.png'; }}
             />
             <h3 className="prime-junk-title" data-nonzero={nonzero}>
-                {isCompleted ? <CheckCircle data-nonzero={nonzero} size={16} weight="bold" className="prime-completed-icon" /> : null}
+                {isCompleted ? <FlowerLotus data-nonzero={nonzero} size={22} weight="bold" className="prime-completed-icon" /> : null}
                 {' '}
                 <strong>{part.parentName}</strong> {part.componentName} ({part.ducats})
             </h3>
