@@ -25,7 +25,7 @@ export default function ItemModal({ item, isMastered, toggleMastered, isOpen, on
                 </div>
                 <div className="item-modal-body">
                     <div className="item-modal-left">
-                    <img className="item-modal-image" src={getImageUrl(item)}></img>
+                    <img className="item-modal-image" data-is-mastered={isMastered} src={getImageUrl(item)}></img>
                     <h1 className="item-modal-title"><FlowerLotus data-is-mastered={isMastered} className="item-modal-mastery-icon" size={26} weight="bold" />{item.name}</h1>
                     <p className="item-modal-subtitle">{item.category}</p>
                     <button className="item-modal-mastery-button" onClick={(e) => toggleMastered(e, item)} data-is-mastered={isMastered}>Mastered</button>
