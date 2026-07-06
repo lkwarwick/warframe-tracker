@@ -169,7 +169,7 @@ export default function MasteryTracker() {
             <div className="toolbar-low">
                 <ProgressBar name={itemGroup} value={items.filter(item => mastered[item.uniqueName]).length} max={items.length} />
             </div>
-            <ItemModal item={selectedItem} isOpen={selectedItem !== null} onClose={closeItemModal} />
+            <ItemModal item={selectedItem} isMastered={mastered[selectedItem?.uniqueName ?? ""]} toggleMastered={toggleMastered} isOpen={selectedItem !== null} onClose={closeItemModal} />
         </div>
     )
 }

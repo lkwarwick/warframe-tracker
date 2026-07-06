@@ -9,11 +9,125 @@
 }
 
 .modal-content {
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: rgb(20 20 20);
+    border: 1px solid var(--gold);
     border-radius: 8px;
     padding: 24px;
-    width: 65%;
+    width: 50%;
     height: 75%;
     overflow-y: auto;
+    flex-direction: column;
+    display: flex;
+}
+
+.item-modal-header {
+    height: 50px;
+}
+
+.item-modal-body {
+    flex: 1;
+    display: flex;
+}
+
+.item-modal-left {
+    width: 250px;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.item-modal-right {
+    flex: 1;
+}
+
+/* ------------------------------- Left Panel ------------------------------- */
+
+.item-modal-image {
+    width: 100%;
+  aspect-ratio: 1 / 1;
+
+  background: linear-gradient(135deg, #1a1a1c, #0f0f11);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+.item-modal-image:hover {
+  filter: brightness(1.05) contrast(1.05);
+}
+
+.item-modal-title {
+    text-align: center;
+    font-weight: bold;
+    color: var(--gold);
+}
+
+.item-modal-mastery-icon {
+  color: #414141;
+  margin-right: 8px;
+  vertical-align: -0.2em;
+}
+
+.item-modal-mastery-icon[data-is-mastered="true"] {
+  color: #6F8D88;
+}
+
+.item-modal-subtitle {
+    text-align: center;
+    color: var(--gold);
+}
+
+.item-modal-mastery-button {
+    margin-top: 8px;
+    margin-bottom: 16px;
+    font-size: 16px;
+    width: 150px;
+}
+
+.item-modal-mastery-button[data-is-mastered="true"] {
+  background: #081412;
+  border: 1px solid #2F4441;
+  color: #425C58;
+}
+
+.item-modal-mastery-button:hover[data-is-mastered="true"] {
+  transform: translateY(-2px);
+  background: #0E201D;
+  border: 1px solid #6F8D88;
+  color: #6F8D88;
+}
+
+.modal-content hr {
+    background-color: rgba(75 58 20 / 0.35);
+    margin-left: 16px;
+    margin-right: 16px;
+    align-self: stretch;
+    border: none;
+    height: 2px;
+}
+
+.item-modal-description {
+    color:rgb(170 170 170);
+    text-align: center;
+    font-size: 14px;
+    margin-left: 22px;
+    margin-right: 22px;
+}
+
+.item-modal-key-value {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    align-self: stretch;
+}
+.item-modal-key-value h6 {
+    margin-left: 24px;
+    font-size: 16px;
+    color: darkgray;
+    text-align: left;
+}
+.item-modal-key-value p {
+    margin-right: 24px;
+    font-size: 16px;
+    color: gray;
 }
