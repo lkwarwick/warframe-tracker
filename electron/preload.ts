@@ -11,6 +11,11 @@ contextBridge.exposeInMainWorld('api', {
   // New Save Data
   getMastered: () => ipcRenderer.invoke('get-mastered'),
   toggleMastered: (uniqueName: string) => ipcRenderer.invoke("toggle-mastered", uniqueName),
+  getComponents: () => ipcRenderer.invoke('get-components'),
+  incrementComponent: (componentId: string) => ipcRenderer.invoke('increment-component', componentId),
+  decrementComponent: (componentId: string) => ipcRenderer.invoke('decrement-component', componentId),
+  setComponent: (componentId: string, value: number) => ipcRenderer.invoke('set-component', componentId, value),
+  removeComponent: (componentId: string) => ipcRenderer.invoke('remove-component', componentId),
   // Old Save Data
   getPrimeParts: () => ipcRenderer.invoke('get-prime-parts'),
   incrementPrimePart: (partId: string) => ipcRenderer.invoke("increment-prime-part", partId),

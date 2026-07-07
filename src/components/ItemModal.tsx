@@ -1,17 +1,20 @@
 import { BaseItem, Buildable, Component } from "@wfcd/items";
 import "./ItemModal.css";
 import { FlowerLotus, CheckCircle, XCircle } from "phosphor-react";
+import { useComponentCounts } from "../hooks/useComponentCounts";
 
 interface ItemModalProps {
     item: (BaseItem & Buildable) | null;
     isMastered: boolean;
     toggleMastered: (e: React.MouseEvent<HTMLButtonElement>, item: BaseItem) => void;
-    
+
     isOpen: boolean;
     onClose: () => void;
 }
 
 export default function ItemModal({ item, isMastered, toggleMastered, isOpen, onClose }: ItemModalProps) {
+    const { counts, increment, decrement, setValue } = useComponentCounts();
+    
     if (!isOpen || !item) return null;
 
     function getImageUrl(item: BaseItem | Component): string {
@@ -53,7 +56,8 @@ export default function ItemModal({ item, isMastered, toggleMastered, isOpen, on
                     </div>
                     <div className="item-modal-components">
                         {item.components?.map((component) => {
-                            const haveComponent = Math.random() < 0.5;
+                            const owned = counts[component.uniqueName] ?? 0;
+                            const haveComponent = owned >= component.itemCount;
                             const HaveIcon = haveComponent ? CheckCircle : XCircle;
 
                             return (
@@ -61,9 +65,9 @@ export default function ItemModal({ item, isMastered, toggleMastered, isOpen, on
                                 <img className="item-modal-component-image" src={getImageUrl(component)}></img>
                                 <h5 className="item-modal-component-text">{component.name}</h5>
                                 <div className="item-modal-component-owned">
-                                    <button>-</button>
-                                    <input type="number" value="1" min="0" />
-                                    <button>+</button>
+                                    <button onClick={() => decrement(component.uniqueName)}>-</button>
+                                    <input type="number" value={owned} min="0" onChange={(e) => setValue(component.uniqueName, Number(e.target.value))} />
+                                    <button onClick={() => increment(component.uniqueName)}>+</button>
                                 </div>
                                 <p className="item-modal-component-needed">{component.itemCount}</p>
                                 <HaveIcon data-have-component={haveComponent} className="item-modal-component-have" size={26} weight="bold" />

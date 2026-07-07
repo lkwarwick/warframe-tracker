@@ -74,6 +74,7 @@ ipcMain.handle('get-companions', async () => {
 interface AppData {
   // Warframe
   mastered: Record<string, true>;
+  components: Record<string, number>;
   // ! Old
   primeParts: Record<string, number>;
   // Misc
@@ -92,6 +93,7 @@ const store = new Store<AppData>({
   defaults: {
     // Warframe
     mastered: {},
+    components: {},
     // ! Old
     primeParts: {},
     // Misc
@@ -120,6 +122,42 @@ ipcMain.handle("toggle-mastered", (_e, uniqueName: string) => {
   const updated = { ...mastered, [uniqueName]: true };
   store.set("mastered", updated);
   return updated;
+});
+
+const getComponents = () => store.get("components");
+
+const setComponents = (updated: Record<string, number>) => {
+  store.set("components", updated);
+  return updated;
+};
+
+ipcMain.handle("get-components", () => getComponents());
+
+ipcMain.handle("increment-component", (_e, componentId: string) => {
+  const components = getComponents();
+  const next = (components[componentId] ?? 0) + 1;
+  return setComponents({ ...components, [componentId]: next });
+});
+
+ipcMain.handle("decrement-component", (_e, componentId: string) => {
+  const components = getComponents();
+  const next = (components[componentId] ?? 0) - 1;
+  const { [componentId]: _, ...rest } = components;
+  return setComponents(next > 0 ? { ...components, [componentId]: next } : rest);
+});
+
+ipcMain.handle("set-component", (_e, componentId: string, value: number) => {
+  const components = getComponents();
+  if (value <= 0) {
+    const { [componentId]: _, ...rest } = components;
+    return setComponents(rest);
+  }
+  return setComponents({ ...components, [componentId]: value });
+});
+
+ipcMain.handle("remove-component", (_e, componentId: string) => {
+  const { [componentId]: _, ...rest } = getComponents();
+  return setComponents(rest);
 });
 
 /* ---------------------------- Old Save Data API --------------------------- */
