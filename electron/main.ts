@@ -133,30 +133,30 @@ const setComponents = (updated: Record<string, number>) => {
 
 ipcMain.handle("get-components", () => getComponents());
 
-ipcMain.handle("increment-component", (_e, componentId: string) => {
+ipcMain.handle("increment-component", (_e, uniqueName: string) => {
   const components = getComponents();
-  const next = (components[componentId] ?? 0) + 1;
-  return setComponents({ ...components, [componentId]: next });
+  const next = (components[uniqueName] ?? 0) + 1;
+  return setComponents({ ...components, [uniqueName]: next });
 });
 
-ipcMain.handle("decrement-component", (_e, componentId: string) => {
+ipcMain.handle("decrement-component", (_e, uniqueName: string) => {
   const components = getComponents();
-  const next = (components[componentId] ?? 0) - 1;
-  const { [componentId]: _, ...rest } = components;
-  return setComponents(next > 0 ? { ...components, [componentId]: next } : rest);
+  const next = (components[uniqueName] ?? 0) - 1;
+  const { [uniqueName]: _, ...rest } = components;
+  return setComponents(next > 0 ? { ...components, [uniqueName]: next } : rest);
 });
 
-ipcMain.handle("set-component", (_e, componentId: string, value: number) => {
+ipcMain.handle("set-component", (_e, uniqueName: string, value: number) => {
   const components = getComponents();
   if (value <= 0) {
-    const { [componentId]: _, ...rest } = components;
+    const { [uniqueName]: _, ...rest } = components;
     return setComponents(rest);
   }
-  return setComponents({ ...components, [componentId]: value });
+  return setComponents({ ...components, [uniqueName]: value });
 });
 
-ipcMain.handle("remove-component", (_e, componentId: string) => {
-  const { [componentId]: _, ...rest } = getComponents();
+ipcMain.handle("remove-component", (_e, uniqueName: string) => {
+  const { [uniqueName]: _, ...rest } = getComponents();
   return setComponents(rest);
 });
 

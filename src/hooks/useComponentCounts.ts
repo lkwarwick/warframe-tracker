@@ -8,16 +8,16 @@ export function useComponentCounts() {
     window.api.getComponents().then(setCounts);
   }, []);
 
-  const increment = useCallback(async (componentId: string) => {
-    setCounts(await window.api.incrementComponent(componentId));
+  const increment = useCallback(async (uniqueName: string) => {
+    setCounts(await window.api.incrementComponent(uniqueName));
   }, []);
 
-  const decrement = useCallback(async (componentId: string) => {
-    setCounts(await window.api.decrementComponent(componentId));
+  const decrement = useCallback(async (uniqueName: string) => {
+    setCounts(await window.api.decrementComponent(uniqueName));
   }, []);
 
-  const setValue = useCallback(async (componentId: string, value: number) => {
-    setCounts(await window.api.setComponent(componentId, value));
+  const setValue = useCallback(async (uniqueName: string, value: number) => {
+    setCounts(await window.api.setComponent(uniqueName, value));
   }, []);
 
   return { counts, increment, decrement, setValue };

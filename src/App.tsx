@@ -22,10 +22,10 @@ declare global {
             getMastered: () => Promise<Record<string, true>>;
             toggleMastered: (uniqueName: string) => Promise<Record<string, true>>;
             getComponents: () => Promise<Record<string, number>>;
-            incrementComponent: (componentId: string) => Promise<Record<string, number>>;
-            decrementComponent: (componentId: string) => Promise<Record<string, number>>;
-            setComponent: (componentId: string, value: number) => Promise<Record<string, number>>;
-            removeComponent: (componentId: string) => Promise<Record<string, number>>;
+            incrementComponent: (uniqueName: string) => Promise<Record<string, number>>;
+            decrementComponent: (uniqueName: string) => Promise<Record<string, number>>;
+            setComponent: (uniqueName: string, value: number) => Promise<Record<string, number>>;
+            removeComponent: (uniqueName: string) => Promise<Record<string, number>>;
             // ! Old Save Data API
             getPrimeParts: () => Promise<Record<string, number>>;
             incrementPrimePart: (partId: string) => Promise<Record<string, number>>;
