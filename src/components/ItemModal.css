@@ -14,14 +14,14 @@
     border-radius: 8px;
     padding: 24px;
     width: 50%;
-    height: 75%;
+    max-height: 75%;      /* was: height: 75%; */
     overflow-y: auto;
     flex-direction: column;
     display: flex;
 }
 
 .item-modal-header {
-    height: 50px;
+    height: 20px;
 }
 
 .item-modal-body {
@@ -44,12 +44,13 @@
 
 .item-modal-image {
     width: 100%;
-  aspect-ratio: 1 / 1;
+    margin-top: 25px;
+    aspect-ratio: 1 / 1;
 
-  background: linear-gradient(135deg, #1a1a1c, #0f0f11);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  margin-bottom: 16px;
+    background: linear-gradient(135deg, #1a1a1c, #0f0f11);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 16px;
 }
 .item-modal-image:hover {
   filter: brightness(1.05) contrast(1.05);
@@ -140,4 +141,151 @@
     margin-right: 24px;
     font-size: 16px;
     color: gray;
+}
+
+/* -------------------------------- Component ------------------------------- */
+
+.item-modal-components {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.item-modal-components-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 25px;
+}
+
+.item-modal-components-header-image {
+    width: 75px;
+}
+.item-modal-components-header-name {
+    color: var(--gold-dim);
+    width: 200px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+}
+.item-modal-components-header-owned {
+    margin-left: auto;
+    color: var(--gold-dim);
+    text-align: center;
+    width: 175px;
+}
+.item-modal-components-header-needed {
+    color: var(--gold-dim);
+    width: 100px;
+    text-align: center;
+}
+.item-modal-components-header-have {
+    width: 75px;
+    color: var(--gold-dim);
+    text-align: center;
+}
+
+.item-modal-component {
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    align-items: center;
+    border: 1px solid rgba(138 111 49 / 0.25);
+    border-radius: 10px;
+    margin-left: 25px;
+    background-color: rgb(22 22 22);
+    transition: background 0.2s ease, color 0.2s ease, transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+.item-modal-component:hover {
+    transform: translateY(-1px);
+    border-color: var(--gold-dim);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--gold-dim);
+}
+
+.item-modal-component-image {
+    margin-left: 12.5px;
+    margin-right: 12.5px;
+    height: 75%;
+    aspect-ratio: 1 / 1;
+}
+
+.item-modal-component-text {
+    color: #B8B4AB;
+    font-size: 16px;
+    width: 200px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.item-modal-component-needed {
+    margin-left: auto;
+    text-align: center;
+    width: 100px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0;
+}
+
+.item-modal-component-have[data-have-component="true"] {
+    color: rgb(40 136 40);
+    width: 75px;
+    aspect-ratio: 1 / 1;
+    height: 50%;
+}
+.item-modal-component-have[data-have-component="false"] {
+    color: rgb(209 51 51);
+    width: 75px;
+    aspect-ratio: 1 / 1;
+    height: 50%;
+}
+
+/* ---------------------------- Component (Owned) --------------------------- */
+
+.item-modal-component-owned {
+    margin-left: auto;
+    text-align: center;
+    width: 175px;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.item-modal-component-owned input {
+    width: 50px;
+    height: 35px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: var(--panel);;
+    text-align: center;
+    font: inherit;
+    line-height: 35px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    color: #B8B4AB;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+.item-modal-component-owned input::-webkit-outer-spin-button,
+.item-modal-component-owned input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.item-modal-component-owned button {
+    width: 35px;
+    height: 35px;
+}.item-modal-component-owned button:first-child {
+    border-radius: 5px 0 0 5px; /* round outer left corners only */
+}
+.item-modal-component-owned button:last-child {
+    border-radius: 0 5px 5px 0; /* round outer right corners only */
 }
