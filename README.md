@@ -22,7 +22,7 @@ Never lose progress wondering what you've already leveled. The app remembers exa
 ### Prime Parts Inventory
 Track your Prime parts collection and their ducat values at a glance. Perfect for keeping organized when you're racking up parts for prime vaulted items or just managing your farm haul.
 
-![App Screenshot - Prime Junk View](./docs/prime-junk.png)
+![App Screenshot - Prime Parts View](./docs/prime-parts.png)
 
 ## Getting Started (Users)
 
@@ -105,7 +105,7 @@ warframe-tracker/
 │   ├── preload.ts      # IPC bridge for renderer process
 │   └── assets/         # Electron-specific resources
 ├── src/                # React frontend
-│   ├── views/          # Main app views (Mastery Tracker, Prime Junk)
+│   ├── views/          # Main app views (Mastery Tracker, Prime Parts)
 │   ├── components/     # Reusable UI components
 │   ├── layout/         # App layout structure
 │   ├── types/          # TypeScript types
@@ -130,7 +130,7 @@ warframe-tracker/
 - [main.ts](./electron/main.ts) – Handles IPC communication and data persistence
 - [App.tsx](./src/App.tsx) – Root component and view management
 - [MasteryTracker.tsx](./src/views/MasteryTracker.tsx) – Mastery progress tracking logic
-- [PrimeJunk.tsx](./src/views/PrimeJunk.tsx) – Prime parts inventory logic
+- [PrimeParts.tsx](./src/views/PrimeParts.tsx) – Prime parts inventory logic
 
 ### Development Tips
 

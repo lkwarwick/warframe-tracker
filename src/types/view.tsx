@@ -1,1 +1,1 @@
-export type View = "mastery-checklist" | "prime-junk";
+export type View = "mastery-checklist" | "prime-parts";

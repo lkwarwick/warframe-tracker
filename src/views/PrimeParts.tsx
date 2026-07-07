@@ -1,7 +1,7 @@
 import { BaseItem, Buildable, Component } from "@wfcd/items";
 import { useEffect, useMemo, useState } from "react";
-import "./PrimeJunk.css";
-import PrimeJunkCard from "../components/PrimeJunkCard";
+import "./PrimeParts.css";
+import PrimePartCard from "../components/PrimePartCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { useComponentCounts } from "../hooks/useComponentCounts";
 
@@ -13,7 +13,7 @@ export type PrimePart = BaseItem & Buildable & Component & {
     componentUniqueName: string;
 };
 
-export default function PrimeJunk() {
+export default function PrimeParts() {
 
     // Loaded parts to display (loads once, never set again)
     const [parts, setParts] = useState<PrimePart[]>([]);
@@ -114,22 +114,22 @@ export default function PrimeJunk() {
         );
 
     return (
-        <div className="prime-junk-view">
+        <div className="prime-parts-view">
             <div className="toolbar-high">
                 <div className="toolbar-top">
                     <div className="toolbar-left">
-                        <p className="prime-junk-total">Total: {(totalPartsCount).toLocaleString("en-GB")}</p>
-                        <p className="prime-junk-unique" >(Unique: {(uniqueOwnedCount).toLocaleString("en-GB")})</p>
+                        <p className="prime-parts-total">Total: {(totalPartsCount).toLocaleString("en-GB")}</p>
+                        <p className="prime-parts-unique" >(Unique: {(uniqueOwnedCount).toLocaleString("en-GB")})</p>
                     </div>
                     <div className="toolbar-right">
-                        <p className="prime-junk-ducats">Ducats: {(totalDucats).toLocaleString("en-GB")}</p>
+                        <p className="prime-parts-ducats">Ducats: {(totalDucats).toLocaleString("en-GB")}</p>
                     </div>
                 </div>
                 <div className="toolbar-search">
                     <input type="search" placeholder="Search parts..." value={itemSearchText} onChange={e => setItemSearchText(e.target.value)} />
                 </div>
             </div>
-            <div className="prime-junk-view-grid">
+            <div className="prime-parts-view-grid">
                 <AnimatePresence mode="popLayout">
                     {sortedParts.map(part => (
                     <motion.div
@@ -139,7 +139,7 @@ export default function PrimeJunk() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.97 }}
                         transition={{ duration: 0.1 }}>
-                        <PrimeJunkCard
+                        <PrimePartCard
                             isCompleted={mastered[part.parentUniqueName]}
                             part={part}
                             counts={counts}

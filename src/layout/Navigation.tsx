@@ -10,7 +10,7 @@ export default function Navigation({ setActiveView}: Props ) {
     return (
         <div className="navigation">
             <button onClick={() => setActiveView("mastery-checklist")}><BookBookmark size={24} weight="bold" />Mastery Checklist</button>
-            <button onClick={() => setActiveView("prime-junk")}><Trash size={24} weight="bold" />Prime Junk</button>
+            <button onClick={() => setActiveView("prime-parts")}><Trash size={24} weight="bold" />Prime Parts</button>
         </div>
     )
 }

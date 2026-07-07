@@ -1,4 +1,4 @@
-.prime-junk-view {
+.prime-parts-view {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -6,7 +6,7 @@
   overflow-x: hidden;
 }
 
-.prime-junk-view-grid {
+.prime-parts-view-grid {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
@@ -21,16 +21,16 @@
   align-items: stretch;
 }
 
-.prime-junk-total {
+.prime-parts-total {
   color: var(--gold);
   font-weight: bold;
 }
 
-.prime-junk-unique {
+.prime-parts-unique {
   color: var(--gold-dim);
 }
 
-.prime-junk-ducats {
+.prime-parts-ducats {
   color: var(--gold);
   font-weight: bold;
 }
