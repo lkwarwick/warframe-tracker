@@ -26,11 +26,6 @@ declare global {
             decrementComponent: (uniqueName: string) => Promise<Record<string, number>>;
             setComponent: (uniqueName: string, value: number) => Promise<Record<string, number>>;
             removeComponent: (uniqueName: string) => Promise<Record<string, number>>;
-            // ! Old Save Data API
-            getPrimeParts: () => Promise<Record<string, number>>;
-            incrementPrimePart: (partId: string) => Promise<Record<string, number>>;
-            decrementPrimePart: (partId: string) => Promise<Record<string, number>>;
-            removePrimePart: (partId: string) => Promise<Record<string, number>>;
           }
     }
 }

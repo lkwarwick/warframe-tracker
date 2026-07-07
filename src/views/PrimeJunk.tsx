@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import "./PrimeJunk.css";
 import PrimeJunkCard from "../components/PrimeJunkCard";
 import { AnimatePresence, motion } from "framer-motion";
+import { useComponentCounts } from "../hooks/useComponentCounts";
 
 type FullItem = BaseItem & Buildable;
 export type PrimePart = BaseItem & Buildable & Component & {
@@ -14,19 +15,16 @@ export type PrimePart = BaseItem & Buildable & Component & {
 
 export default function PrimeJunk() {
 
+    // Loaded parts to display (loads once, never set again)
     const [parts, setParts] = useState<PrimePart[]>([]);
-    const [partData, setPartData] = useState<Record<string, number>>({});
+
+    // Load the mastery data
     const [mastered, setMastered] = useState<Record<string, true>>({});
 
+    // Load the player's components
+    const { counts, increment, decrement, setValue } = useComponentCounts();
+
     const [itemSearchText, setItemSearchText] = useState<string>("");
-
-    function handleIncrement(part: PrimePart) {
-        window.api.incrementPrimePart(`${part.parentName}:${part.componentName}`).then(setPartData);
-    }
-
-    function handleDecrement(part: PrimePart) {
-        window.api.decrementPrimePart(`${part.parentName}:${part.componentName}`).then(setPartData);
-    }
 
     useEffect(() => {
         Promise.all([
@@ -36,8 +34,7 @@ export default function PrimeJunk() {
             window.api.getMelee(),
             window.api.getArchwing(),
             window.api.getCompanions(),
-            window.api.getPrimeParts(),
-        ]).then(([warframes, primaries, secondaries, melee, archwing, companions, primeJunk]) => {
+        ]).then(([warframes, primaries, secondaries, melee, archwing, companions]) => {
             const allItems: FullItem[] = [...warframes, ...primaries, ...secondaries, ...melee, ...archwing, ...companions];
 
             const primeParts: PrimePart[] = allItems.flatMap(item =>
@@ -54,7 +51,6 @@ export default function PrimeJunk() {
             );
 
             setParts(primeParts);
-            setPartData(primeJunk)
         });
     }, []);
 
@@ -72,8 +68,8 @@ export default function PrimeJunk() {
             : parts;
 
         return [...filtered].sort((a, b) => {
-            const aCount = partData[`${a.parentName}:${a.componentName}`] ?? 0;
-            const bCount = partData[`${b.parentName}:${b.componentName}`] ?? 0;
+            const aCount = counts[a.uniqueName] ?? 0;
+            const bCount = counts[b.uniqueName] ?? 0;
             const aHas = aCount > 0;
             const bHas = bCount > 0;
             if (aHas !== bHas) return aHas ? -1 : 1; // zero-count group first, nonzero group second
@@ -81,33 +77,34 @@ export default function PrimeJunk() {
             const bName = `${b.parentName} ${b.componentName}`;
             return aName.localeCompare(bName);
         });
-    }, [parts, partData, itemSearchText]);
+    }, [parts, counts, itemSearchText]);
 
     const partsById = useMemo(() => {
         const map: Record<string, PrimePart> = {};
         parts.forEach(part => {
-            map[`${part.parentName}:${part.componentName}`] = part;
+            map[part.uniqueName] = part;
         });
         return map;
     }, [parts]);
 
     const uniqueOwnedCount = useMemo(
-        () => Object.values(partData).filter(count => count > 0).length,
-        [partData]
+        () => Object.values(counts).filter(count => count > 0).length,
+        [counts]
     );
 
     const totalPartsCount = useMemo(
-        () => Object.values(partData).reduce((sum, count) => sum + count, 0),
-        [partData]
+        () => Object.values(counts).reduce((sum, count) => sum + count, 0),
+        [counts]
     );
 
     const totalDucats = useMemo(
         () =>
-            Object.entries(partData).reduce((sum, [partId, count]) => {
+            Object.entries(counts).reduce((sum, [partId, count]) => {
             const ducats = partsById[partId]?.ducats ?? 0;
+            console.log(ducats)
             return sum + ducats * count;
             }, 0),
-        [partData, partsById]
+        [counts, partsById]
         );
 
     return (
@@ -139,9 +136,9 @@ export default function PrimeJunk() {
                         <PrimeJunkCard
                             isCompleted={mastered[part.parentUniqueName]}
                             part={part}
-                            partData={partData}
-                            onDecrement={handleDecrement}
-                            onIncrement={handleIncrement}
+                            counts={counts}
+                            onDecrement={decrement}
+                            onIncrement={increment}
                         />
                     </motion.div>
                     ))}

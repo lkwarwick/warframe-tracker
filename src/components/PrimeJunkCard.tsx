@@ -15,15 +15,15 @@ function getImageUrl(part: PrimePart) {
 type PrimeJunkCardProps = {
     isCompleted: boolean;
     part: PrimePart;
-    partData: Record<string, number>;
-    onDecrement: (part: PrimePart) => void;
-    onIncrement: (part: PrimePart) => void;
+    counts: Record<string, number>;
+    onDecrement: (uniqueName: string) => void;
+    onIncrement: (uniqueName: string) => void;
 }
 
-export default function PrimeJunkCard({ isCompleted, part, partData, onDecrement, onIncrement }: PrimeJunkCardProps) {
+export default function PrimeJunkCard({ isCompleted, part, counts, onDecrement, onIncrement }: PrimeJunkCardProps) {
 
-    const key = `${part.parentName}:${part.componentName}`;
-    const count = partData[key] ?? 0;
+    const key = part.uniqueName;
+    const count = counts[key] ?? 0;
     const nonzero = count > 0;
 
     return (
@@ -41,9 +41,9 @@ export default function PrimeJunkCard({ isCompleted, part, partData, onDecrement
                 <strong>{part.parentName}</strong> {part.componentName} ({part.ducats})
             </h3>
             <div className="prime-junk-counter">
-                <button className="prime-junk-decrement" disabled={!nonzero} onClick={() => onDecrement(part)}>-</button>
+                <button className="prime-junk-decrement" disabled={!nonzero} onClick={() => onDecrement(part.uniqueName)}>-</button>
                 <h4 className="prime-junk-value" data-nonzero={nonzero}>{count}</h4>
-                <button className="prime-junk-increment" onClick={() => onIncrement(part)}>+</button>
+                <button className="prime-junk-increment" onClick={() => onIncrement(part.uniqueName)}>+</button>
             </div>
         </div>
     )

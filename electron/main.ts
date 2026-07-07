@@ -75,8 +75,6 @@ interface AppData {
   // Warframe
   mastered: Record<string, true>;
   components: Record<string, number>;
-  // ! Old
-  primeParts: Record<string, number>;
   // Misc
   windowBounds: WindowBounds;
 }
@@ -94,8 +92,6 @@ const store = new Store<AppData>({
     // Warframe
     mastered: {},
     components: {},
-    // ! Old
-    primeParts: {},
     // Misc
     windowBounds: { width: 1000, height: 700 },
   },
@@ -158,34 +154,6 @@ ipcMain.handle("set-component", (_e, uniqueName: string, value: number) => {
 ipcMain.handle("remove-component", (_e, uniqueName: string) => {
   const { [uniqueName]: _, ...rest } = getComponents();
   return setComponents(rest);
-});
-
-/* ---------------------------- Old Save Data API --------------------------- */
-
-ipcMain.handle("get-prime-parts", () => store.get("primeParts"));  // Get all prime parts
-
-ipcMain.handle("increment-prime-part", (_e, partId: string) => {
-  const parts = store.get("primeParts");
-  const next = (parts[partId] ?? 0) + 1;
-  const updated = { ...parts, [partId]: next };
-  store.set("primeParts", updated);
-  return updated;
-});
-
-ipcMain.handle("decrement-prime-part", (_e, partId: string) => {
-  const parts = store.get("primeParts");
-  const next = (parts[partId] ?? 0) - 1;
-  const { [partId]: _, ...rest } = parts;
-  const updated = next > 0 ? { ...parts, [partId]: next } : rest;
-  store.set("primeParts", updated);
-  return updated;
-});
-
-ipcMain.handle("remove-prime-part", (_e, partId: string) => {
-  const parts = store.get("primeParts");
-  const { [partId]: _, ...rest } = parts;
-  store.set("primeParts", rest);
-  return rest;
 });
 
 /* ---------------------------- Browser + Preload --------------------------- */

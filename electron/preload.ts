@@ -16,9 +16,4 @@ contextBridge.exposeInMainWorld('api', {
   decrementComponent: (uniqueName: string) => ipcRenderer.invoke('decrement-component', uniqueName),
   setComponent: (uniqueName: string, value: number) => ipcRenderer.invoke('set-component', uniqueName, value),
   removeComponent: (uniqueName: string) => ipcRenderer.invoke('remove-component', uniqueName),
-  // Old Save Data
-  getPrimeParts: () => ipcRenderer.invoke('get-prime-parts'),
-  incrementPrimePart: (partId: string) => ipcRenderer.invoke("increment-prime-part", partId),
-  decrementPrimePart: (partId: string) => ipcRenderer.invoke("decrement-prime-part", partId),
-  removePrimePart: (partId: string) => ipcRenderer.invoke("remove-prime-part", partId),
 });
