@@ -74,6 +74,13 @@ export default function ItemModal({ item, isMastered, toggleMastered, isOpen, on
                             </div>
                         )
                         })}
+                        <p className="item-modal-component-info">Components are shared across all items.</p>
+                    </div>
+                    <div className="item-modal-info-boxes">
+                        <div className="item-modal-info-box"></div>
+                        <div className="item-modal-info-box"></div>
+                        <div className="item-modal-info-box"></div>
+                        <div className="item-modal-info-box"></div>
                     </div>
                 </div>
                 </div>

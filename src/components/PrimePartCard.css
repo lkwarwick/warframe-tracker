@@ -16,6 +16,12 @@
   padding: 12px;
   transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
+.prime-part-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--gold-dim);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--gold-dim);
+  /* cursor: pointer; */
+}
 
 .prime-part-card[data-nonzero="true"] {
   border: 2px solid var(--gold-dim);

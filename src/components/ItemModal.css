@@ -242,6 +242,13 @@
     height: 50%;
 }
 
+.item-modal-component-info {
+    font-size: 14px;
+    margin-top: 4px;
+    margin-left: 48px;
+    color:rgb(104 104 104);
+}
+
 /* ---------------------------- Component (Owned) --------------------------- */
 
 .item-modal-component-owned {
@@ -288,4 +295,38 @@
 }
 .item-modal-component-owned button:last-child {
     border-radius: 0 5px 5px 0; /* round outer right corners only */
+}
+
+/* ------------------------------- Info Boxes ------------------------------- */
+
+.item-modal-info-boxes {
+    height: 300px;
+    margin-left: 25px;
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+}
+
+.item-modal-info-box {
+    border: 1px solid rgba(138 111 49 / 0.25);
+    border-radius: 10px;
+    background-color: rgb(22 22 22);
+    transition: background 0.2s ease, color 0.2s ease, transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    padding: 16px;
+}
+.item-modal-info-box:hover {
+    transform: translateY(-1px);
+    border-color: var(--gold-dim);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--gold-dim);
+}
+
+.item-modal-info-box h3 {
+    color: var(--gold);
+    font-size: 20px;
+}
+.item-modal-info-box p {
+    color: var(--muted);
+    font-size: 14px;
 }
