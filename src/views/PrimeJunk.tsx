@@ -87,24 +87,30 @@ export default function PrimeJunk() {
         return map;
     }, [parts]);
 
+    const primeCounts = useMemo(
+        () => Object.fromEntries(
+            Object.entries(counts).filter(([id]) => id in partsById)
+        ),
+        [counts, partsById]
+    );
+
     const uniqueOwnedCount = useMemo(
-        () => Object.values(counts).filter(count => count > 0).length,
-        [counts]
+        () => Object.values(primeCounts).filter(count => count > 0).length,
+        [primeCounts]
     );
 
     const totalPartsCount = useMemo(
-        () => Object.values(counts).reduce((sum, count) => sum + count, 0),
-        [counts]
+        () => Object.values(primeCounts).reduce((sum, count) => sum + count, 0),
+        [primeCounts]
     );
 
     const totalDucats = useMemo(
         () =>
-            Object.entries(counts).reduce((sum, [partId, count]) => {
+            Object.entries(primeCounts).reduce((sum, [partId, count]) => {
             const ducats = partsById[partId]?.ducats ?? 0;
-            console.log(ducats)
             return sum + ducats * count;
             }, 0),
-        [counts, partsById]
+        [primeCounts, partsById]
         );
 
     return (
