@@ -7,20 +7,15 @@ import FooterPanel from "./layout/FooterPanel";
 import MiddlePanel from "./layout/MiddlePanel";
 import { useState } from "react";
 import { View } from "./types/view";
-import { BaseItem } from "@wfcd/items";
+
 
 declare global {
     interface Window {
         api: {
-            getWarframes: () => Promise<BaseItem[]>;
-            getPrimaries: () => Promise<BaseItem[]>;
-            getSecondaries: () => Promise<BaseItem[]>;
-            getMelee: () => Promise<BaseItem[]>;
-            getArchwing: () => Promise<BaseItem[]>;
-            getCompanions: () => Promise<BaseItem[]>;
-            // Save Data API
+            // Mastery
             getMastered: () => Promise<Record<string, true>>;
             toggleMastered: (uniqueName: string) => Promise<Record<string, true>>;
+            // Components
             getComponents: () => Promise<Record<string, number>>;
             incrementComponent: (uniqueName: string) => Promise<Record<string, number>>;
             decrementComponent: (uniqueName: string) => Promise<Record<string, number>>;
@@ -31,7 +26,6 @@ declare global {
 }
 
 function App() {
-
   const [activeView, setActiveView] = useState<View>("mastery-checklist");
 
   return (
