@@ -1,4 +1,4 @@
-import type { Item } from "@wfcd/items";
+import type { Item } from "./types.ts";
 
 import warframesJson from "../../vendor/warframe-items/data/json/Warframes.json";
 import primaryJson from "../../vendor/warframe-items/data/json/Primary.json";
@@ -61,4 +61,15 @@ export function getCompanions(): Item[] {
     ...(sentinelsJson as Item[]),
     ...(sentinelWeaponsJson as Item[]),
   ].filter((i) => i.masterable && notBlacklisted(i));
+}
+
+export function getAll(): Item[] {
+  return [
+    ...getWarframes(), 
+    ...getPrimaries(),
+    ...getSecondaries(),
+    ...getMelee(),
+    ...getArchwing(),
+    ...getCompanions(),
+  ]
 }
