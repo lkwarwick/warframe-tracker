@@ -54,7 +54,7 @@ the new snapshot rather than assuming full history is available:
 // package.json
 {
   "scripts": {
-    "data:update": "git -C vendor/warframe-items fetch --depth 1 origin master && git -C vendor/warframe-items checkout FETCH_HEAD"
+    "data:update": "git -C vendor/warframe-items fetch --depth 1 origin main && git -C vendor/warframe-items checkout FETCH_HEAD"
   }
 }
 ```
