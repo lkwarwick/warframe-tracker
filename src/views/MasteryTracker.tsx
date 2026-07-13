@@ -1,4 +1,4 @@
-import type { BaseItem } from "@wfcd/items";
+import type { Item } from "../data/types.ts";
 import { useEffect, useState, MouseEvent } from "react";
 import { User, Crosshair, SquaresFour, Circle, Sword, Rocket, PawPrint, Funnel } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
@@ -6,6 +6,7 @@ import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
 import ProgressBar from "../components/ProgressBar";
 import ItemModal from "../components/ItemModal";
+import { getAll, getArchwing, getCompanions, getMelee, getPrimaries, getSecondaries, getWarframes } from "../data/items";
 
 export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing" | "companions"
 export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
@@ -13,7 +14,7 @@ export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
 export default function MasteryTracker() {
     const [mastered, setMastered] = useState<Record<string, true>>({});
 
-    const toggleMastered = (e: MouseEvent<HTMLButtonElement>, item: BaseItem) => {
+    const toggleMastered = (e: MouseEvent<HTMLButtonElement>, item: Item) => {
         e.stopPropagation();
         window.api.toggleMastered(item.uniqueName).then(setMastered);
     }
@@ -24,9 +25,9 @@ export default function MasteryTracker() {
     const [hideCompleted, setHideCompleted] = useState(false);
     const [primeFilter, setPrimeFilter] = useState<PrimeFilter>("all");
 
-    const [selectedItem, setSelectedItem] = useState<BaseItem | null>(null);
+    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
-    const openItemModal = (item: BaseItem) => {
+    const openItemModal = (item: Item) => {
         setSelectedItem(item);
     };
 
@@ -35,36 +36,15 @@ export default function MasteryTracker() {
     };
 
     const [itemGroup, setItemGroup] = useState<ItemGroup>("warframes");
-    const [itemsByGroup, setItemsByGroup] = useState<Record<ItemGroup, BaseItem[]>>({
-        all: [],
-        warframes: [],
-        primaries: [],
-        secondaries: [],
-        melee: [],
-        archwing: [],
-        companions: [],
-    });
-
-    useEffect(() => {
-        Promise.all([
-            window.api.getWarframes(),
-            window.api.getPrimaries(),
-            window.api.getSecondaries(),
-            window.api.getMelee(),
-            window.api.getArchwing(),
-            window.api.getCompanions(),
-        ]).then(([warframes, primaries, secondaries, melee, archwing, companions]) => {
-            setItemsByGroup({
-                all: [...warframes, ...primaries, ...secondaries, ...melee, ...archwing, ...companions],
-                warframes,
-                primaries,
-                secondaries,
-                melee,
-                archwing,
-                companions,
-            });
-        });
-    }, []);
+    const itemsByGroup = {
+        all: getAll(),
+        warframes: getWarframes(),
+        primaries: getPrimaries(),
+        secondaries: getSecondaries(),
+        melee: getMelee(),
+        archwing: getArchwing(),
+        companions: getCompanions(),
+    };
 
     useEffect(() => {
         window.api.getMastered().then(setMastered);
