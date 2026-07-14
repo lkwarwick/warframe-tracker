@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { View } from "./types/view";
 import { useUserStore } from "./persistence/userStore";
 import { loadFromGist } from "./persistence/gistSync";
+import { saveUserDataIfDirty } from "./persistence/autoSave";
 import type { UserData } from "./persistence/userStore";
 
 
@@ -71,6 +72,16 @@ function App() {
       cancelled = true;
     };
   }, [hydrate]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void saveUserDataIfDirty();
+    }, 60_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   if (isBooting) {
     return (
