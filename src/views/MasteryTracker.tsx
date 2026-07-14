@@ -6,7 +6,7 @@ import "./MasteryTracker.css";
 import { AnimatePresence, motion } from "framer-motion";
 import ProgressBar from "../components/ProgressBar";
 import ItemModal from "../components/ItemModal";
-import { getAll, getArchwing, getCompanions, getMelee, getPrimaries, getSecondaries, getWarframes } from "../data/items";
+import { all, archwing, companions, melee, primaries, secondaries, warframes } from "../data/items";
 
 export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing" | "companions"
 export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
@@ -37,13 +37,13 @@ export default function MasteryTracker() {
 
     const [itemGroup, setItemGroup] = useState<ItemGroup>("warframes");
     const itemsByGroup = {
-        all: getAll(),
-        warframes: getWarframes(),
-        primaries: getPrimaries(),
-        secondaries: getSecondaries(),
-        melee: getMelee(),
-        archwing: getArchwing(),
-        companions: getCompanions(),
+        all: all,
+        warframes: warframes,
+        primaries: primaries,
+        secondaries: secondaries,
+        melee: melee,
+        archwing: archwing,
+        companions: companions,
     };
 
     useEffect(() => {
