@@ -1,5 +1,5 @@
 import type { Item } from "../data/types.ts";
-import { useEffect, useState, MouseEvent } from "react";
+import { useState, MouseEvent } from "react";
 import { User, Crosshair, SquaresFour, Circle, Sword, Rocket, PawPrint, Funnel } from "phosphor-react";
 import ItemCard from "../components/ItemCard";
 import "./MasteryTracker.css";
@@ -7,17 +7,28 @@ import { AnimatePresence, motion } from "framer-motion";
 import ProgressBar from "../components/ProgressBar";
 import ItemModal from "../components/ItemModal";
 import { all, archwing, companions, melee, primaries, secondaries, warframes } from "../data/items";
+import { useUserStore } from "../persistence/userStore.js";
 
 export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing" | "companions"
 export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
 
 export default function MasteryTracker() {
-    const [mastered, setMastered] = useState<Record<string, true>>({});
+    const mastered = useUserStore((s) => s.data?.mastered || {});
+    const update = useUserStore((s) => s.update);
 
     const toggleMastered = (e: MouseEvent<HTMLButtonElement>, item: Item) => {
         e.stopPropagation();
-        window.api.toggleMastered(item.uniqueName).then(setMastered);
-    }
+        
+        const nextMastered = { ...mastered };
+        
+        if (nextMastered[item.uniqueName]) {
+            delete nextMastered[item.uniqueName];
+        } else {
+            nextMastered[item.uniqueName] = true;
+        }
+        
+        update({ mastered: nextMastered });
+    };
 
     // Filters
     const [itemSearchText, setItemSearchText] = useState<string>("");
@@ -45,10 +56,6 @@ export default function MasteryTracker() {
         archwing: archwing,
         companions: companions,
     };
-
-    useEffect(() => {
-        window.api.getMastered().then(setMastered);
-    }, []);
 
     const groups: { key: ItemGroup; label: string; icon: any }[] = [
         { key: "all", label: "All", icon: SquaresFour },
