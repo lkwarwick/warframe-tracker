@@ -40,14 +40,12 @@ ipcMain.handle("toggle-mastered", (_e, uniqueName: string) => {
 
   // Remove if present
   if (mastered[uniqueName]) {
-    console.log(`Removing "${uniqueName}" from mastered`);
     const { [uniqueName]: _, ...rest } = mastered;
     store.set("mastered", rest);
     return rest;
   }
 
   // Add if missing
-  console.log(`Adding "${uniqueName}" to mastered`);
   const updated = { ...mastered, [uniqueName]: true };
   store.set("mastered", updated);
   return updated;
