@@ -3,11 +3,11 @@
   "main": "out/main/main.js",
   "scripts": {
     "dev": "electron-vite dev -- --ozone-platform=x11",
+    "vendor:update": "bash scripts/update-vendor.sh",
     "build": "electron-vite build"
   },
   "dependencies": {
-    "@wfcd/items": "^1.1274.68",
-    "electron": "latest",
+    "electron": "^43.1.0",
     "electron-store": "^8.2.0",
     "framer-motion": "^12.42.2",
     "phosphor-react": "^1.4.1",
