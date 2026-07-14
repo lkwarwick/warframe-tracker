@@ -12,7 +12,8 @@
     "framer-motion": "^12.42.2",
     "phosphor-react": "^1.4.1",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

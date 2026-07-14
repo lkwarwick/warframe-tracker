@@ -5,8 +5,11 @@ import HeaderPanel from "./layout/HeaderPanel";
 import "./App.css"
 import FooterPanel from "./layout/FooterPanel";
 import MiddlePanel from "./layout/MiddlePanel";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "./types/view";
+import { useUserStore } from "./persistence/userStore";
+import { loadFromGist } from "./persistence/gistSync";
+import type { UserData } from "./persistence/userStore";
 
 
 declare global {
@@ -27,6 +30,68 @@ declare global {
 
 function App() {
   const [activeView, setActiveView] = useState<View>("mastery-checklist");
+  const [isBooting, setIsBooting] = useState(true);
+  const [bootError, setBootError] = useState<Error | null>(null);
+
+  const hydrate = useUserStore((s) => s.hydrate);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      console.log("Loading user data...");
+
+      try {
+        const data = await loadFromGist();
+
+        if (cancelled) {
+          return;
+        }
+
+        console.log("Loaded data:", data);
+        hydrate(data as UserData);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        const nextError = error instanceof Error ? error : new Error(String(error));
+        console.error("Failed to load user data", nextError);
+        setBootError(nextError);
+      } finally {
+        if (!cancelled) {
+          setIsBooting(false);
+        }
+      }
+    }
+
+    void loadData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrate]);
+
+  if (isBooting) {
+    return (
+      <div className="app load-save-data-state">
+        <div className="load-save-data-card">
+          <p className="load-save-data-title">Loading save data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (bootError) {
+    return (
+      <div className="app load-save-data-state">
+        <div className="load-save-data-card load-save-data-card--error">
+          <p className="load-save-data-title">Unable to load save data</p>
+          <p className="load-save-data-message">{bootError.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
