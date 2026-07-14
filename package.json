@@ -7,7 +7,7 @@
     "build": "electron-vite build"
   },
   "dependencies": {
-    "electron": "latest",
+    "electron": "^43.1.0",
     "electron-store": "^8.2.0",
     "framer-motion": "^12.42.2",
     "phosphor-react": "^1.4.1",
