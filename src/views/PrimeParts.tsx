@@ -4,6 +4,7 @@ import "./PrimeParts.css";
 import PrimePartCard from "../components/PrimePartCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { useComponentCounts } from "../hooks/useComponentCounts";
+import { getAllPrimeParts } from "../data/items";
 
 type FullItem = BaseItem & Buildable;
 export type PrimePart = BaseItem & Buildable & Component & {
@@ -16,7 +17,7 @@ export type PrimePart = BaseItem & Buildable & Component & {
 export default function PrimeParts() {
 
     // Loaded parts to display (loads once, never set again)
-    const [parts, setParts] = useState<PrimePart[]>([]);
+    const parts = getAllPrimeParts();
 
     // Load the mastery data
     const [mastered, setMastered] = useState<Record<string, true>>({});
@@ -25,34 +26,6 @@ export default function PrimeParts() {
     const { counts, increment, decrement, setValue } = useComponentCounts();
 
     const [itemSearchText, setItemSearchText] = useState<string>("");
-
-    useEffect(() => {
-        Promise.all([
-            window.api.getWarframes(),
-            window.api.getPrimaries(),
-            window.api.getSecondaries(),
-            window.api.getMelee(),
-            window.api.getArchwing(),
-            window.api.getCompanions(),
-        ]).then(([warframes, primaries, secondaries, melee, archwing, companions]) => {
-            const allItems: FullItem[] = [...warframes, ...primaries, ...secondaries, ...melee, ...archwing, ...companions];
-
-            const primeParts: PrimePart[] = allItems.flatMap(item =>
-                (item.components ?? [])
-                    .filter(c => typeof c.ducats === 'number' && c.ducats > 0)
-                    .map(c => ({
-                        ...item,
-                        ...c,
-                        parentName: item.name,
-                        componentName: c.name,
-                        parentUniqueName: item.uniqueName,
-                        componentUniqueName: c.uniqueName,
-                    }))
-            );
-
-            setParts(primeParts);
-        });
-    }, []);
 
     useEffect(() => {
         window.api.getMastered().then(setMastered);

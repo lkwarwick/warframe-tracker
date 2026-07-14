@@ -1,4 +1,4 @@
-import type { Item } from "./types.ts";
+import type { Item, PrimePart } from "./types.ts";
 
 import warframesJson from "../../vendor/warframe-items/data/json/Warframes.json";
 import primaryJson from "../../vendor/warframe-items/data/json/Primary.json";
@@ -22,6 +22,8 @@ const unique_name_blacklist: string[] = [
 
 const notBlacklisted = (i: { uniqueName: string }) =>
   !unique_name_blacklist.includes(i.uniqueName);
+
+/* ---------------------------------- Items --------------------------------- */
 
 export function getWarframes(): Item[] {
   return (warframesJson as Item[]).filter(
@@ -72,4 +74,21 @@ export function getAll(): Item[] {
     ...getArchwing(),
     ...getCompanions(),
   ]
+}
+
+/* ---------------------------------- Parts --------------------------------- */
+
+export function getAllPrimeParts(): PrimePart[] {
+  return getAll().flatMap(item =>
+    (item.components ?? [])
+      .filter(c => typeof c.ducats === "number" && c.ducats > 0)
+      .map(c => ({
+          ...item,
+          ...c,
+          parentName: item.name,
+          componentName: c.name,
+          parentUniqueName: item.uniqueName,
+          componentUniqueName: c.uniqueName,
+      }))
+  );
 }
