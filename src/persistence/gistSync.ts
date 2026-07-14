@@ -1,5 +1,5 @@
 import { GITHUB_TOKEN, GIST_FILE_NAME } from "./config";
-import type { UserData } from "./userStore";
+import { createEmptyUserData, type UserData } from "./userStore";
 
 export async function getGist() {
   const res = await fetch("https://api.github.com/gists", {
@@ -45,11 +45,7 @@ export async function loadFromGist(): Promise<UserData> {
   const gist = await getGist();
 
   if (!gist) {
-    const emptyData: UserData = {
-      items: [],
-      settings: {},
-      updatedAt: new Date().toISOString(),
-    };
+    const emptyData: UserData = createEmptyUserData();
 
     await createGist(emptyData);
     return emptyData;

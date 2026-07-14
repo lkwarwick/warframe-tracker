@@ -3,6 +3,7 @@
   "main": "out/main/main.js",
   "scripts": {
     "dev": "electron-vite dev -- --ozone-platform=x11",
+    "fix:electron": "cd node_modules/electron && node install.js && cd ../../",
     "vendor:update": "bash scripts/update-vendor.sh",
     "build": "electron-vite build"
   },
