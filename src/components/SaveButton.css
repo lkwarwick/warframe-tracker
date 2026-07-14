@@ -1,0 +1,69 @@
+.save-button {
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--gold-dim);
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  
+  /* Removed properties that cause flashing when transitioning between states */
+  transition: background 0.2s ease, color 0.2s ease, transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+/* Active "Needs Saving" State (Dirty) */
+.save-button:not(.clean):not(.saving) {
+  border-color: var(--gold-dim);
+  color: var(--gold);
+  background: rgba(218, 165, 32, 0.05); /* subtle gold glow behind the button */
+  box-shadow: 0 0 8px rgba(218, 165, 32, 0.15);
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+.save-button:not(.clean):not(.saving):hover {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+  color: #ffffff;
+  background: var(--panel);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--gold);
+}
+
+/* Disabled state when everything is already saved (Clean) */
+.save-button.clean:disabled {
+  color: var(--text);
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border);
+  background: var(--panel);
+}
+
+/* Explicit Saving State */
+.save-button.saving:disabled {
+  color: var(--gold-dim);
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  border-color: var(--gold-dim);
+  background: var(--panel);
+}
+
+/* Subtle pulse animation to draw attention without being annoying */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(218, 165, 32, 0.1);
+    border-color: var(--gold-dim);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(218, 165, 32, 0.3);
+    border-color: var(--gold);
+  }
+}
