@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { View } from "./types/view";
 import { useUserStore } from "./persistence/userStore";
 import { loadFromGist } from "./persistence/gistSync";
-import { saveUserDataIfDirty } from "./persistence/autoSave";
+import { saveUserDataIfDirty, forceSaveUserData } from "./persistence/autoSave";
 import type { UserData } from "./persistence/userStore";
 
 
@@ -31,6 +31,7 @@ function App() {
   const [activeView, setActiveView] = useState<View>("mastery-checklist");
   const [isBooting, setIsBooting] = useState(true);
   const [bootError, setBootError] = useState<Error | null>(null);
+  const [isForcingSave, setIsForcingSave] = useState(false);
 
   const hydrate = useUserStore((s) => s.hydrate);
 
@@ -85,10 +86,14 @@ function App() {
     if (typeof window.api?.onForceSave === "function") {
       window.api.onForceSave(async () => {
         try {
-          const result = await saveUserDataIfDirty();
+          setIsForcingSave(true);
+          // Attempt a forced save on close so data is persisted even if not marked dirty
+          const result = await forceSaveUserData();
           return result;
         } catch {
           return false;
+        } finally {
+          setIsForcingSave(false);
         }
       });
     }
@@ -99,6 +104,17 @@ function App() {
       <div className="app load-save-data-state">
         <div className="load-save-data-card">
           <p className="load-save-data-title">Loading save data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isForcingSave) {
+    return (
+      <div className="app load-save-data-state">
+        <div className="load-save-data-card">
+          <p className="load-save-data-title">Saving data...</p>
+          <p className="load-save-data-message">Saving your data to GitHub Gist — please wait.</p>
         </div>
       </div>
     );

@@ -102,7 +102,7 @@ app.whenReady().then(() => {
     const waitForSave = new Promise<boolean>((resolve) => {
       const timeout = setTimeout(() => {
         resolve(false);
-      }, 5000);
+      }, 15000);
 
       ipcMain.once("force-save-result", (_evt, result: boolean) => {
         clearTimeout(timeout);

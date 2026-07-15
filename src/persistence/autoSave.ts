@@ -12,3 +12,13 @@ export async function saveUserDataIfDirty() {
   markClean();
   return true;
 }
+
+export async function forceSaveUserData() {
+  const { data, markClean } = useUserStore.getState();
+
+  if (!data) return false;
+
+  await saveToGist(data);
+  markClean();
+  return true;
+}
