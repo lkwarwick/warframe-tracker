@@ -16,9 +16,6 @@ import type { UserData } from "./persistence/userStore";
 declare global {
     interface Window {
         api: {
-            // Mastery
-            getMastered: () => Promise<Record<string, true>>;
-            toggleMastered: (uniqueName: string) => Promise<Record<string, true>>;
             // Components
             getComponents: () => Promise<Record<string, number>>;
             incrementComponent: (uniqueName: string) => Promise<Record<string, number>>;

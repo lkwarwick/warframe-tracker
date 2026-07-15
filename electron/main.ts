@@ -6,7 +6,6 @@ import Store from 'electron-store';
 
 interface AppData {
   // Warframe
-  mastered: Record<string, true>;
   components: Record<string, number>;
   // Misc
   windowBounds: WindowBounds;
@@ -23,7 +22,6 @@ interface WindowBounds {
 const store = new Store<AppData>({
   defaults: {
     // Warframe
-    mastered: {},
     components: {},
     // Misc
     windowBounds: { width: 1000, height: 700 },
@@ -31,25 +29,6 @@ const store = new Store<AppData>({
 });
 
 /* ------------------------------ Save Data API ----------------------------- */
-
-ipcMain.handle("get-mastered", () => store.get("mastered"));
-
-ipcMain.handle("toggle-mastered", (_e, uniqueName: string) => {
-  // Grab local copy
-  const mastered = store.get("mastered");
-
-  // Remove if present
-  if (mastered[uniqueName]) {
-    const { [uniqueName]: _, ...rest } = mastered;
-    store.set("mastered", rest);
-    return rest;
-  }
-
-  // Add if missing
-  const updated = { ...mastered, [uniqueName]: true };
-  store.set("mastered", updated);
-  return updated;
-});
 
 const getComponents = () => store.get("components");
 
