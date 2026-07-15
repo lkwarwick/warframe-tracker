@@ -24,9 +24,6 @@ export default function ItemModal({ item, isMastered, toggleMastered, isOpen, on
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="item-modal-header">
-                    <button onClick={onClose}>Close</button>
-                </div>
                 <div className="item-modal-body">
                     <div className="item-modal-left">
                     <img className="item-modal-image" data-is-mastered={isMastered} src={getImageUrl(item)}></img>

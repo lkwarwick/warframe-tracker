@@ -13,8 +13,10 @@
     border: 1px solid var(--gold);
     border-radius: 8px;
     padding: 24px;
-    width: 50%;
-    max-height: 75%;      /* was: height: 75%; */
+    padding-top: 12px;
+    min-width: 400px;
+    max-width: 90vw;
+    max-height: 95vh;
     overflow-y: auto;
     flex-direction: column;
     display: flex;
