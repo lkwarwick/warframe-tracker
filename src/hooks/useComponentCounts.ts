@@ -1,24 +1,34 @@
-// useComponentCounts.ts
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
+import { useUserStore } from "../persistence/userStore.js";
 
 export function useComponentCounts() {
-  const [counts, setCounts] = useState<Record<string, number>>({});
+  const counts = useUserStore((s) => s.data?.components || {});
+  const update = useUserStore((s) => s.update);
 
-  useEffect(() => {
-    window.api.getComponents().then(setCounts);
-  }, []);
+  const increment = useCallback((uniqueName: string) => {
+    update((prev) => {
+      const next = (prev.components[uniqueName] ?? 0) + 1;
+      return { components: { ...prev.components, [uniqueName]: next } };
+    });
+  }, [update]);
 
-  const increment = useCallback(async (uniqueName: string) => {
-    setCounts(await window.api.incrementComponent(uniqueName));
-  }, []);
+  const decrement = useCallback((uniqueName: string) => {
+    update((prev) => {
+      const next = (prev.components[uniqueName] ?? 0) - 1;
+      const { [uniqueName]: _, ...rest } = prev.components;
+      return { components: next > 0 ? { ...prev.components, [uniqueName]: next } : rest };
+    });
+  }, [update]);
 
-  const decrement = useCallback(async (uniqueName: string) => {
-    setCounts(await window.api.decrementComponent(uniqueName));
-  }, []);
-
-  const setValue = useCallback(async (uniqueName: string, value: number) => {
-    setCounts(await window.api.setComponent(uniqueName, value));
-  }, []);
+  const setValue = useCallback((uniqueName: string, value: number) => {
+    update((prev) => {
+      if (value <= 0) {
+        const { [uniqueName]: _, ...rest } = prev.components;
+        return { components: rest };
+      }
+      return { components: { ...prev.components, [uniqueName]: value } };
+    });
+  }, [update]);
 
   return { counts, increment, decrement, setValue };
 }

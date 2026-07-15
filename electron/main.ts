@@ -5,8 +5,6 @@ import Store from 'electron-store';
 /* -------------------------------- App Data -------------------------------- */
 
 interface AppData {
-  // Warframe
-  components: Record<string, number>;
   // Misc
   windowBounds: WindowBounds;
 }
@@ -21,49 +19,9 @@ interface WindowBounds {
 
 const store = new Store<AppData>({
   defaults: {
-    // Warframe
-    components: {},
     // Misc
     windowBounds: { width: 1000, height: 700 },
   },
-});
-
-/* ------------------------------ Save Data API ----------------------------- */
-
-const getComponents = () => store.get("components");
-
-const setComponents = (updated: Record<string, number>) => {
-  store.set("components", updated);
-  return updated;
-};
-
-ipcMain.handle("get-components", () => getComponents());
-
-ipcMain.handle("increment-component", (_e, uniqueName: string) => {
-  const components = getComponents();
-  const next = (components[uniqueName] ?? 0) + 1;
-  return setComponents({ ...components, [uniqueName]: next });
-});
-
-ipcMain.handle("decrement-component", (_e, uniqueName: string) => {
-  const components = getComponents();
-  const next = (components[uniqueName] ?? 0) - 1;
-  const { [uniqueName]: _, ...rest } = components;
-  return setComponents(next > 0 ? { ...components, [uniqueName]: next } : rest);
-});
-
-ipcMain.handle("set-component", (_e, uniqueName: string, value: number) => {
-  const components = getComponents();
-  if (value <= 0) {
-    const { [uniqueName]: _, ...rest } = components;
-    return setComponents(rest);
-  }
-  return setComponents({ ...components, [uniqueName]: value });
-});
-
-ipcMain.handle("remove-component", (_e, uniqueName: string) => {
-  const { [uniqueName]: _, ...rest } = getComponents();
-  return setComponents(rest);
 });
 
 /* ---------------------------- Browser + Preload --------------------------- */

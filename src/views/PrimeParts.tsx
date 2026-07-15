@@ -1,18 +1,11 @@
-import { BaseItem, Buildable, Component } from "@wfcd/items";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import "./PrimeParts.css";
 import PrimePartCard from "../components/PrimePartCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { useComponentCounts } from "../hooks/useComponentCounts";
 import { getAllPrimeParts } from "../data/items";
-
-type FullItem = BaseItem & Buildable;
-export type PrimePart = BaseItem & Buildable & Component & {
-    parentName: string;
-    componentName: string;
-    parentUniqueName: string;
-    componentUniqueName: string;
-};
+import { PrimePart } from "../data/types";
+import { useUserStore } from "../persistence/userStore";
 
 export default function PrimeParts() {
 
@@ -20,16 +13,12 @@ export default function PrimeParts() {
     const parts = getAllPrimeParts();
 
     // Load the mastery data
-    const [mastered, setMastered] = useState<Record<string, true>>({});
+    const mastered = useUserStore((s) => s.data?.mastered || {});
 
     // Load the player's components
     const { counts, increment, decrement, setValue } = useComponentCounts();
 
     const [itemSearchText, setItemSearchText] = useState<string>("");
-
-    useEffect(() => {
-        window.api.getMastered().then(setMastered);
-    }, []);
 
     const sortedParts = useMemo(() => {
         const search = itemSearchText.trim().toLowerCase();
