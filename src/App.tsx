@@ -25,6 +25,7 @@ declare global {
             decrementComponent: (uniqueName: string) => Promise<Record<string, number>>;
             setComponent: (uniqueName: string, value: number) => Promise<Record<string, number>>;
             removeComponent: (uniqueName: string) => Promise<Record<string, number>>;
+            onForceSave: (cb: () => Promise<boolean>) => void;
           }
     }
 }
@@ -81,6 +82,19 @@ function App() {
     return () => {
       window.clearInterval(intervalId);
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window.api?.onForceSave === "function") {
+      window.api.onForceSave(async () => {
+        try {
+          const result = await saveUserDataIfDirty();
+          return result;
+        } catch {
+          return false;
+        }
+      });
+    }
   }, []);
 
   if (isBooting) {
