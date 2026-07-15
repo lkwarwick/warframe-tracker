@@ -77,7 +77,7 @@ export async function saveToGist(data: unknown) {
     body: JSON.stringify({
       files: {
         [GIST_FILE_NAME]: {
-          content: JSON.stringify(data),
+          content: JSON.stringify(data, null, 2),
         },
       },
     }),
@@ -104,7 +104,7 @@ async function createGist(data: unknown) {
       public: false,
       files: {
         [GIST_FILE_NAME]: {
-          content: JSON.stringify(data),
+          content: JSON.stringify(data, null, 2),
         },
       },
     }),
