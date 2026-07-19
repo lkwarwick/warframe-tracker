@@ -7,7 +7,12 @@ Track your mastery progress and keep tabs on your Prime parts. A lightweight des
 
 ## What It Does
 
-Warframe Tracker helps you manage two key aspects of your Warframe progression:
+Warframe Tracker helps you manage two key aspects of your Warframe progression; **Mastery Checklist**, and **Prime Parts Inventory**. To provide a way of saving data to the cloud in in OSS way, I opted to use GitHub Gist to save your progress to your own account. This way all you need is a PAT (Personal Access Token) and it will automatically create a file with the `` name. Add the following to a `.env` in your root directory:
+
+```bash
+VITE_GITHUB_TOKEN=<github-pat>
+VITE_GIST_FILE_NAME=warframe-tracker.json
+```
 
 ### Mastery Checklist
 Keep track of all the equipment you've mastered across every category:
@@ -50,6 +55,13 @@ Want to contribute or just get it running? Here's how to set up the project.
 2. **Install dependencies**
    ```bash
    npm install
+   ```
+
+1. **(Optional) Install Electron
+   
+   Not sure why (if you know, please submit a bug fix PR!) Electron fails to install. If you get an error like this, run the following command:
+   ```bash
+   npm run fix:electron
    ```
 
 3. **Start the development server**
