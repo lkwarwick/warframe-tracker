@@ -30,7 +30,11 @@
   color: var(--gold-dim);
 }
 
-.prime-parts-ducats {
+.prime-parts-mastered-ducats {
   color: var(--gold);
   font-weight: bold;
+}
+
+.prime-parts-ducats {
+  color: var(--gold-dim);
 }

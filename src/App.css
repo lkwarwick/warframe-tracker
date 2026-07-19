@@ -76,6 +76,46 @@ h1, h2, h3, h4, h5, h6, p {
   flex-direction: column;
 }
 
+/* ------------------------- Load Save Data State ------------------------- */
+
+.load-save-data-state {
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  background: radial-gradient(circle at top, rgba(200, 164, 77, 0.16), transparent 48%), var(--bg);
+}
+
+.load-save-data-card {
+  width: min(100%, 420px);
+  padding: 24px 28px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(17, 17, 19, 0.95);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
+  text-align: center;
+}
+
+.load-save-data-card--error {
+  border-color: rgba(255, 92, 92, 0.35);
+  box-shadow: 0 20px 40px rgba(255, 92, 92, 0.12);
+}
+
+.load-save-data-title {
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.load-save-data-message {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
 /* --------------------------------- Toolbar -------------------------------- */
 
 .toolbar-high {

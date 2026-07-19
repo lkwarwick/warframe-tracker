@@ -3,6 +3,7 @@
   "main": "out/main/main.js",
   "scripts": {
     "dev": "electron-vite dev -- --ozone-platform=x11",
+    "fix:electron": "cd node_modules/electron && node install.js && cd ../../",
     "vendor:update": "bash scripts/update-vendor.sh",
     "build": "electron-vite build"
   },
@@ -12,7 +13,8 @@
     "framer-motion": "^12.42.2",
     "phosphor-react": "^1.4.1",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

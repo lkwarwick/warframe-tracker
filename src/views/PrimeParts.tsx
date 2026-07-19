@@ -1,18 +1,11 @@
-import { BaseItem, Buildable, Component } from "@wfcd/items";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import "./PrimeParts.css";
 import PrimePartCard from "../components/PrimePartCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { useComponentCounts } from "../hooks/useComponentCounts";
 import { getAllPrimeParts } from "../data/items";
-
-type FullItem = BaseItem & Buildable;
-export type PrimePart = BaseItem & Buildable & Component & {
-    parentName: string;
-    componentName: string;
-    parentUniqueName: string;
-    componentUniqueName: string;
-};
+import { PrimePart } from "../data/types";
+import { useUserStore } from "../persistence/userStore";
 
 export default function PrimeParts() {
 
@@ -20,16 +13,12 @@ export default function PrimeParts() {
     const parts = getAllPrimeParts();
 
     // Load the mastery data
-    const [mastered, setMastered] = useState<Record<string, true>>({});
+    const mastered = useUserStore((s) => s.data?.mastered || {});
 
     // Load the player's components
     const { counts, increment, decrement, setValue } = useComponentCounts();
 
     const [itemSearchText, setItemSearchText] = useState<string>("");
-
-    useEffect(() => {
-        window.api.getMastered().then(setMastered);
-    }, []);
 
     const sortedParts = useMemo(() => {
         const search = itemSearchText.trim().toLowerCase();
@@ -41,11 +30,6 @@ export default function PrimeParts() {
             : parts;
 
         return [...filtered].sort((a, b) => {
-            const aCount = counts[a.uniqueName] ?? 0;
-            const bCount = counts[b.uniqueName] ?? 0;
-            const aHas = aCount > 0;
-            const bHas = bCount > 0;
-            if (aHas !== bHas) return aHas ? -1 : 1; // zero-count group first, nonzero group second
             const aName = `${a.parentName} ${a.componentName}`;
             const bName = `${b.parentName} ${b.componentName}`;
             return aName.localeCompare(bName);
@@ -86,6 +70,18 @@ export default function PrimeParts() {
         [primeCounts, partsById]
         );
 
+    const totalMasteredDucats = useMemo(
+        () => Object.entries(primeCounts).reduce((sum, [partId, count]) => {
+            const part = partsById[partId];
+            if (!part || !mastered[part.parentUniqueName]) {
+                return sum;
+            }
+            const ducats = part.ducats ?? 0;
+            return sum + ducats * count;
+        }, 0),
+        [primeCounts, partsById, mastered]
+    );
+
     return (
         <div className="prime-parts-view">
             <div className="toolbar-high">
@@ -95,7 +91,8 @@ export default function PrimeParts() {
                         <p className="prime-parts-unique" >(Unique: {(uniqueOwnedCount).toLocaleString("en-GB")})</p>
                     </div>
                     <div className="toolbar-right">
-                        <p className="prime-parts-ducats">Ducats: {(totalDucats).toLocaleString("en-GB")}</p>
+                        <p className="prime-parts-ducats">(Total Ducats: {(totalDucats).toLocaleString("en-GB")})</p>
+                        <p className="prime-parts-mastered-ducats">Ducats: {(totalMasteredDucats).toLocaleString("en-GB")}</p>
                     </div>
                 </div>
                 <div className="toolbar-search">
