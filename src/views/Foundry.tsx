@@ -19,7 +19,7 @@ export default function Foundry() {
         return imageName ? `https://cdn.warframestat.us/img/${imageName}` : '/fallback-icon.png';
     }
 
-    const toggleMastered = (e: MouseEvent<HTMLButtonElement>, item: Item) => {
+    const toggleMastered = (e: React.MouseEvent<HTMLButtonElement>, item: Item) => {
         e.stopPropagation();
         
         const nextMastered = { ...mastered };
@@ -50,7 +50,7 @@ export default function Foundry() {
                                 <img className="item-modal-image" style={{ marginBottom: "8px" }} src={getImageUrl(item)} data-is-mastered={mastered[item.uniqueName]}></img>
                                 <h1 className="item-modal-title" style={{ fontSize: "18px" }}>{item.name}</h1>
                                 <p className="item-modal-subtitle grid-item-category" style={{ fontSize: "14px" }}>{item.category}</p>
-                                <button className="item-grid-mastery-button" onClick={(e) => toggleMastered(e, item)} style={{ fontSize: "12px" }} data-is-mastered={mastered[item.uniqueName]}>Mastered</button>
+                                <button className="grid-item-mastery-button" onClick={(e) => toggleMastered(e, item)} style={{ fontSize: "12px" }} data-is-mastered={mastered[item.uniqueName]}>Mastered</button>
                             </div>
                             <div className="grid-column">
                                 {item.components?.map((component) => {

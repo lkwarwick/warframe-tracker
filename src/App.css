@@ -5,24 +5,32 @@
 /* -------------------------- Reset Default Styles -------------------------- */
 
 :root {
-  --bg: #0a0a0b;
-  --panel: #111113;
-  --panel-alt: #161618;
+    --bg: #0a0a0b;
+    --panel: #111113;
+    --panel-alt: #161618;
 
-  --text: #e6e1d3;
-  --muted: color-mix(in srgb, var(--text) 70%, var(--bg));
+    --text: #e6e1d3;
+    --muted: color-mix(in srgb, var(--text) 70%, var(--bg));
 
-  /* Prime Colors */
-  --gold: #c8a44d;
-  --gold-dim: color-mix(in srgb, var(--gold) 70%, var(--bg));
-  --gold-bg: color-mix(in srgb, var(--gold) 7.5%, transparent);
+    /* Regular Colors (Not Prime) */
+    --normal: #e6e1d3;
+    --normal-dim: color-mix(in srgb, var(--normal) 70%, var(--bg));
+    --normal-border: color-mix(in srgb, var(--normal) 15%, transparent);
+    --normal-bg: color-mix(in srgb, var(--normal) 7.5%, transparent);
 
-  --border: color-mix(in srgb, var(--gold) 15%, var(--bg));
+    /* Prime Colors */
+    --gold: #c8a44d;
+    --gold-dim: color-mix(in srgb, var(--gold) 70%, var(--bg));
+    --gold-border: color-mix(in srgb, var(--gold) 15%, transparent);
+    --gold-bg: color-mix(in srgb, var(--gold) 7.5%, transparent);
 
-  /* Mastery Colors */
-  --mastered: #86B3AB;
-  --mastered-dim: color-mix(in srgb, var(--mastered) 70%, var(--bg));
-  --mastered-bg: color-mix(in srgb, var(--mastered) 7.5%, transparent);
+    --border: color-mix(in srgb, var(--gold) 15%, var(--bg));
+
+    /* Mastery Colors */
+    --mastered: #86B3AB;
+    --mastered-dim: color-mix(in srgb, var(--mastered) 70%, var(--bg));
+    --mastered-border: color-mix(in srgb, var(--mastered) 20%, transparent);
+    --mastered-bg: color-mix(in srgb, var(--mastered) 7.5%, transparent);
 }
 
 html,

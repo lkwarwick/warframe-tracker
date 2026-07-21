@@ -24,18 +24,21 @@
 /* -------------------------------- Grid Item ------------------------------- */
 
 .grid-item {
-    --primary-color: var(--text);
-    --secondary-color: var(--muted);
-    --background-color: var(--panel);
+    --primary-color: var(--normal);
+    --secondary-color: var(--normal-dim);
+    --border-color: var(--normal-border);
+    --background-color: var(--normal-bg);
 }
 .grid-item[data-prime="true"] {
     --primary-color: var(--gold);
     --secondary-color: var(--gold-dim);
+    --border-color: var(--gold-border);
     --background-color: var(--gold-bg);
 }
 .grid-item[data-mastered="true"] {
     --primary-color: var(--mastered);
     --secondary-color: var(--mastered-dim);
+    --border-color: var(--mastered-border);
     --background-color: var(--mastered-bg);
 }
 
@@ -44,7 +47,7 @@
     display: flex;
     gap: 0.5rem;
     background: var(--background-color);
-    border: 1px solid var(--secondary-color);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 0.5rem;
     justify-content: center;
@@ -89,14 +92,20 @@
 
 /* ----------------------- Item Grid (Mastery Button) ----------------------- */
 
-.item-grid-mastery-button {
+.grid-item-mastery-button {
     margin-top: 8px;
     margin-bottom: 16px;
     font-size: 16px;
     width: 150px;
+    color: var(--secondary-color);
+    border-color: var(--border-color);
+    border-width: 1px;
+}
+
+.grid-item-mastery-button:hover {
     color: var(--primary-color);
     border-color: var(--secondary-color);
-    border-width: 1px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--secondary-color);
 }
 
 .grid-item-component:not(:last-child) {
