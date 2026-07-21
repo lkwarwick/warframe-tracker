@@ -17,12 +17,14 @@
     --normal-dim: color-mix(in srgb, var(--normal) 70%, var(--bg));
     --normal-border: color-mix(in srgb, var(--normal) 15%, transparent);
     --normal-bg: color-mix(in srgb, var(--normal) 7.5%, transparent);
+    --normal-panel-bg: color-mix(in srgb, var(--normal) 4%, transparent);
 
     /* Prime Colors */
     --gold: #c8a44d;
     --gold-dim: color-mix(in srgb, var(--gold) 70%, var(--bg));
     --gold-border: color-mix(in srgb, var(--gold) 15%, transparent);
     --gold-bg: color-mix(in srgb, var(--gold) 7.5%, transparent);
+    --gold-panel-bg: color-mix(in srgb, var(--gold) 4%, transparent);
 
     --border: color-mix(in srgb, var(--gold) 15%, var(--bg));
 
@@ -31,6 +33,7 @@
     --mastered-dim: color-mix(in srgb, var(--mastered) 70%, var(--bg));
     --mastered-border: color-mix(in srgb, var(--mastered) 20%, transparent);
     --mastered-bg: color-mix(in srgb, var(--mastered) 7.5%, transparent);
+    --mastered-panel-bg: color-mix(in srgb, var(--mastered) 4%, transparent);
 }
 
 html,

@@ -1,3 +1,10 @@
+.foundry-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
 .grid-container {
     flex: 1;
     min-height: 0;
@@ -28,18 +35,21 @@
     --secondary-color: var(--normal-dim);
     --border-color: var(--normal-border);
     --background-color: var(--normal-bg);
+    --panel-bg-color: var(--normal-panel-bg);
 }
 .grid-item[data-prime="true"] {
     --primary-color: var(--gold);
     --secondary-color: var(--gold-dim);
     --border-color: var(--gold-border);
     --background-color: var(--gold-bg);
+    --panel-bg-color: var(--gold-panel-bg);
 }
 .grid-item[data-mastered="true"] {
     --primary-color: var(--mastered);
     --secondary-color: var(--mastered-dim);
     --border-color: var(--mastered-border);
     --background-color: var(--mastered-bg);
+    --panel-bg-color: var(--mastered-panel-bg);
 }
 
 .grid-item {
@@ -90,7 +100,7 @@
     color: var(--secondary-color) !important;
 }
 
-/* ----------------------- Item Grid (Mastery Button) ----------------------- */
+/* ----------------------- Grid ITem (Mastery Button) ----------------------- */
 
 .grid-item-mastery-button {
     margin-top: 8px;
@@ -106,6 +116,13 @@
     color: var(--primary-color);
     border-color: var(--secondary-color);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--secondary-color);
+}
+
+/* -------------------------- Grid Item (Component) ------------------------- */
+
+.grid-item-component {
+    border-color: var(--border-color) !important;
+    background-color: var(--panel-bg-color) !important;
 }
 
 .grid-item-component:not(:last-child) {
