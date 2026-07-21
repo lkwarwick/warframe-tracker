@@ -1,0 +1,104 @@
+.grid-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+.grid {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: grid;
+    min-height: 0;
+
+    grid-template-columns: repeat(auto-fill, minmax(475px, 1fr));
+    grid-auto-rows: auto;
+    gap: 12px;
+    align-content: start;
+    padding: 8px;
+    align-items: stretch;
+}
+
+/* -------------------------------- Grid Item ------------------------------- */
+
+.grid-item {
+    --primary-color: var(--text);
+    --secondary-color: var(--muted);
+    --background-color: var(--panel);
+}
+.grid-item[data-prime="true"] {
+    --primary-color: var(--gold);
+    --secondary-color: var(--gold-dim);
+    --background-color: var(--gold-bg);
+}
+.grid-item[data-mastered="true"] {
+    --primary-color: var(--mastered);
+    --secondary-color: var(--mastered-dim);
+    --background-color: var(--mastered-bg);
+}
+
+.grid-item {
+    text-overflow: ellipsis;
+    display: flex;
+    gap: 0.5rem;
+    background: var(--background-color);
+    border: 1px solid var(--secondary-color);
+    border-radius: 6px;
+    padding: 0.5rem;
+    justify-content: center;
+    transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.grid-item:hover {
+  transform: translateY(-3px);
+  border-color: var(--secondary-color);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--secondary-color);
+  cursor: pointer;
+}
+
+.grid-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ---------------------------- Grid Item (Image) --------------------------- */
+
+.grid-item img {
+    width: 150px;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(135deg, #1a1a1c, #0f0f11);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+/* ---------------------------- Grid Item (Name) ---------------------------- */
+
+.grid-item h1 {
+    color: var(--primary-color);
+}
+
+/* -------------------------- Grid Item (Category) -------------------------- */
+
+.grid-item-category {
+    color: var(--secondary-color) !important;
+}
+
+/* ----------------------- Item Grid (Mastery Button) ----------------------- */
+
+.item-grid-mastery-button {
+    margin-top: 8px;
+    margin-bottom: 16px;
+    font-size: 16px;
+    width: 150px;
+    color: var(--primary-color);
+    border-color: var(--secondary-color);
+    border-width: 1px;
+}
+
+.grid-item-component:not(:last-child) {
+    margin-bottom: 4px;
+}

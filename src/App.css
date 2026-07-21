@@ -8,11 +8,21 @@
   --bg: #0a0a0b;
   --panel: #111113;
   --panel-alt: #161618;
+
   --text: #e6e1d3;
-  --muted: #a39b86;
+  --muted: color-mix(in srgb, var(--text) 70%, var(--bg));
+
+  /* Prime Colors */
   --gold: #c8a44d;
-  --gold-dim: rgba(200, 164, 77, 0.35);
-  --border: rgba(200, 164, 77, 0.12);
+  --gold-dim: color-mix(in srgb, var(--gold) 70%, var(--bg));
+  --gold-bg: color-mix(in srgb, var(--gold) 7.5%, transparent);
+
+  --border: color-mix(in srgb, var(--gold) 15%, var(--bg));
+
+  /* Mastery Colors */
+  --mastered: #86B3AB;
+  --mastered-dim: color-mix(in srgb, var(--mastered) 70%, var(--bg));
+  --mastered-bg: color-mix(in srgb, var(--mastered) 7.5%, transparent);
 }
 
 html,
@@ -64,9 +74,12 @@ h1, h2, h3, h4, h5, h6, p {
   flex: 0 0 3%;
 }
 
-.left,
-.right {
+.left {
   flex: 0 0 12.5%;
+}
+
+.right {
+  flex: 0 0 15%;
 }
 
 .middle {
