@@ -145,7 +145,7 @@ export default function Foundry() {
                             transition={{ duration: 0.1 }}>
                             <div className="grid-item" data-prime={item.isPrime} data-mastered={mastered[item.uniqueName]}>
                                 <div className="grid-column">
-                                    <img className="item-modal-image" style={{ marginBottom: "8px" }} src={getImageUrl(item)} data-is-mastered={mastered[item.uniqueName]}></img>
+                                    <img className="item-modal-image" loading="lazy" decoding="async" style={{ marginBottom: "8px" }} src={getImageUrl(item)} data-is-mastered={mastered[item.uniqueName]}></img>
                                     <h1 className="item-modal-title" style={{ fontSize: "18px" }}>{item.name}</h1>
                                     <p className="item-modal-subtitle grid-item-category" style={{ fontSize: "14px" }}>{item.category}</p>
                                     <button className="grid-item-mastery-button" onClick={(e) => toggleMastered(e, item)} style={{ fontSize: "12px" }} data-is-mastered={mastered[item.uniqueName]}>Mastered</button>
@@ -158,7 +158,7 @@ export default function Foundry() {
 
                                         return (
                                         <div className="item-modal-component grid-item-component" key={component.name}>
-                                            <img className="item-modal-component-image" src={getImageUrl(component)} style={{ width: "40px" }}></img>
+                                            <img className="item-modal-component-image" loading="lazy" decoding="async" src={getImageUrl(component)} style={{ width: "40px" }}></img>
                                             <h5 className="item-modal-component-text" style={{ width: "100px" }}>{component.name}</h5>
                                             <div className="item-modal-component-owned">
                                                 <button onClick={() => decrement(component.uniqueName)}>-</button>
