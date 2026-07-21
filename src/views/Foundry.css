@@ -17,15 +17,9 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    display: grid;
+    position: relative; /* virtualized rows are absolutely positioned within this */
     min-height: 0;
-
-    grid-template-columns: repeat(auto-fill, minmax(475px, 1fr));
-    grid-auto-rows: auto;
-    gap: 12px;
-    align-content: start;
     padding: 8px;
-    align-items: stretch;
 }
 
 /* -------------------------------- Grid Item ------------------------------- */
@@ -64,6 +58,34 @@
     transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
     content-visibility: auto;
     contain-intrinsic-size: 0 320px;
+
+    /* Grow to fill available row space, but stop at a comfortable max —
+       leftover space becomes margin (row is centered) instead of stretching
+       every card. min-width: 0 stops content (e.g. component lists) from
+       forcing this flex item wider than its share. */
+    flex: 1 1 0;
+    max-width: 620px; /* keep in sync with CARD_MAX_WIDTH in Foundry.tsx */
+    min-width: 0;
+    box-sizing: border-box;
+
+    animation: grid-item-enter 160ms ease both;
+}
+
+@keyframes grid-item-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .grid-item {
+        animation: none;
+    }
 }
 
 .grid-item:hover {
