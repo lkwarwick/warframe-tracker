@@ -21,6 +21,7 @@ declare global {
             removeComponent: (uniqueName: string) => Promise<Record<string, number>>;
             loadUserData: () => Promise<UserData>;
             saveUserData: (data: UserData) => Promise<boolean>;
+            getUserDataPath: () => Promise<string>;
             onForceSave: (cb: () => Promise<boolean>) => void;
           }
     }
