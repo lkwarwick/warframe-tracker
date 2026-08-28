@@ -7,10 +7,7 @@ import FooterPanel from "./layout/FooterPanel";
 import MiddlePanel from "./layout/MiddlePanel";
 import { useEffect, useState } from "react";
 import { View } from "./types/view";
-import { useUserStore } from "./persistence/userStore";
-import { loadFromGist } from "./persistence/gistSync";
-import { saveUserDataIfDirty, forceSaveUserData } from "./persistence/autoSave";
-import type { UserData } from "./persistence/userStore";
+import { createEmptyUserData, useUserStore, type UserData } from "./persistence/userStore";
 
 
 declare global {
@@ -22,6 +19,8 @@ declare global {
             decrementComponent: (uniqueName: string) => Promise<Record<string, number>>;
             setComponent: (uniqueName: string, value: number) => Promise<Record<string, number>>;
             removeComponent: (uniqueName: string) => Promise<Record<string, number>>;
+            loadUserData: () => Promise<UserData>;
+            saveUserData: (data: UserData) => Promise<boolean>;
             onForceSave: (cb: () => Promise<boolean>) => void;
           }
     }
@@ -29,107 +28,36 @@ declare global {
 
 function App() {
   const [activeView, setActiveView] = useState<View>("mastery-checklist");
-  const [isBooting, setIsBooting] = useState(true);
-  const [bootError, setBootError] = useState<Error | null>(null);
-  const [isForcingSave, setIsForcingSave] = useState(false);
-
-  const hydrate = useUserStore((s) => s.hydrate);
+  const data = useUserStore((state) => state.data);
+  const hydrate = useUserStore((state) => state.hydrate);
+  const markClean = useUserStore((state) => state.markClean);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function loadData() {
-      console.log("Loading user data...");
-
-      try {
-        const data = await loadFromGist();
-
-        if (cancelled) {
-          return;
-        }
-
-        console.log("Loaded data:", data);
-        hydrate(data as UserData);
-      } catch (error) {
-        if (cancelled) {
-          return;
-        }
-
-        const nextError = error instanceof Error ? error : new Error(String(error));
-        console.error("Failed to load user data", nextError);
-        setBootError(nextError);
-      } finally {
-        if (!cancelled) {
-          setIsBooting(false);
-        }
-      }
-    }
-
-    void loadData();
-
-    return () => {
-      cancelled = true;
-    };
+    let mounted = true;
+    window.api.loadUserData()
+      .then((savedData) => {
+        if (mounted) hydrate(savedData ?? createEmptyUserData());
+      })
+      .catch(() => {
+        if (mounted) hydrate(createEmptyUserData());
+      });
+    return () => { mounted = false; };
   }, [hydrate]);
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      void saveUserDataIfDirty();
-    }, 60_000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
+    if (!data) return;
+    void window.api.saveUserData(data).then((saved) => {
+      if (saved && useUserStore.getState().data === data) markClean();
+    });
+  }, [data, markClean]);
 
   useEffect(() => {
-    if (typeof window.api?.onForceSave === "function") {
-      window.api.onForceSave(async () => {
-        try {
-          setIsForcingSave(true);
-          // Attempt a forced save on close so data is persisted even if not marked dirty
-          const result = await forceSaveUserData();
-          return result;
-        } catch {
-          return false;
-        } finally {
-          setIsForcingSave(false);
-        }
-      });
-    }
+    window.api.onForceSave(async () => {
+      const currentData = useUserStore.getState().data;
+      if (!currentData) return true;
+      return window.api.saveUserData(currentData);
+    });
   }, []);
-
-  if (isBooting) {
-    return (
-      <div className="app load-save-data-state">
-        <div className="load-save-data-card">
-          <p className="load-save-data-title">Loading save data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isForcingSave) {
-    return (
-      <div className="app load-save-data-state">
-        <div className="load-save-data-card">
-          <p className="load-save-data-title">Saving data...</p>
-          <p className="load-save-data-message">Saving your data to GitHub Gist — please wait.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (bootError) {
-    return (
-      <div className="app load-save-data-state">
-        <div className="load-save-data-card load-save-data-card--error">
-          <p className="load-save-data-title">Unable to load save data</p>
-          <p className="load-save-data-message">{bootError.message}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="app">

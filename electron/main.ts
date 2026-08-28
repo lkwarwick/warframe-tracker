@@ -7,6 +7,14 @@ import Store from 'electron-store';
 interface AppData {
   // Misc
   windowBounds: WindowBounds;
+  userData: UserData;
+}
+
+interface UserData {
+  mastered: Record<string, true>;
+  components: Record<string, number>;
+  settings: Record<string, unknown>;
+  updatedAt: string;
 }
 
 interface WindowBounds {
@@ -21,12 +29,47 @@ const store = new Store<AppData>({
   defaults: {
     // Misc
     windowBounds: { width: 1000, height: 700 },
+    userData: {
+      mastered: {},
+      components: {},
+      settings: {},
+      updatedAt: new Date().toISOString(),
+    },
   },
+});
+
+function isUserData(value: unknown): value is UserData {
+  if (!value || typeof value !== "object") return false;
+  const data = value as Partial<UserData>;
+  return !!data.mastered && typeof data.mastered === "object"
+    && !!data.components && typeof data.components === "object"
+    && !!data.settings && typeof data.settings === "object"
+    && typeof data.updatedAt === "string";
+}
+
+function createEmptyUserData(): UserData {
+  return {
+    mastered: {},
+    components: {},
+    settings: {},
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+ipcMain.handle("load-user-data", () => {
+  const data = store.get("userData");
+  return isUserData(data) ? data : createEmptyUserData();
+});
+ipcMain.handle("save-user-data", (_event, data: unknown) => {
+  if (!isUserData(data)) return false;
+  store.set("userData", data);
+  return true;
 });
 
 /* ---------------------------- Browser + Preload --------------------------- */
 
 let win: BrowserWindow | null = null;
+let isClosing = false;
 
 app.whenReady().then(() => {
   const saved = store.get("windowBounds");
@@ -52,15 +95,16 @@ app.whenReady().then(() => {
   win.once("ready-to-show", () => win?.show());
 
   win.on("close", (e) => {
+    if (isClosing) return;
     if (!win) return;
-    // Prevent default close so we can attempt to flush save to remote gist
+    isClosing = true;
     e.preventDefault();
 
     // Ask renderer to save; wait for a response or timeout
     const waitForSave = new Promise<boolean>((resolve) => {
       const timeout = setTimeout(() => {
         resolve(false);
-      }, 15000);
+      }, 2000);
 
       ipcMain.once("force-save-result", (_evt, result: boolean) => {
         clearTimeout(timeout);
@@ -95,5 +139,9 @@ app.whenReady().then(() => {
     })();
   });
 
-  win.loadURL("http://localhost:5173");
+  if (process.env.ELECTRON_RENDERER_URL) {
+    void win.loadURL(process.env.ELECTRON_RENDERER_URL);
+  } else {
+    void win.loadFile(path.join(__dirname, "../renderer/index.html"));
+  }
 });

@@ -3,16 +3,46 @@
 > [!Warning]
 > This project is still in early development. It is highly likely that the underlying logic and UI will change over time.
 
-Track your mastery progress and keep tabs on your Prime parts. A lightweight desktop companion for Warframe enthusiasts who want to stay on top of their grind.
+Track your mastery progress and keep tabs on your Prime parts. A lightweight desktop companion for Warframe enthusiasts who want to stay on top of their grind. User progress is saved locally on the computer running the app.
 
 ## What It Does
 
-Warframe Tracker helps you manage two key aspects of your Warframe progression; **Mastery Checklist**, and **Prime Parts Inventory**. To provide a way of saving data to the cloud in in OSS way, I opted to use GitHub Gist to save your progress to your own account. This way all you need is a PAT (Personal Access Token) and it will automatically create a file with the `` name. Add the following to a `.env` in your root directory:
+Warframe Tracker helps you manage two key aspects of your Warframe progression: **Mastery Checklist** and **Prime Parts Inventory**. The app does not currently require an account, GitHub token, or cloud service.
 
-```bash
-VITE_GITHUB_TOKEN=<github-pat>
-VITE_GIST_FILE_NAME=warframe-tracker.json
+### Local Save Data
+
+The desktop app uses [`electron-store`](https://github.com/sindresorhus/electron-store) to save your data as JSON in Electron's application data directory. The file is named `config.json` and contains both your window preferences and your tracker data.
+
+On Linux, the default location is:
+
+```text
+~/.config/warframe-tracker/config.json
 ```
+
+Typical locations on other platforms are:
+
+```text
+# macOS
+~/Library/Application Support/warframe-tracker/config.json
+
+# Windows
+%APPDATA%/warframe-tracker/config.json
+```
+
+The saved user data is stored under the `userData` key with this shape:
+
+```json
+{
+   "userData": {
+      "mastered": {},
+      "components": {},
+      "settings": {},
+      "updatedAt": "2026-08-28T00:00:00.000Z"
+   }
+}
+```
+
+The app loads this record when it starts and saves changes automatically as mastery or component counts are updated. It also attempts a final save when the window closes. Saving is local only, so uninstalling the app, deleting this file, or moving to another computer will not transfer your progress. Back up `config.json` while the app is closed if you need to move or restore your data. If the file is missing or invalid, the app starts with empty progress.
 
 ### Mastery Checklist
 Keep track of all the equipment you've mastered across every category:

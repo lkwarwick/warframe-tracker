@@ -7,13 +7,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import ProgressBar from "../components/ProgressBar";
 import ItemModal from "../components/ItemModal";
 import { all, archwing, companions, melee, primaries, secondaries, warframes } from "../data/items";
-import { useUserStore } from "../persistence/userStore.js";
+import { EMPTY_MASTERED, useUserStore } from "../persistence/userStore.js";
 
 export type ItemGroup = "all" | "warframes" | "primaries" | "secondaries" | "melee" | "archwing" | "companions"
 export type PrimeFilter = "all" | "prime-only" | "non-prime-only"
 
 export default function MasteryTracker() {
-    const mastered = useUserStore((s) => s.data?.mastered || {});
+    const mastered = useUserStore((s) => s.data?.mastered || EMPTY_MASTERED);
     const update = useUserStore((s) => s.update);
 
     const toggleMastered = (e: MouseEvent<HTMLButtonElement>, item: Item) => {

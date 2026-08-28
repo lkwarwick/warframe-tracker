@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useComponentCounts } from "../hooks/useComponentCounts";
 import { getAllPrimeParts } from "../data/items";
 import { PrimePart } from "../data/types";
-import { useUserStore } from "../persistence/userStore";
+import { EMPTY_MASTERED, useUserStore } from "../persistence/userStore";
 
 export default function PrimeParts() {
 
@@ -13,7 +13,7 @@ export default function PrimeParts() {
     const parts = getAllPrimeParts();
 
     // Load the mastery data
-    const mastered = useUserStore((s) => s.data?.mastered || {});
+    const mastered = useUserStore((s) => s.data?.mastered || EMPTY_MASTERED);
 
     // Load the player's components
     const { counts, increment, decrement, setValue } = useComponentCounts();

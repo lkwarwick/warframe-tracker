@@ -7,6 +7,9 @@ export interface UserData {
   updatedAt: string;
 }
 
+export const EMPTY_MASTERED: Record<string, true> = {};
+export const EMPTY_COMPONENTS: Record<string, number> = {};
+
 interface UserStore {
   data: UserData | null;
   dirty: boolean;

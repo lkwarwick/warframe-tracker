@@ -1,8 +1,8 @@
 import { useCallback } from "react";
-import { useUserStore } from "../persistence/userStore.js";
+import { EMPTY_COMPONENTS, useUserStore } from "../persistence/userStore.js";
 
 export function useComponentCounts() {
-  const counts = useUserStore((s) => s.data?.components || {});
+  const counts = useUserStore((s) => s.data?.components || EMPTY_COMPONENTS);
   const update = useUserStore((s) => s.update);
 
   const increment = useCallback((uniqueName: string) => {

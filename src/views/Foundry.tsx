@@ -3,7 +3,7 @@ import { all, archwing, companions, melee, primaries, secondaries, warframes } f
 import "./Foundry.css"
 import { CheckCircle, Circle, Crosshair, FlowerLotus, Funnel, PawPrint, Rocket, SquaresFour, Sword, User, XCircle } from "phosphor-react";
 import { useComponentCounts } from "../hooks/useComponentCounts";
-import { useUserStore } from "../persistence/userStore";
+import { EMPTY_MASTERED, useUserStore } from "../persistence/userStore";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ItemGroup, PrimeFilter } from "./MasteryTracker";
@@ -212,7 +212,7 @@ const GridItem = memo(function GridItem({
 
 export default function Foundry() {
     const { counts, increment, decrement, setValue } = useComponentCounts();
-    const mastered = useUserStore((s) => s.data?.mastered || {});
+    const mastered = useUserStore((s) => s.data?.mastered || EMPTY_MASTERED);
     const update = useUserStore((s) => s.update);
 
     const [itemSearchText, setItemSearchText] = useState<string>("");
