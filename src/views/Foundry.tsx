@@ -243,6 +243,7 @@ export default function Foundry() {
                             return (
                                 <div
                                     key={virtualRow.key}
+                                    className="foundry-grid-row"
                                     ref={rowVirtualizer.measureElement}
                                     data-index={virtualRow.index}
                                     style={{

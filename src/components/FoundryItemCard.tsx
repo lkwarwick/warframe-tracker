@@ -32,7 +32,10 @@ const ComponentRow = memo(function ComponentRow({
 
     return (
         <div className="item-modal-component grid-item-component">
-            <img className="item-modal-component-image" src={getImageUrl(component)} style={{ width: "40px" }} />
+            <span className="component-image-tooltip" tabIndex={0} role="img" aria-label={component.name}>
+                <img className="item-modal-component-image" src={getImageUrl(component)} style={{ width: "40px" }} />
+                <span className="tooltip">{component.name}</span>
+            </span>
             <h5 className="item-modal-component-text" style={{ width: "100px" }}>{component.name}</h5>
             <div className="item-modal-component-owned">
                 <input

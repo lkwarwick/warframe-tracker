@@ -22,6 +22,11 @@
     padding: 8px;
 }
 
+.foundry-grid-row:hover,
+.foundry-grid-row:has(.component-image-tooltip:focus-visible) {
+    z-index: 1;
+}
+
 /* ------------------------------- Filters --------------------------------- */
 
 .filters-wrapper {

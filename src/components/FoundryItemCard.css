@@ -32,8 +32,6 @@
     padding: 0.5rem;
     justify-content: center;
     transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
-    content-visibility: auto;
-    contain-intrinsic-size: 0 320px;
     flex: 1 1 0;
     max-width: 500px;
     min-width: 0;
@@ -129,6 +127,12 @@
     height: auto;
     aspect-ratio: auto;
     object-fit: contain;
+    flex: 0 0 auto;
+}
+
+.component-image-tooltip {
+    display: flex;
+    align-items: center;
     flex: 0 0 auto;
 }
 
