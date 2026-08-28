@@ -76,6 +76,9 @@ ipcMain.handle("get-user-data-path", () => personalDataPath);
 
 let win: BrowserWindow | null = null;
 let isClosing = false;
+const iconPath = app.isPackaged
+  ? path.join(__dirname, "assets/favicon.png")
+  : path.join(process.cwd(), "electron/assets/favicon.png");
 
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null);
@@ -109,7 +112,7 @@ app.whenReady().then(() => {
       nodeIntegration: false,
     },
     title: "Warframe Tracker",
-    icon: path.join(__dirname, "assets/favicon.png"),
+    icon: iconPath,
   });
 
   if (saved.isMaximized) win.maximize();
