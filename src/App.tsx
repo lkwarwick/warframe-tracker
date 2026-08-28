@@ -27,7 +27,7 @@ declare global {
 }
 
 function App() {
-  const [activeView, setActiveView] = useState<View>("mastery-checklist");
+  const [activeView, setActiveView] = useState<View>("foundry");
   const data = useUserStore((state) => state.data);
   const hydrate = useUserStore((state) => state.hydrate);
   const markClean = useUserStore((state) => state.markClean);

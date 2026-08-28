@@ -6,7 +6,8 @@ import { useComponentCounts } from "../hooks/useComponentCounts";
 import { EMPTY_MASTERED, useUserStore } from "../persistence/userStore";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ItemGroup, PrimeFilter } from "./MasteryTracker";
+import { ItemGroup, PrimeFilter } from "../types/view";
+import ItemModal from "../components/ItemModal";
 
 // Must match .grid-item's width constraints in Foundry.css
 const CARD_MIN_WIDTH = 475;  // shrink floor — used only if a comfortable column can't fit at all
@@ -138,6 +139,7 @@ interface GridItemProps {
     onIncrement: (uniqueName: string) => void;
     onDecrement: (uniqueName: string) => void;
     onSetValue: (uniqueName: string, value: number) => void;
+    onItemModal: (item: Item) => void;
 }
 
 function gridItemPropsAreEqual(prev: GridItemProps, next: GridItemProps) {
@@ -147,7 +149,8 @@ function gridItemPropsAreEqual(prev: GridItemProps, next: GridItemProps) {
         prev.onToggleMastered !== next.onToggleMastered ||
         prev.onIncrement !== next.onIncrement ||
         prev.onDecrement !== next.onDecrement ||
-        prev.onSetValue !== next.onSetValue
+        prev.onSetValue !== next.onSetValue ||
+        prev.onItemModal !== next.onItemModal
     ) return false;
 
     if (prev.counts === next.counts) return true;
@@ -169,10 +172,13 @@ const GridItem = memo(function GridItem({
     onIncrement,
     onDecrement,
     onSetValue,
+    onItemModal,
 }: GridItemProps) {
     return (
         <div className="grid-item" data-prime={item.isPrime} data-mastered={isMastered}>
-            <div className="grid-column">
+            <div className="grid-column" role="button" tabIndex={0} onClick={() => onItemModal(item)} onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") onItemModal(item);
+            }}>
                 <img
                     className="item-modal-image"
                     style={{ marginBottom: "8px" }}
@@ -185,7 +191,10 @@ const GridItem = memo(function GridItem({
                 <p className="item-modal-subtitle grid-item-category" style={{ fontSize: "14px" }}>{item.category}</p>
                 <button
                     className="grid-item-mastery-button"
-                    onClick={() => onToggleMastered(item)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleMastered(item);
+                    }}
                     style={{ fontSize: "12px" }}
                     data-is-mastered={isMastered}
                 >
@@ -220,6 +229,8 @@ export default function Foundry() {
     const [hideCompleted, setHideCompleted] = useState(false);
     const [primeFilter, setPrimeFilter] = useState<PrimeFilter>("all");
     const [itemGroup, setItemGroup] = useState<ItemGroup>("warframes");
+    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+    const filtersRef = useRef<HTMLDivElement>(null);
 
     const itemsByGroup = useMemo(() => ({
         all: all,
@@ -243,6 +254,11 @@ export default function Foundry() {
             return { mastered: nextMastered };
         });
     }, [update]);
+
+    const toggleMasteredFromModal = useCallback((e: React.MouseEvent<HTMLButtonElement>, item: Item) => {
+        e.stopPropagation();
+        toggleMastered(item);
+    }, [toggleMastered]);
 
     const handleIncrement = useCallback((uniqueName: string) => increment(uniqueName), [increment]);
     const handleDecrement = useCallback((uniqueName: string) => decrement(uniqueName), [decrement]);
@@ -296,6 +312,26 @@ export default function Foundry() {
         gridRef.current?.scrollTo({ top: 0 });
     }, [itemGroup]);
 
+    useEffect(() => {
+        if (!showFilters) return;
+
+        const closeOnOutsideClick = (event: PointerEvent) => {
+            if (!filtersRef.current?.contains(event.target as Node)) {
+                setShowFilters(false);
+            }
+        };
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setShowFilters(false);
+        };
+
+        document.addEventListener("pointerdown", closeOnOutsideClick);
+        document.addEventListener("keydown", closeOnEscape);
+        return () => {
+            document.removeEventListener("pointerdown", closeOnOutsideClick);
+            document.removeEventListener("keydown", closeOnEscape);
+        };
+    }, [showFilters]);
+
     return (
         <div className="foundry-view">
             <div className="toolbar-high">
@@ -309,13 +345,13 @@ export default function Foundry() {
                         ))}
                     </div>
                     <div className="toolbar-right">
-                        <div className="filters-wrapper" style={{ position: "relative" }}>
+                        <div className="filters-wrapper" ref={filtersRef}>
                             <button key="filters" className="toolbar-icon-button" type="button" aria-label="filters" onClick={() => setShowFilters(!showFilters)}>
                                 <Funnel size={18} weight="bold" />
                                 <span className="tooltip">Filters</span>
                             </button>
                             {showFilters && (
-                                <div className="filters-dropdown">
+                                <div className="filters-dropdown" onPointerDown={(e) => e.stopPropagation()}>
                                     <h4>Prime Status</h4>
                                     <label key="prime-filter-all">
                                         <input type="radio" name="group" value="all" checked={primeFilter == "all"} onChange={() => setPrimeFilter("all")} />
@@ -381,6 +417,7 @@ export default function Foundry() {
                                             onIncrement={handleIncrement}
                                             onDecrement={handleDecrement}
                                             onSetValue={handleSetValue}
+                                            onItemModal={setSelectedItem}
                                         />
                                     ))}
                                 </div>
@@ -389,6 +426,13 @@ export default function Foundry() {
                     </div>
                 </div>
             </div>
+            <ItemModal
+                item={selectedItem}
+                isMastered={!!mastered[selectedItem?.uniqueName ?? ""]}
+                toggleMastered={toggleMasteredFromModal}
+                isOpen={selectedItem !== null}
+                onClose={() => setSelectedItem(null)}
+            />
         </div>
     )
 }
