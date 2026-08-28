@@ -1,6 +1,7 @@
 import { memo } from "react";
-import type { BaseItem, Component, Item } from "@wfcd/items";
+import type { BaseItem, Component } from "@wfcd/items";
 import { CheckCircle, XCircle } from "phosphor-react";
+import type { Item } from "../data/types";
 import "./FoundryItemCard.css";
 
 const IMAGE_OVERRIDES: Record<string, string> = { '/Lotus/Types/Items/MiscItems/Forma': 'Forma.png' };
