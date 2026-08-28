@@ -2,6 +2,12 @@ import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import path from "path";
 import Store from 'electron-store';
 
+if (process.platform === "linux") {
+  app.disableHardwareAcceleration();
+  app.commandLine.appendSwitch("disable-gpu");
+  app.commandLine.appendSwitch("disable-gpu-vsync");
+}
+
 /* -------------------------------- App Data -------------------------------- */
 
 interface LegacyAppData {
