@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import path from "path";
 import Store from 'electron-store';
 
@@ -72,6 +72,8 @@ let win: BrowserWindow | null = null;
 let isClosing = false;
 
 app.whenReady().then(() => {
+  Menu.setApplicationMenu(null);
+
   const saved = store.get("windowBounds");
   const x = typeof saved.x === "number" ? saved.x : undefined;
   const y = typeof saved.y === "number" ? saved.y : undefined;
