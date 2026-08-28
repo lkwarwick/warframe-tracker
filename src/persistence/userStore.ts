@@ -1,11 +1,26 @@
 import { create } from 'zustand';
 
+export type FoundrySettings = {
+  itemSearchText: string;
+  hideCompleted: boolean;
+  primeFilter: 'all' | 'prime-only' | 'non-prime-only';
+  itemGroup: 'all' | 'warframes' | 'primaries' | 'secondaries' | 'melee' | 'archwing' | 'companions';
+};
+
+export type UserSettings = {
+  foundry?: Partial<FoundrySettings>;
+  [view: string]: unknown;
+};
+
 export interface UserData {
   mastered: Record<string, true>;
   components: Record<string, number>;
-  settings: Record<string, any>;
+  settings: UserSettings;
   updatedAt: string;
 }
+
+export const EMPTY_MASTERED: Record<string, true> = {};
+export const EMPTY_COMPONENTS: Record<string, number> = {};
 
 interface UserStore {
   data: UserData | null;
@@ -41,52 +56,4 @@ export function createEmptyUserData(): UserData {
     settings: {},
     updatedAt: new Date().toISOString(),
   }
-}
-
-/* --------------------------- Component Functions -------------------------- */
-
-type NumericRecordField = {
-  [K in keyof UserData]: UserData[K] extends Record<string, number> ? K : never
-}[keyof UserData];
-
-export function adjustCount(
-  update: UserStore['update'],
-  field: NumericRecordField,
-  key: string,
-  delta: number
-) {
-  update((prev) => {
-    const record = prev[field] as Record<string, number>;
-    const next = (record[key] ?? 0) + delta;
-    const { [key]: _, ...rest } = record;
-    return { [field]: next > 0 ? { ...record, [key]: next } : rest } as Partial<UserData>;
-  });
-}
-
-export function setCount(
-  update: UserStore['update'],
-  field: NumericRecordField,
-  key: string,
-  value: number
-) {
-  update((prev) => {
-    const record = prev[field] as Record<string, number>;
-    if (value <= 0) {
-      const { [key]: _, ...rest } = record;
-      return { [field]: rest } as Partial<UserData>;
-    }
-    return { [field]: { ...record, [key]: value } } as Partial<UserData>;
-  });
-}
-
-export function removeKey(
-  update: UserStore['update'],
-  field: keyof UserData,
-  key: string
-) {
-  update((prev) => {
-    const record = prev[field] as Record<string, unknown>;
-    const { [key]: _, ...rest } = record;
-    return { [field]: rest } as Partial<UserData>;
-  });
 }

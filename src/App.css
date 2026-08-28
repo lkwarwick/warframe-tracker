@@ -5,14 +5,35 @@
 /* -------------------------- Reset Default Styles -------------------------- */
 
 :root {
-  --bg: #0a0a0b;
-  --panel: #111113;
-  --panel-alt: #161618;
-  --text: #e6e1d3;
-  --muted: #a39b86;
-  --gold: #c8a44d;
-  --gold-dim: rgba(200, 164, 77, 0.35);
-  --border: rgba(200, 164, 77, 0.12);
+    --bg: #0a0a0b;
+    --panel: #111113;
+    --panel-alt: #161618;
+
+    --text: #e6e1d3;
+    --muted: color-mix(in srgb, var(--text) 70%, var(--bg));
+
+    /* Regular Colors (Not Prime) */
+    --normal: #e6e1d3;
+    --normal-dim: color-mix(in srgb, var(--normal) 70%, var(--bg));
+    --normal-border: color-mix(in srgb, var(--normal) 15%, transparent);
+    --normal-bg: color-mix(in srgb, var(--normal) 7.5%, transparent);
+    --normal-panel-bg: color-mix(in srgb, var(--normal) 4%, transparent);
+
+    /* Prime Colors */
+    --gold: #c8a44d;
+    --gold-dim: color-mix(in srgb, var(--gold) 70%, var(--bg));
+    --gold-border: color-mix(in srgb, var(--gold) 15%, transparent);
+    --gold-bg: color-mix(in srgb, var(--gold) 7.5%, transparent);
+    --gold-panel-bg: color-mix(in srgb, var(--gold) 4%, transparent);
+
+    --border: color-mix(in srgb, var(--gold) 15%, var(--bg));
+
+    /* Mastery Colors */
+    --mastered: #86B3AB;
+    --mastered-dim: color-mix(in srgb, var(--mastered) 70%, var(--bg));
+    --mastered-border: color-mix(in srgb, var(--mastered) 20%, transparent);
+    --mastered-bg: color-mix(in srgb, var(--mastered) 7.5%, transparent);
+    --mastered-panel-bg: color-mix(in srgb, var(--mastered) 4%, transparent);
 }
 
 html,
@@ -50,7 +71,7 @@ h1, h2, h3, h4, h5, h6, p {
 }
 
 .header {
-  flex: 0 0 7.5%;
+  flex: 0 0 3%;
 }
 
 .main {
@@ -64,7 +85,10 @@ h1, h2, h3, h4, h5, h6, p {
   flex: 0 0 3%;
 }
 
-.left,
+.left {
+  flex: 0 0 7.5%;
+}
+
 .right {
   flex: 0 0 12.5%;
 }
@@ -159,6 +183,45 @@ h1, h2, h3, h4, h5, h6, p {
 .toolbar-left p,
 .toolbar-right p {
   margin: 0;
+}
+
+.toolbar-icon-button,
+.component-image-tooltip {
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 20;
+  padding: 6px 9px;
+  border: 1px solid var(--gold-border);
+  border-radius: 4px;
+  background: var(--panel);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition: opacity 120ms ease, transform 120ms ease;
+  white-space: nowrap;
+}
+
+.toolbar-icon-button .tooltip {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
+
+.toolbar-icon-button:hover .tooltip,
+.toolbar-icon-button:focus-visible .tooltip,
+.component-image-tooltip:hover .tooltip,
+.component-image-tooltip:focus-visible .tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .toolbar-search input {

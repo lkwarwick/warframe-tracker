@@ -1,4 +1,4 @@
-import type { Item, PrimePart } from "./types.ts";
+import type { Item } from "./types.ts";
 
 import warframesJson from "../../vendor/warframe-items/data/json/Warframes.json";
 import primaryJson from "../../vendor/warframe-items/data/json/Primary.json";
@@ -53,20 +53,3 @@ export const all: Item[] = [
   ...archwing,
   ...companions,
 ];
-
-/* ---------------------------------- Parts --------------------------------- */
-
-export function getAllPrimeParts(): PrimePart[] {
-  return all.flatMap(item =>
-    (item.components ?? [])
-      .filter(c => typeof c.ducats === "number" && c.ducats > 0)
-      .map(c => ({
-          ...item,
-          ...c,
-          parentName: item.name,
-          componentName: c.name,
-          parentUniqueName: item.uniqueName,
-          componentUniqueName: c.uniqueName,
-      }))
-  );
-}

@@ -1,12 +1,23 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import path from "path";
 import Store from 'electron-store';
 
 /* -------------------------------- App Data -------------------------------- */
 
-interface AppData {
-  // Misc
+interface LegacyAppData {
+  windowBounds?: WindowBounds;
+  userData: UserData;
+}
+
+interface WindowState {
   windowBounds: WindowBounds;
+}
+
+interface UserData {
+  mastered: Record<string, true>;
+  components: Record<string, number>;
+  settings: Record<string, unknown>;
+  updatedAt: string;
 }
 
 interface WindowBounds {
@@ -17,19 +28,72 @@ interface WindowBounds {
   isMaximized?: boolean;
 }
 
-const store = new Store<AppData>({
-  defaults: {
-    // Misc
-    windowBounds: { width: 1000, height: 700 },
-  },
+const legacyStore = new Store<LegacyAppData>();
+const windowStore = new Store<WindowState>({
+  name: "window-state",
 });
+
+const personalDataPath = path.join(app.getPath("userData"), "sync-data");
+const userDataStore = new Store<{ userData: UserData }>({
+  cwd: personalDataPath,
+  name: "user-data",
+});
+const previousPersonalDataStore = new Store<{ userData: UserData }>({
+  cwd: path.join(app.getPath("documents"), "Warframe Tracker"),
+  name: "user-data",
+});
+
+function isUserData(value: unknown): value is UserData {
+  if (!value || typeof value !== "object") return false;
+  const data = value as Partial<UserData>;
+  return !!data.mastered && typeof data.mastered === "object"
+    && !!data.components && typeof data.components === "object"
+    && !!data.settings && typeof data.settings === "object"
+    && typeof data.updatedAt === "string";
+}
+
+function createEmptyUserData(): UserData {
+  return {
+    mastered: {},
+    components: {},
+    settings: {},
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+ipcMain.handle("load-user-data", () => {
+  const data = userDataStore.get("userData");
+  return isUserData(data) ? data : createEmptyUserData();
+});
+ipcMain.handle("save-user-data", (_event, data: unknown) => {
+  if (!isUserData(data)) return false;
+  userDataStore.set("userData", data);
+  return true;
+});
+ipcMain.handle("get-user-data-path", () => personalDataPath);
 
 /* ---------------------------- Browser + Preload --------------------------- */
 
 let win: BrowserWindow | null = null;
+let isClosing = false;
 
 app.whenReady().then(() => {
-  const saved = store.get("windowBounds");
+  Menu.setApplicationMenu(null);
+
+  if (!userDataStore.has("userData") && legacyStore.has("userData")) {
+    const legacyUserData = legacyStore.get("userData");
+    if (isUserData(legacyUserData)) userDataStore.set("userData", legacyUserData);
+  }
+  if (!userDataStore.has("userData") && previousPersonalDataStore.has("userData")) {
+    const previousUserData = previousPersonalDataStore.get("userData");
+    if (isUserData(previousUserData)) userDataStore.set("userData", previousUserData);
+  }
+  if (legacyStore.has("windowBounds") && !windowStore.has("windowBounds")) {
+    const legacyWindowBounds = legacyStore.get("windowBounds");
+    if (legacyWindowBounds) windowStore.set("windowBounds", legacyWindowBounds);
+  }
+
+  const saved = windowStore.get("windowBounds", { width: 1000, height: 700 });
   const x = typeof saved.x === "number" ? saved.x : undefined;
   const y = typeof saved.y === "number" ? saved.y : undefined;
 
@@ -52,15 +116,16 @@ app.whenReady().then(() => {
   win.once("ready-to-show", () => win?.show());
 
   win.on("close", (e) => {
+    if (isClosing) return;
     if (!win) return;
-    // Prevent default close so we can attempt to flush save to remote gist
+    isClosing = true;
     e.preventDefault();
 
     // Ask renderer to save; wait for a response or timeout
     const waitForSave = new Promise<boolean>((resolve) => {
       const timeout = setTimeout(() => {
         resolve(false);
-      }, 15000);
+      }, 2000);
 
       ipcMain.once("force-save-result", (_evt, result: boolean) => {
         clearTimeout(timeout);
@@ -80,7 +145,7 @@ app.whenReady().then(() => {
       } finally {
         // Persist window bounds locally (electron-store)
         const b = win!.getNormalBounds();
-        store.set("windowBounds", {
+        windowStore.set("windowBounds", {
           x: b.x,
           y: b.y,
           width: b.width,
@@ -95,5 +160,9 @@ app.whenReady().then(() => {
     })();
   });
 
-  win.loadURL("http://localhost:5173");
+  if (process.env.ELECTRON_RENDERER_URL) {
+    void win.loadURL(process.env.ELECTRON_RENDERER_URL);
+  } else {
+    void win.loadFile(path.join(__dirname, "../renderer/index.html"));
+  }
 });

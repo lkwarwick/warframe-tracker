@@ -1,0 +1,105 @@
+.foundry-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.grid-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+.grid {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative; /* virtualized rows are absolutely positioned within this */
+    min-height: 0;
+    padding: 8px;
+}
+
+.foundry-grid-row:hover,
+.foundry-grid-row:has(.component-image-tooltip:focus-visible) {
+    z-index: 1;
+}
+
+/* ------------------------------- Filters --------------------------------- */
+
+.filters-wrapper {
+    position: relative;
+}
+
+.filters-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 10;
+    width: 220px;
+    padding: 14px;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--panel) 96%, transparent);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+    animation: filters-dropdown-enter 120ms ease both;
+}
+
+.filters-dropdown h4 {
+    margin: 0 0 8px;
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.filters-dropdown h4:not(:first-child) {
+    margin-top: 16px;
+}
+
+.filters-dropdown label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 30px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.filters-dropdown label:hover {
+    color: var(--gold);
+}
+
+.filters-dropdown input {
+    accent-color: var(--gold);
+    cursor: pointer;
+}
+
+.filters-dropdown label span {
+    flex: 1;
+}
+
+.filters-dropdown label p {
+    margin: 0;
+}
+
+@keyframes filters-dropdown-enter {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .filters-dropdown {
+        animation: none;
+    }
+}

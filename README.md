@@ -3,16 +3,67 @@
 > [!Warning]
 > This project is still in early development. It is highly likely that the underlying logic and UI will change over time.
 
-Track your mastery progress and keep tabs on your Prime parts. A lightweight desktop companion for Warframe enthusiasts who want to stay on top of their grind.
+Track your mastery progress and keep tabs on your Prime parts. A lightweight desktop companion for Warframe enthusiasts who want to stay on top of their grind. User progress is saved locally on the computer running the app, in a dedicated folder that can be managed with Syncthing.
 
 ## What It Does
 
-Warframe Tracker helps you manage two key aspects of your Warframe progression; **Mastery Checklist**, and **Prime Parts Inventory**. To provide a way of saving data to the cloud in in OSS way, I opted to use GitHub Gist to save your progress to your own account. This way all you need is a PAT (Personal Access Token) and it will automatically create a file with the `` name. Add the following to a `.env` in your root directory:
+Warframe Tracker helps you manage two key aspects of your Warframe progression: **Mastery Checklist** and **Prime Parts Inventory**. The app does not currently require an account, GitHub token, or cloud service.
 
-```bash
-VITE_GITHUB_TOKEN=<github-pat>
-VITE_GIST_FILE_NAME=warframe-tracker.json
+### Local Save Data
+
+The desktop app uses [`electron-store`](https://github.com/sindresorhus/electron-store) to save device-specific window preferences separately from syncable tracker data.
+
+Tracker data is stored in a dedicated subfolder of Electron's app-data directory:
+
+```text
+<app-data>/warframe-tracker/sync-data/user-data.json
 ```
+
+Sync only the `sync-data` folder with Syncthing to share mastered items, component counts, and user settings between devices. View-specific settings are grouped under `settings` so additional views can add their own settings without changing the top-level user-data shape. Window size and position are stored separately in `window-state.json`, outside the folder you sync.
+
+On Linux, the default location is:
+
+```text
+~/.config/warframe-tracker/window-state.json
+```
+
+The Syncthing folder on Linux is:
+
+```text
+~/.config/warframe-tracker/sync-data/
+```
+
+Typical locations on other platforms are:
+
+```text
+# macOS
+~/Library/Application Support/warframe-tracker/window-state.json
+
+# Windows
+%APPDATA%/warframe-tracker/window-state.json
+```
+
+The syncable data is stored under the `userData` key in `user-data.json` with this shape:
+
+```json
+{
+   "userData": {
+      "mastered": {},
+      "components": {},
+      "settings": {
+         "foundry": {
+            "itemSearchText": "",
+            "hideCompleted": false,
+            "primeFilter": "all",
+            "itemGroup": "warframes"
+         }
+      },
+      "updatedAt": "2026-08-28T00:00:00.000Z"
+   }
+}
+```
+
+The app loads this record when it starts and saves changes automatically as mastery, component counts, or view settings are updated. It also attempts a final save when the window closes. Existing data from the old combined `config.json` file is migrated automatically on first launch after this change. If the syncable file is missing or invalid, the app starts with empty progress and default view settings.
 
 ### Mastery Checklist
 Keep track of all the equipment you've mastered across every category:
