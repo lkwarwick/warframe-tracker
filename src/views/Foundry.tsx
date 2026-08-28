@@ -11,8 +11,9 @@ import ItemModal from "../components/ItemModal";
 import FoundryItemCard from "../components/FoundryItemCard";
 
 // Must match .grid-item's width constraints in Foundry.css
-const CARD_MIN_WIDTH = 475;  // shrink floor — used only if a comfortable column can't fit at all
-const CARD_MAX_WIDTH = 620;  // grow cap — tune this to taste; leftover space becomes side margins
+const CARD_MIN_WIDTH = 360;  // shrink floor — used only if a comfortable column can't fit at all
+const CARD_MAX_WIDTH = 380;  // three-column breakpoint; cards still grow to the CSS max width
+const MAX_COLUMNS = 4;
 const GRID_GAP = 12;
 const ESTIMATED_ROW_HEIGHT = 340; // corrected automatically per-row by the virtualizer
 
@@ -47,7 +48,7 @@ function useColumnCount(containerRef: React.RefObject<HTMLElement>) {
             // this avoids squeezing in an extra narrow column just because
             // it technically satisfies the min width. Leftover space becomes
             // centered margin (handled in the row's flexbox layout) instead.
-            let cols = Math.floor((availableWidth + GRID_GAP) / (CARD_MAX_WIDTH + GRID_GAP));
+            let cols = Math.min(MAX_COLUMNS, Math.floor((availableWidth + GRID_GAP) / (CARD_MAX_WIDTH + GRID_GAP)));
 
             if (cols < 1) {
                 // Window too narrow for even one comfortable card — allow shrinking.

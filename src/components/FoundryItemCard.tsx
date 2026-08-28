@@ -34,14 +34,16 @@ const ComponentRow = memo(function ComponentRow({
             <img className="item-modal-component-image" src={getImageUrl(component)} style={{ width: "40px" }} />
             <h5 className="item-modal-component-text" style={{ width: "100px" }}>{component.name}</h5>
             <div className="item-modal-component-owned">
-                <button onClick={() => onDecrement(component.uniqueName)}>-</button>
                 <input
                     type="number"
                     value={owned}
                     min="0"
                     onChange={(event) => onSetValue(component.uniqueName, Number(event.target.value))}
                 />
-                <button onClick={() => onIncrement(component.uniqueName)}>+</button>
+                <div className="grid-item-component-controls">
+                    <button onClick={() => onIncrement(component.uniqueName)}>+</button>
+                    <button onClick={() => onDecrement(component.uniqueName)}>-</button>
+                </div>
             </div>
             <p className="item-modal-component-needed" style={{ width: "30px" }}>{component.itemCount}</p>
             <HaveIcon

@@ -35,7 +35,7 @@
     content-visibility: auto;
     contain-intrinsic-size: 0 320px;
     flex: 1 1 0;
-    max-width: 620px;
+    max-width: 500px;
     min-width: 0;
     box-sizing: border-box;
     animation: grid-item-enter 160ms ease both;
@@ -75,7 +75,7 @@
 /* ---------------------------- Grid Item (Image) --------------------------- */
 
 .grid-item img {
-    width: 150px;
+    width: 120px;
     aspect-ratio: 1 / 1;
     background: linear-gradient(135deg, #1a1a1c, #0f0f11);
     border: 1px solid var(--border);
@@ -100,7 +100,7 @@
     margin-top: 8px;
     margin-bottom: 16px;
     font-size: 16px;
-    width: 150px;
+    width: 120px;
     color: var(--secondary-color);
     border-color: var(--border-color);
     border-width: 1px;
@@ -115,6 +115,7 @@
 /* -------------------------- Grid Item (Component) ------------------------- */
 
 .grid-item-component {
+    height: 42px;
     border-color: var(--border-color) !important;
     background-color: var(--panel-bg-color) !important;
 }
@@ -125,4 +126,50 @@
 
 .grid-item-component .item-modal-component-needed {
     color: var(--secondary-color);
+}
+
+.grid-item-component .item-modal-component-owned {
+    --counter-border-color: color-mix(in srgb, var(--border-color) 55%, var(--bg));
+    --counter-background-color: color-mix(in srgb, var(--panel-bg-color) 55%, var(--bg));
+    width: 68px;
+    height: 40px;
+    gap: 0;
+    border: 1px solid var(--counter-border-color);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--counter-background-color);
+}
+
+.grid-item-component .item-modal-component-owned input {
+    width: 42px;
+    height: 38px;
+    border: 0;
+    border-radius: 0;
+    line-height: 38px;
+    box-sizing: border-box;
+    background: var(--counter-background-color);
+}
+
+.grid-item-component-controls {
+    display: flex;
+    flex-direction: column;
+    width: 25px;
+    height: 38px;
+    border-left: 1px solid var(--counter-border-color);
+}
+
+.grid-item-component .grid-item-component-controls button {
+    width: 25px;
+    height: 19px;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    font-size: 13px;
+    line-height: 19px;
+    background: var(--counter-background-color);
+}
+
+.grid-item-component .grid-item-component-controls button + button {
+    border-top: 1px solid var(--counter-border-color);
 }
