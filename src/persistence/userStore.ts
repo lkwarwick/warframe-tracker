@@ -1,9 +1,21 @@
 import { create } from 'zustand';
 
+export type FoundrySettings = {
+  itemSearchText: string;
+  hideCompleted: boolean;
+  primeFilter: 'all' | 'prime-only' | 'non-prime-only';
+  itemGroup: 'all' | 'warframes' | 'primaries' | 'secondaries' | 'melee' | 'archwing' | 'companions';
+};
+
+export type UserSettings = {
+  foundry?: Partial<FoundrySettings>;
+  [view: string]: unknown;
+};
+
 export interface UserData {
   mastered: Record<string, true>;
   components: Record<string, number>;
-  settings: Record<string, any>;
+  settings: UserSettings;
   updatedAt: string;
 }
 

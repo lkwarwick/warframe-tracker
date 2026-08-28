@@ -3,7 +3,7 @@ import { all, archwing, companions, melee, primaries, secondaries, warframes } f
 import "./Foundry.css"
 import { CheckCircle, Circle, Crosshair, FlowerLotus, Funnel, PawPrint, Rocket, SquaresFour, Sword, User, XCircle } from "phosphor-react";
 import { useComponentCounts } from "../hooks/useComponentCounts";
-import { EMPTY_MASTERED, useUserStore } from "../persistence/userStore";
+import { EMPTY_MASTERED, type FoundrySettings, useUserStore } from "../persistence/userStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ItemGroup, PrimeFilter } from "../types/view";
@@ -16,6 +16,13 @@ const CARD_MAX_WIDTH = 380;  // three-column breakpoint; cards still grow to the
 const MAX_COLUMNS = 4;
 const GRID_GAP = 12;
 const ESTIMATED_ROW_HEIGHT = 340; // corrected automatically per-row by the virtualizer
+
+const DEFAULT_FOUNDRY_SETTINGS: FoundrySettings = {
+    itemSearchText: "",
+    hideCompleted: false,
+    primeFilter: "all",
+    itemGroup: "warframes",
+};
 
 const GROUPS: { key: ItemGroup; label: string; icon: any }[] = [
     { key: "all", label: "All", icon: SquaresFour },
@@ -72,13 +79,14 @@ function useColumnCount(containerRef: React.RefObject<HTMLElement>) {
 export default function Foundry() {
     const { counts, increment, decrement, setValue } = useComponentCounts();
     const mastered = useUserStore((s) => s.data?.mastered || EMPTY_MASTERED);
+    const userData = useUserStore((s) => s.data);
     const update = useUserStore((s) => s.update);
 
-    const [itemSearchText, setItemSearchText] = useState<string>("");
+    const [itemSearchText, setItemSearchText] = useState(DEFAULT_FOUNDRY_SETTINGS.itemSearchText);
     const [showFilters, setShowFilters] = useState(false);
-    const [hideCompleted, setHideCompleted] = useState(false);
-    const [primeFilter, setPrimeFilter] = useState<PrimeFilter>("all");
-    const [itemGroup, setItemGroup] = useState<ItemGroup>("warframes");
+    const [hideCompleted, setHideCompleted] = useState(DEFAULT_FOUNDRY_SETTINGS.hideCompleted);
+    const [primeFilter, setPrimeFilter] = useState<PrimeFilter>(DEFAULT_FOUNDRY_SETTINGS.primeFilter);
+    const [itemGroup, setItemGroup] = useState<ItemGroup>(DEFAULT_FOUNDRY_SETTINGS.itemGroup);
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
     const filtersRef = useRef<HTMLDivElement>(null);
 
@@ -91,6 +99,48 @@ export default function Foundry() {
         archwing: archwing,
         companions: companions,
     }), []);
+
+    useEffect(() => {
+        const saved = userData?.settings.foundry;
+        if (!saved) return;
+
+        setItemSearchText(saved.itemSearchText ?? DEFAULT_FOUNDRY_SETTINGS.itemSearchText);
+        setHideCompleted(saved.hideCompleted ?? DEFAULT_FOUNDRY_SETTINGS.hideCompleted);
+        setPrimeFilter(saved.primeFilter ?? DEFAULT_FOUNDRY_SETTINGS.primeFilter);
+        setItemGroup(saved.itemGroup ?? DEFAULT_FOUNDRY_SETTINGS.itemGroup);
+    }, [userData]);
+
+    const updateFoundrySettings = useCallback((patch: Partial<FoundrySettings>) => {
+        update((prev) => ({
+            settings: {
+                ...prev.settings,
+                foundry: {
+                    ...prev.settings.foundry,
+                    ...patch,
+                },
+            },
+        }));
+    }, [update]);
+
+    const handleSearchChange = useCallback((value: string) => {
+        setItemSearchText(value);
+        updateFoundrySettings({ itemSearchText: value });
+    }, [updateFoundrySettings]);
+
+    const handleHideCompletedChange = useCallback((value: boolean) => {
+        setHideCompleted(value);
+        updateFoundrySettings({ hideCompleted: value });
+    }, [updateFoundrySettings]);
+
+    const handlePrimeFilterChange = useCallback((value: PrimeFilter) => {
+        setPrimeFilter(value);
+        updateFoundrySettings({ primeFilter: value });
+    }, [updateFoundrySettings]);
+
+    const handleItemGroupChange = useCallback((value: ItemGroup) => {
+        setItemGroup(value);
+        updateFoundrySettings({ itemGroup: value });
+    }, [updateFoundrySettings]);
 
     // Stable callback identities so GridItem's memo comparator actually holds
     const toggleMastered = useCallback((item: Item) => {
@@ -188,7 +238,7 @@ export default function Foundry() {
                 <div className="toolbar-top">
                     <div className="toolbar-left">
                         {GROUPS.map(({ key, label, icon: Icon }) => (
-                            <button key={key} className="toolbar-icon-button" type="button" aria-label={label} onClick={() => setItemGroup(key)}>
+                            <button key={key} className="toolbar-icon-button" type="button" aria-label={label} onClick={() => handleItemGroupChange(key)}>
                                 <Icon size={18} weight="bold" />
                                 <span className="tooltip">{label}</span>
                             </button>
@@ -204,20 +254,20 @@ export default function Foundry() {
                                 <div className="filters-dropdown" onPointerDown={(e) => e.stopPropagation()}>
                                     <h4>Prime Status</h4>
                                     <label key="prime-filter-all">
-                                        <input type="radio" name="group" value="all" checked={primeFilter == "all"} onChange={() => setPrimeFilter("all")} />
+                                        <input type="radio" name="group" value="all" checked={primeFilter == "all"} onChange={() => handlePrimeFilterChange("all")} />
                                         <span><p>All</p></span>
                                     </label>
                                     <label key="prime-filter-prime">
-                                        <input type="radio" name="group" value="prime-only" checked={primeFilter == "prime-only"} onChange={() => setPrimeFilter("prime-only")} />
+                                        <input type="radio" name="group" value="prime-only" checked={primeFilter == "prime-only"} onChange={() => handlePrimeFilterChange("prime-only")} />
                                         <span><p>Prime Only</p></span>
                                     </label>
                                     <label key="prime-filter-non-prime">
-                                        <input type="radio" name="group" value="non-prime-only" checked={primeFilter == "non-prime-only"} onChange={() => setPrimeFilter("non-prime-only")} />
+                                        <input type="radio" name="group" value="non-prime-only" checked={primeFilter == "non-prime-only"} onChange={() => handlePrimeFilterChange("non-prime-only")} />
                                         <span><p>Non-Prime Only</p></span>
                                     </label>
                                     <h4>Visibility</h4>
                                     <label key="hide-completed-filter">
-                                        <input type="checkbox" checked={hideCompleted} onChange={() => setHideCompleted(!hideCompleted)}></input>
+                                        <input type="checkbox" checked={hideCompleted} onChange={(event) => handleHideCompletedChange(event.target.checked)}></input>
                                         <span><p>Hide Completed</p></span>
                                     </label>
                                 </div>
@@ -226,7 +276,7 @@ export default function Foundry() {
                     </div>
                 </div>
                 <div className="toolbar-search">
-                    <input type="search" onChange={(e) => setItemSearchText(e.target.value)} placeholder="Search items..." />
+                    <input type="search" value={itemSearchText} onChange={(e) => handleSearchChange(e.target.value)} placeholder="Search items..." />
                 </div>
             </div>
             <div className="grid-container">

@@ -19,7 +19,7 @@ Tracker data is stored in a dedicated subfolder of Electron's app-data directory
 <app-data>/warframe-tracker/sync-data/user-data.json
 ```
 
-Sync only the `sync-data` folder with Syncthing to share mastered items, component counts, and other personal settings between devices. Window size and position are stored alongside it but remain in `window-state.json`, outside the folder you sync.
+Sync only the `sync-data` folder with Syncthing to share mastered items, component counts, and user settings between devices. View-specific settings are grouped under `settings` so additional views can add their own settings without changing the top-level user-data shape. Window size and position are stored separately in `window-state.json`, outside the folder you sync.
 
 On Linux, the default location is:
 
@@ -50,13 +50,20 @@ The syncable data is stored under the `userData` key in `user-data.json` with th
    "userData": {
       "mastered": {},
       "components": {},
-      "settings": {},
+      "settings": {
+         "foundry": {
+            "itemSearchText": "",
+            "hideCompleted": false,
+            "primeFilter": "all",
+            "itemGroup": "warframes"
+         }
+      },
       "updatedAt": "2026-08-28T00:00:00.000Z"
    }
 }
 ```
 
-The app loads this record when it starts and saves changes automatically as mastery or component counts are updated. It also attempts a final save when the window closes. Existing data from the old combined `config.json` file is migrated automatically on first launch after this change. If the syncable file is missing or invalid, the app starts with empty progress.
+The app loads this record when it starts and saves changes automatically as mastery, component counts, or view settings are updated. It also attempts a final save when the window closes. Existing data from the old combined `config.json` file is migrated automatically on first launch after this change. If the syncable file is missing or invalid, the app starts with empty progress and default view settings.
 
 ### Mastery Checklist
 Keep track of all the equipment you've mastered across every category:
