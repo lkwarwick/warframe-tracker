@@ -1,12 +1,12 @@
-import type { Item } from "@wfcd/items"
 import { all, archwing, companions, melee, primaries, secondaries, warframes } from "../data/items"
+import type { Item } from "../data/types"
 import "./Foundry.css"
-import { CheckCircle, Circle, Crosshair, FlowerLotus, Funnel, PawPrint, Rocket, SquaresFour, Sword, User, XCircle } from "phosphor-react";
+import { Circle, Crosshair, Funnel, PawPrint, Rocket, SquaresFour, Sword, User } from "phosphor-react";
 import { useComponentCounts } from "../hooks/useComponentCounts";
 import { EMPTY_MASTERED, type FoundrySettings, useUserStore } from "../persistence/userStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ItemGroup, PrimeFilter } from "../types/view";
+import type { ItemGroup, PrimeFilter } from "../types/view";
 import ItemModal from "../components/ItemModal";
 import FoundryItemCard from "../components/FoundryItemCard";
 
@@ -38,7 +38,7 @@ const GROUPS: { key: ItemGroup; label: string; icon: any }[] = [
 // Mirrors `grid-template-columns: repeat(auto-fill, minmax(CARD_MIN_WIDTH, 1fr))`
 // so we can chunk the flat item list into rows ourselves for virtualization.
 
-function useColumnCount(containerRef: React.RefObject<HTMLElement>) {
+function useColumnCount(containerRef: React.RefObject<HTMLElement | null>) {
     const [columns, setColumns] = useState(1);
 
     useEffect(() => {
