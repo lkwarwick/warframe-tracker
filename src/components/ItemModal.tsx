@@ -2,6 +2,38 @@ import { BaseItem, Buildable, Component } from "@wfcd/items";
 import "./ItemModal.css";
 import { FlowerLotus, CheckCircle, XCircle } from "phosphor-react";
 import { useComponentCounts } from "../hooks/useComponentCounts";
+import relicsJson from "../../vendor/warframe-items/data/json/Relics.json";
+
+type Relic = {
+    name: string;
+    vaulted?: boolean;
+    rewards?: {
+        rarity: string;
+        item: { name: string };
+    }[];
+};
+
+const relics = relicsJson as Relic[];
+
+function getRelicsForComponent(itemName: string, componentName: string) {
+    const rewardNames = componentName === "Blueprint"
+        ? [`${itemName} Blueprint`]
+        : [`${itemName} ${componentName}`, `${itemName} ${componentName} Blueprint`];
+
+    const matchingRelics = relics.flatMap((relic) =>
+        (relic.rewards ?? [])
+            .filter((reward) => rewardNames.includes(reward.item.name))
+            .map((reward) => ({ name: relic.name, rarity: reward.rarity, vaulted: relic.vaulted })),
+    );
+    const groupedRelics = new Map<string, (typeof matchingRelics)[number]>();
+
+    for (const relic of matchingRelics) {
+        const baseName = relic.name.replace(/ (Intact|Exceptional|Flawless|Radiant)$/, "");
+        if (!groupedRelics.has(baseName)) groupedRelics.set(baseName, { ...relic, name: baseName });
+    }
+
+    return [...groupedRelics.values()];
+}
 
 interface ItemModalProps {
     item: (BaseItem & Buildable) | null;
@@ -74,7 +106,31 @@ export default function ItemModal({ item, isMastered, toggleMastered, isOpen, on
                         <p className="item-modal-component-info">Components are shared across all items.</p>
                     </div>
                     <div className="item-modal-info-boxes">
-                        <div className="item-modal-info-box"></div>
+                        <div className="item-modal-info-box">
+                            {item.isPrime && (
+                                <>
+                                    <h3>Relics</h3>
+                                    <div className="item-modal-relics">
+                                        {item.components?.map((component) => {
+                                            const componentRelics = getRelicsForComponent(item.name, component.name);
+
+                                            if (componentRelics.length === 0) return null;
+
+                                            return (
+                                                <div className="item-modal-relic-group" key={component.uniqueName}>
+                                                    <h4>{component.name}</h4>
+                                                    {componentRelics.map((relic) => (
+                                                        <p key={`${component.uniqueName}-${relic.name}`}>
+                                                            {relic.name} ({relic.rarity}){relic.vaulted && <span className="item-modal-vaulted" title="Vaulted"> (V)</span>}
+                                                        </p>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                         <div className="item-modal-info-box"></div>
                         <div className="item-modal-info-box"></div>
                         <div className="item-modal-info-box"></div>

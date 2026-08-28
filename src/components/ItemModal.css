@@ -317,6 +317,11 @@
     background-color: rgb(22 22 22);
     transition: background 0.2s ease, color 0.2s ease, transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
     padding: 16px;
+    box-sizing: border-box;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 .item-modal-info-box:hover {
     transform: translateY(-1px);
@@ -327,8 +332,44 @@
 .item-modal-info-box h3 {
     color: var(--gold);
     font-size: 20px;
+    margin: 0 0 8px;
+    flex: 0 0 auto;
 }
 .item-modal-info-box p {
     color: var(--muted);
     font-size: 14px;
+}
+
+.item-modal-relics {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold-dim) transparent;
+}
+
+.item-modal-relic-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 10px;
+}
+
+.item-modal-relic-group h4 {
+    color: var(--gold-dim);
+    grid-column: 1 / -1;
+    margin: 8px 0 3px;
+    font-size: 13px;
+}
+
+.item-modal-relic-group p {
+    margin: 1px 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.item-modal-vaulted {
+    color: var(--gold-dim);
 }
