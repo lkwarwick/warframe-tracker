@@ -1,28 +1,20 @@
-import type { BaseItem, Buildable, Component, Item } from "@wfcd/items"
+import type { Item } from "@wfcd/items"
 import { all, archwing, companions, melee, primaries, secondaries, warframes } from "../data/items"
 import "./Foundry.css"
 import { CheckCircle, Circle, Crosshair, FlowerLotus, Funnel, PawPrint, Rocket, SquaresFour, Sword, User, XCircle } from "phosphor-react";
 import { useComponentCounts } from "../hooks/useComponentCounts";
 import { EMPTY_MASTERED, useUserStore } from "../persistence/userStore";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ItemGroup, PrimeFilter } from "../types/view";
 import ItemModal from "../components/ItemModal";
+import FoundryItemCard from "../components/FoundryItemCard";
 
 // Must match .grid-item's width constraints in Foundry.css
 const CARD_MIN_WIDTH = 475;  // shrink floor — used only if a comfortable column can't fit at all
 const CARD_MAX_WIDTH = 620;  // grow cap — tune this to taste; leftover space becomes side margins
 const GRID_GAP = 12;
 const ESTIMATED_ROW_HEIGHT = 340; // corrected automatically per-row by the virtualizer
-
-// Static, doesn't need to live inside the component
-const IMAGE_OVERRIDES: Record<string, string> = { '/Lotus/Types/Items/MiscItems/Forma': 'Forma.png' };
-
-function getImageUrl(item: BaseItem | Component): string {
-    const override = IMAGE_OVERRIDES[item.uniqueName];
-    const imageName = override ?? item.imageName;
-    return imageName ? `https://cdn.warframestat.us/img/${imageName}` : '/fallback-icon.png';
-}
 
 const GROUPS: { key: ItemGroup; label: string; icon: any }[] = [
     { key: "all", label: "All", icon: SquaresFour },
@@ -33,55 +25,6 @@ const GROUPS: { key: ItemGroup; label: string; icon: any }[] = [
     { key: "archwing", label: "Archwing", icon: Rocket },
     { key: "companions", label: "Companions", icon: PawPrint },
 ];
-
-// ---------- ComponentRow ----------
-// One row inside a card (a single component + its owned count controls).
-// Memoized on its own so typing in ONE component's count box doesn't
-// re-render every other component row of every other card.
-
-interface ComponentRowProps {
-    component: Component;
-    owned: number;
-    onIncrement: (uniqueName: string) => void;
-    onDecrement: (uniqueName: string) => void;
-    onSetValue: (uniqueName: string, value: number) => void;
-}
-
-const ComponentRow = memo(function ComponentRow({
-    component,
-    owned,
-    onIncrement,
-    onDecrement,
-    onSetValue,
-}: ComponentRowProps) {
-    const haveComponent = owned >= component.itemCount;
-    const HaveIcon = haveComponent ? CheckCircle : XCircle;
-
-    return (
-        <div className="item-modal-component grid-item-component">
-            <img className="item-modal-component-image" src={getImageUrl(component)} style={{ width: "40px" }} />
-            <h5 className="item-modal-component-text" style={{ width: "100px" }}>{component.name}</h5>
-            <div className="item-modal-component-owned">
-                <button onClick={() => onDecrement(component.uniqueName)}>-</button>
-                <input
-                    type="number"
-                    value={owned}
-                    min="0"
-                    onChange={(e) => onSetValue(component.uniqueName, Number(e.target.value))}
-                />
-                <button onClick={() => onIncrement(component.uniqueName)}>+</button>
-            </div>
-            <p className="item-modal-component-needed" style={{ width: "30px" }}>{component.itemCount}</p>
-            <HaveIcon
-                style={{ width: "25px", marginRight: "12px" }}
-                data-have-component={haveComponent}
-                className="item-modal-component-have"
-                size={26}
-                weight="bold"
-            />
-        </div>
-    );
-});
 
 // ---------- useColumnCount ----------
 // Mirrors `grid-template-columns: repeat(auto-fill, minmax(CARD_MIN_WIDTH, 1fr))`
@@ -122,100 +65,6 @@ function useColumnCount(containerRef: React.RefObject<HTMLElement>) {
 
     return columns;
 }
-
-// ---------- GridItem ----------
-// One card. Memoized with a custom comparator: `counts` is one shared
-// Record<string, number> for every component in the game, so a naive
-// reference-equality check on `counts` would bust the memo for every
-// card whenever ANY component's count changed anywhere. Instead we
-// only compare the counts that are actually relevant to this item's
-// own components.
-
-interface GridItemProps {
-    item: Item;
-    isMastered: boolean;
-    counts: Record<string, number>;
-    onToggleMastered: (item: Item) => void;
-    onIncrement: (uniqueName: string) => void;
-    onDecrement: (uniqueName: string) => void;
-    onSetValue: (uniqueName: string, value: number) => void;
-    onItemModal: (item: Item) => void;
-}
-
-function gridItemPropsAreEqual(prev: GridItemProps, next: GridItemProps) {
-    if (prev.item !== next.item) return false;
-    if (prev.isMastered !== next.isMastered) return false;
-    if (
-        prev.onToggleMastered !== next.onToggleMastered ||
-        prev.onIncrement !== next.onIncrement ||
-        prev.onDecrement !== next.onDecrement ||
-        prev.onSetValue !== next.onSetValue ||
-        prev.onItemModal !== next.onItemModal
-    ) return false;
-
-    if (prev.counts === next.counts) return true;
-
-    // Only bail out (i.e. re-render) if a count THIS item cares about changed
-    const components = next.item.components ?? [];
-    for (const component of components) {
-        const key = component.uniqueName;
-        if (prev.counts[key] !== next.counts[key]) return false;
-    }
-    return true;
-}
-
-const GridItem = memo(function GridItem({
-    item,
-    isMastered,
-    counts,
-    onToggleMastered,
-    onIncrement,
-    onDecrement,
-    onSetValue,
-    onItemModal,
-}: GridItemProps) {
-    return (
-        <div className="grid-item" data-prime={item.isPrime} data-mastered={isMastered}>
-            <div className="grid-column" role="button" tabIndex={0} onClick={() => onItemModal(item)} onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") onItemModal(item);
-            }}>
-                <img
-                    className="item-modal-image"
-                    style={{ marginBottom: "8px" }}
-                    loading="lazy"
-                    decoding="async"
-                    src={getImageUrl(item)}
-                    data-is-mastered={isMastered}
-                />
-                <h1 className="item-modal-title" style={{ fontSize: "18px" }}>{item.name}</h1>
-                <p className="item-modal-subtitle grid-item-category" style={{ fontSize: "14px" }}>{item.category}</p>
-                <button
-                    className="grid-item-mastery-button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleMastered(item);
-                    }}
-                    style={{ fontSize: "12px" }}
-                    data-is-mastered={isMastered}
-                >
-                    Mastered
-                </button>
-            </div>
-            <div className="grid-column">
-                {item.components?.map((component) => (
-                    <ComponentRow
-                        key={component.name}
-                        component={component}
-                        owned={counts[component.uniqueName] ?? 0}
-                        onIncrement={onIncrement}
-                        onDecrement={onDecrement}
-                        onSetValue={onSetValue}
-                    />
-                ))}
-            </div>
-        </div>
-    );
-}, gridItemPropsAreEqual);
 
 // ---------- Foundry ----------
 
@@ -408,7 +257,7 @@ export default function Foundry() {
                                     }}
                                 >
                                     {row.map(item => (
-                                        <GridItem
+                                        <FoundryItemCard
                                             key={item.uniqueName}
                                             item={item}
                                             isMastered={!!mastered[item.uniqueName]}
