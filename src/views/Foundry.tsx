@@ -1,14 +1,15 @@
 import { all, archwing, companions, melee, primaries, secondaries, warframes } from "../data/items"
 import type { Item } from "../data/types"
 import "./Foundry.css"
-import { Circle, Crosshair, Funnel, PawPrint, Rocket, SquaresFour, Sword, User } from "phosphor-react";
+import { Circle, Crosshair, Funnel, Package, PawPrint, Rocket, SquaresFour, Sword, User } from "phosphor-react";
 import { useComponentCounts } from "../hooks/useComponentCounts";
 import { EMPTY_MASTERED, type FoundrySettings, useUserStore } from "../persistence/userStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { ItemGroup, PrimeFilter } from "../types/view";
+import type { ItemGroup, PrimeFilter, PrimePartEntry } from "../types/view";
 import ItemModal from "../components/ItemModal";
 import FoundryItemCard from "../components/FoundryItemCard";
+import PrimePartsModal from "../components/PrimePartsModal";
 
 // Must match .grid-item's width constraints in Foundry.css
 const CARD_MIN_WIDTH = 360;  // shrink floor — used only if a comfortable column can't fit at all
@@ -88,6 +89,7 @@ export default function Foundry() {
     const [primeFilter, setPrimeFilter] = useState<PrimeFilter>(DEFAULT_FOUNDRY_SETTINGS.primeFilter);
     const [itemGroup, setItemGroup] = useState<ItemGroup>(DEFAULT_FOUNDRY_SETTINGS.itemGroup);
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+    const [showPrimeParts, setShowPrimeParts] = useState(false);
     const filtersRef = useRef<HTMLDivElement>(null);
 
     const itemsByGroup = useMemo(() => ({
@@ -165,6 +167,72 @@ export default function Foundry() {
     const handleSetValue = useCallback((uniqueName: string, value: number) => setValue(uniqueName, value), [setValue]);
 
     const items = itemsByGroup[itemGroup];
+
+    const primeParts = useMemo<PrimePartEntry[]>(() => {
+        const parts = new Map<string, PrimePartEntry>();
+        const unmasteredRequirements = new Map<string, number>();
+
+        for (const item of all) {
+            if (!item.isPrime || mastered[item.uniqueName]) continue;
+            for (const component of item.components ?? []) {
+                unmasteredRequirements.set(
+                    component.uniqueName,
+                    (unmasteredRequirements.get(component.uniqueName) ?? 0) + component.itemCount,
+                );
+            }
+        }
+
+        for (const item of all) {
+            if (!item.isPrime) continue;
+
+            for (const component of item.components ?? []) {
+                const owned = counts[component.uniqueName] ?? 0;
+                const isMastered = !!mastered[item.uniqueName];
+                if (owned <= 0 || component.ducats === undefined) continue;
+
+                const sellable = isMastered
+                    ? owned
+                    : Math.max(0, owned - (unmasteredRequirements.get(component.uniqueName) ?? 0));
+                if (sellable <= 0) continue;
+
+                const existing = parts.get(component.uniqueName);
+                if (existing) {
+                    existing.fromItems.push(item.name);
+                    existing.owned = Math.max(existing.owned, sellable);
+                    existing.removeAmount = Math.max(existing.removeAmount, sellable);
+                } else {
+                    parts.set(component.uniqueName, {
+                        uniqueName: component.uniqueName,
+                        name: component.name,
+                        imageName: component.imageName,
+						ducats: component.ducats,
+                        owned: sellable,
+                        removeAmount: sellable,
+                        fromItems: [item.name],
+                    });
+                }
+            }
+        }
+
+        return [...parts.values()].sort((a, b) => a.name.localeCompare(b.name));
+    }, [counts, mastered]);
+
+    const clearPrimeParts = useCallback(() => {
+        if (primeParts.length === 0) return;
+
+        const totalOwned = primeParts.reduce((total, part) => total + part.removeAmount, 0);
+        if (!window.confirm(`Remove ${totalOwned} owned Prime part${totalOwned === 1 ? "" : "s"} from your inventory? This cannot be undone.`)) return;
+
+        update((prev) => {
+            const components = { ...prev.components };
+            for (const part of primeParts) {
+                const remaining = (components[part.uniqueName] ?? 0) - part.removeAmount;
+                if (remaining > 0) components[part.uniqueName] = remaining;
+                else delete components[part.uniqueName];
+            }
+            return { components };
+        });
+    }, [primeParts, update]);
 
     const filteredItems = useMemo(() => {
         return items
@@ -245,6 +313,10 @@ export default function Foundry() {
                         ))}
                     </div>
                     <div className="toolbar-right">
+                        <button className="toolbar-icon-button" type="button" aria-label="Prime Parts" onClick={() => setShowPrimeParts(true)}>
+                            <Package size={18} weight="bold" />
+                            <span className="tooltip">Prime Parts</span>
+                        </button>
                         <div className="filters-wrapper" ref={filtersRef}>
                             <button key="filters" className="toolbar-icon-button" type="button" aria-label="filters" onClick={() => setShowFilters(!showFilters)}>
                                 <Funnel size={18} weight="bold" />
@@ -333,6 +405,12 @@ export default function Foundry() {
                 toggleMastered={toggleMasteredFromModal}
                 isOpen={selectedItem !== null}
                 onClose={() => setSelectedItem(null)}
+            />
+            <PrimePartsModal
+                entries={primeParts}
+                isOpen={showPrimeParts}
+                onClear={clearPrimeParts}
+                onClose={() => setShowPrimeParts(false)}
             />
         </div>
     )

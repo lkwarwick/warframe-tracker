@@ -1,0 +1,202 @@
+.prime-parts-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.72);
+}
+
+.prime-parts-modal {
+    display: flex;
+    flex-direction: column;
+    width: min(680px, 100%);
+    max-height: min(720px, 90vh);
+    border: 1px solid var(--gold-border);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+
+.prime-parts-header,
+.prime-parts-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+}
+
+.prime-parts-header {
+    border-bottom: 1px solid var(--border);
+}
+
+.prime-parts-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.prime-parts-header h2 {
+    margin-top: 4px;
+    color: var(--text);
+    font-size: 26px;
+}
+
+.prime-parts-summary {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.prime-parts-close {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.prime-parts-close:hover,
+.prime-parts-close:focus-visible {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.prime-parts-list {
+    min-height: 120px;
+    overflow-y: auto;
+    padding: 8px 22px;
+}
+
+.prime-part-row {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 190px;
+    align-items: center;
+    gap: 13px;
+    min-height: 62px;
+    border-bottom: 1px solid var(--border);
+}
+
+.prime-part-row:last-child {
+    border-bottom: 0;
+}
+
+.prime-part-row img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.prime-part-details {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.prime-part-details strong,
+.prime-part-details span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.prime-part-details strong {
+    color: var(--text);
+    font-size: 16px;
+}
+
+.prime-part-details span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.prime-part-values {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+}
+
+.prime-part-ducats,
+.prime-part-owned {
+    min-width: 58px;
+    color: var(--gold);
+    font-size: 16px;
+    text-align: right;
+}
+
+.prime-part-values span {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.prime-part-owned {
+    color: var(--gold);
+}
+
+.prime-parts-footer {
+    justify-content: flex-end;
+    border-top: 1px solid var(--border);
+}
+
+.prime-parts-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    border: 1px solid rgba(220, 94, 94, 0.45);
+    border-radius: 4px;
+    background: rgba(220, 94, 94, 0.08);
+    color: #e59a9a;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.prime-parts-clear:hover:not(:disabled),
+.prime-parts-clear:focus-visible:not(:disabled) {
+    border-color: #e59a9a;
+    background: rgba(220, 94, 94, 0.16);
+}
+
+.prime-parts-clear:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+@media (max-width: 560px) {
+    .prime-parts-backdrop {
+        padding: 10px;
+    }
+
+    .prime-parts-header,
+    .prime-parts-footer {
+        padding: 16px;
+    }
+
+    .prime-parts-list {
+        padding: 8px 16px;
+    }
+
+    .prime-part-row {
+        grid-template-columns: 42px minmax(0, 1fr) 175px;
+        gap: 8px;
+    }
+
+    .prime-part-values {
+        gap: 8px;
+    }
+}
