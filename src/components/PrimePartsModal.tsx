@@ -40,7 +40,6 @@ export default function PrimePartsModal({ entries, isOpen, onClear, onClose }: P
                             <img src={getImageUrl(entry.imageName)} alt="" />
                             <div className="prime-part-details">
                                 <strong>{entry.name}</strong>
-                                <span>{entry.fromItems.join(", ")}</span>
                             </div>
                             <div className="prime-part-values">
                                 <strong className="prime-part-ducats">{entry.ducats} x {entry.owned} = {entry.ducats * entry.owned} <span>Ducats</span></strong>

@@ -197,18 +197,16 @@ export default function Foundry() {
 
                 const existing = parts.get(component.uniqueName);
                 if (existing) {
-                    existing.fromItems.push(item.name);
                     existing.owned = Math.max(existing.owned, sellable);
                     existing.removeAmount = Math.max(existing.removeAmount, sellable);
                 } else {
                     parts.set(component.uniqueName, {
                         uniqueName: component.uniqueName,
-                        name: component.name,
+                        name: `${item.name} ${component.name}`,
                         imageName: component.imageName,
 						ducats: component.ducats,
                         owned: sellable,
                         removeAmount: sellable,
-                        fromItems: [item.name],
                     });
                 }
             }

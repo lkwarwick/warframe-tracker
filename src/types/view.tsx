@@ -8,5 +8,4 @@ export type PrimePartEntry = {
 	ducats: number;
 	owned: number;
 	removeAmount: number;
-	fromItems: string[];
 };
