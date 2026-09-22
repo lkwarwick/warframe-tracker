@@ -12,8 +12,8 @@ contextBridge.exposeInMainWorld('api', {
   saveUserData: (data: UserData): Promise<boolean> => ipcRenderer.invoke('save-user-data', data),
   getUserDataPath: (): Promise<string> => ipcRenderer.invoke('get-user-data-path'),
   deleteScreenshot: (filePath: string): Promise<boolean> => ipcRenderer.invoke('delete-screenshot', filePath),
-  onScreenshot: (cb: (screenshot: { path: string; dataUrl: string }) => void) => {
-    ipcRenderer.on('screenshot-created', (_event, screenshot: { path: string; dataUrl: string }) => {
+  onScreenshot: (cb: (screenshot: { path: string; dataUrl: string; canDelete: boolean }) => void) => {
+    ipcRenderer.on('screenshot-created', (_event, screenshot: { path: string; dataUrl: string; canDelete: boolean }) => {
       cb(screenshot);
     });
   },

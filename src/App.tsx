@@ -13,6 +13,7 @@ import { createEmptyUserData, useUserStore, type UserData } from "./persistence/
 type ScreenshotCapture = {
   path: string;
   dataUrl: string;
+  canDelete: boolean;
 };
 
 declare global {
@@ -93,6 +94,7 @@ function App() {
           key={screenshot.path}
           path={screenshot.path}
           dataUrl={screenshot.dataUrl}
+          canDelete={screenshot.canDelete}
           onClose={() => setScreenshot(null)}
         />
       )}

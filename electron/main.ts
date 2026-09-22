@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu } from "electron";
+import { app, BrowserWindow, globalShortcut, ipcMain, Menu } from "electron";
 import fs from "fs";
 import { promises as fsPromises } from "fs";
 import path from "path";
@@ -55,6 +55,7 @@ const screenshotExtensions = new Set([".jpg", ".jpeg", ".png"]);
 const screenshotWatchers: fs.FSWatcher[] = [];
 const pendingScreenshots = new Set<string>();
 let screenshotDirectories: string[] = [];
+const debugScreenshotPath = "/home/lkwarwick/.local/share/Steam/steamapps/compatdata/230410/pfx/drive_c/users/steamuser/Pictures/Warframe/Relics.jpg";
 
 function isScreenshotPath(filePath: string): boolean {
   return screenshotExtensions.has(path.extname(filePath).toLowerCase());
@@ -88,6 +89,7 @@ async function sendScreenshot(filePath: string): Promise<void> {
     win.webContents.send("screenshot-created", {
       path: filePath,
       dataUrl: `data:${mimeType};base64,${file.toString("base64")}`,
+      canDelete: filePath !== debugScreenshotPath,
     });
   } catch (_) {
     // The file may have been moved or deleted before it finished writing.
@@ -157,7 +159,7 @@ ipcMain.handle("save-user-data", (_event, data: unknown) => {
 });
 ipcMain.handle("get-user-data-path", () => personalDataPath);
 ipcMain.handle("delete-screenshot", async (_event, filePath: unknown) => {
-  if (typeof filePath !== "string" || !isScreenshotPath(filePath) || !isWatchedScreenshotPath(filePath)) {
+  if (typeof filePath !== "string" || filePath === debugScreenshotPath || !isScreenshotPath(filePath) || !isWatchedScreenshotPath(filePath)) {
     return false;
   }
 
@@ -267,4 +269,12 @@ app.whenReady().then(() => {
   }
 
   startScreenshotWatcher();
+  globalShortcut.register("F7", () => {
+    void sendScreenshot(debugScreenshotPath);
+  });
+});
+
+app.on("will-quit", () => {
+  globalShortcut.unregister("F7");
+  for (const watcher of screenshotWatchers) watcher.close();
 });

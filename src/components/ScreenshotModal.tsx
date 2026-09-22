@@ -5,10 +5,11 @@ import "./ScreenshotModal.css";
 interface ScreenshotModalProps {
     path: string;
     dataUrl: string;
+    canDelete: boolean;
     onClose: () => void;
 }
 
-export default function ScreenshotModal({ path, dataUrl, onClose }: ScreenshotModalProps) {
+export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: ScreenshotModalProps) {
     const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
@@ -39,9 +40,11 @@ export default function ScreenshotModal({ path, dataUrl, onClose }: ScreenshotMo
                 <div className="screenshot-modal-header">
                     <h2>Warframe Screenshot</h2>
                     <div className="screenshot-modal-actions">
-                        <button className="screenshot-modal-delete" type="button" onClick={() => void handleDelete()} disabled={isDeleting} aria-label="Close and delete screenshot">
-                            <Trash size={20} weight="bold" />
-                        </button>
+                                        {canDelete && (
+                                            <button className="screenshot-modal-delete" type="button" onClick={() => void handleDelete()} disabled={isDeleting} aria-label="Close and delete screenshot">
+                                                <Trash size={20} weight="bold" />
+                                            </button>
+                                        )}
                         <button className="screenshot-modal-close" type="button" onClick={onClose} aria-label="Close screenshot">
                             <X size={22} weight="bold" />
                         </button>
