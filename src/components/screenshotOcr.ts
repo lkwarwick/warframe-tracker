@@ -37,6 +37,8 @@ let workerPoolPromise: Promise<OcrWorker[]> | null = null;
 function getWorkerPool(): Promise<OcrWorker[]> {
     if (workerPoolPromise) return workerPoolPromise;
 
+    console.info("[ocr] Initializing worker pool.");
+
     workerPoolPromise = Promise.all(
         Array.from({ length: 4 }, () => createWorker("eng", 1)),
     )
@@ -45,10 +47,12 @@ function getWorkerPool(): Promise<OcrWorker[]> {
                 tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
                 preserve_interword_spaces: "1",
             })));
+            console.info(`[ocr] Worker pool ready with ${workers.length} workers.`);
             return workers;
         })
         .catch((error: unknown) => {
             workerPoolPromise = null;
+            console.error("[ocr] Failed to initialize worker pool.", error);
             throw error;
         });
 
@@ -69,14 +73,17 @@ function buildCatalog(): CatalogItem[] {
                     itemUniqueName: item.uniqueName,
                     componentUniqueName: component.uniqueName,
                 }));
+
             }
         }
     }
     names.add(JSON.stringify({ name: "Forma Blueprint" }));
 
-    return [...names]
+    const result = [...names]
         .map((value) => JSON.parse(value) as CatalogItem)
         .filter((item) => item.name.trim().length >= 3);
+    console.info(`[ocr] Catalog loaded with ${result.length} reward entries.`);
+    return result;
 }
 
 function normalize(value: string): string {
@@ -110,10 +117,13 @@ function levenshtein(left: string, right: string): number {
 
 function matchItem(text: string): OcrMatch[] {
     const normalizedText = normalize(text);
-    if (!normalizedText) return [];
+    if (!normalizedText) {
+        console.warn("[ocr] No usable text after normalization.", { text });
+        return [];
+    }
     const textTokens = normalizedText.split(" ");
 
-    return catalog
+    const matches = catalog
         .map((item) => {
             const normalizedName = normalize(item.name);
             const nameTokens = normalizedName.split(" ");
@@ -137,13 +147,23 @@ function matchItem(text: string): OcrMatch[] {
             componentUniqueName,
         }))
         .slice(0, 3);
+
+    if (matches.length === 0) {
+        console.warn("[ocr] No catalog match for OCR text.", { text, normalizedText });
+    } else {
+        console.info("[ocr] Catalog candidates:", matches.map(({ name, score, componentUniqueName }) => ({ name, score, componentUniqueName })));
+    }
+    return matches;
 }
 
 function loadImage(dataUrl: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
         const image = new Image();
         image.onload = () => resolve(image);
-        image.onerror = () => reject(new Error("The screenshot could not be loaded for OCR."));
+        image.onerror = () => {
+            console.error("[ocr] Screenshot image failed to load.", { dataUrlLength: dataUrl.length });
+            reject(new Error("The screenshot could not be loaded for OCR."));
+        };
         image.src = dataUrl;
     });
 }
@@ -164,7 +184,10 @@ function createCardCrop(image: HTMLImageElement, cardIndex: number): HTMLCanvasE
     crop.width = Math.round(sourceCropWidth * scale);
     crop.height = Math.round(sourceCropHeight * scale);
     const context = crop.getContext("2d");
-    if (!context) throw new Error("Could not create an OCR canvas.");
+    if (!context) {
+        console.error(`[ocr] Could not create OCR canvas for card ${cardIndex + 1}.`);
+        throw new Error("Could not create an OCR canvas.");
+    }
 
     context.drawImage(
         image,
@@ -185,14 +208,25 @@ export async function recognizeScreenshot(
     dataUrl: string,
     onProgress: (progress: OcrProgress) => void,
 ): Promise<OcrCardResult[]> {
+    console.info("[ocr] Starting screenshot recognition.");
     const image = await loadImage(dataUrl);
+    if (image.naturalWidth === 0 || image.naturalHeight === 0) {
+        console.error("[ocr] Loaded screenshot has invalid dimensions.", { width: image.naturalWidth, height: image.naturalHeight });
+        throw new Error("The screenshot has invalid dimensions.");
+    }
     const workers = await getWorkerPool();
     return await Promise.all(workers.map(async (worker, cardIndex) => {
-        onProgress({ card: cardIndex + 1, totalCards: 4, status: "Recognizing reward", progress: 0 });
-        const crop = createCardCrop(image, cardIndex);
-        const result = await worker.recognize(crop);
-        const text = result.data.text.trim();
-        onProgress({ card: cardIndex + 1, totalCards: 4, status: "Recognized reward", progress: 1 });
-        return { text, matches: matchItem(text) };
+        try {
+            onProgress({ card: cardIndex + 1, totalCards: 4, status: "Recognizing reward", progress: 0 });
+            const crop = createCardCrop(image, cardIndex);
+            const result = await worker.recognize(crop);
+            const text = result.data.text.trim();
+            onProgress({ card: cardIndex + 1, totalCards: 4, status: "Recognized reward", progress: 1 });
+            console.info(`[ocr] Card ${cardIndex + 1} recognized.`, { text });
+            return { text, matches: matchItem(text) };
+        } catch (error) {
+            console.error(`[ocr] Card ${cardIndex + 1} recognition failed.`, error);
+            throw error;
+        }
     }));
 }

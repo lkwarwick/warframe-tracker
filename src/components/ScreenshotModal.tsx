@@ -12,7 +12,7 @@ interface ScreenshotModalProps {
 }
 
 export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: ScreenshotModalProps) {
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [isProcessingSelection, setIsProcessingSelection] = useState(false);
     const [ocrResults, setOcrResults] = useState<OcrCardResult[]>([]);
     const [ocrProgress, setOcrProgress] = useState<OcrProgress | null>(null);
     const [ocrError, setOcrError] = useState<string | null>(null);
@@ -38,12 +38,14 @@ export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: S
             if (!cancelled) setOcrProgress(progress);
         })
             .then((results) => {
+                console.info("[screenshot-modal] OCR completed.", { results });
                 if (!cancelled) {
                     setOcrResults(results);
                     setOcrProgress(null);
                 }
             })
             .catch((error: unknown) => {
+                console.error("[screenshot-modal] OCR failed.", error);
                 if (!cancelled) {
                     setOcrProgress(null);
                     setOcrError(error instanceof Error ? error.message : "OCR failed.");
@@ -55,11 +57,35 @@ export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: S
         };
     }, [dataUrl]);
 
+    async function deleteAndClose() {
+        setIsProcessingSelection(true);
+        try {
+            const deleted = await window.api.deleteScreenshot(path);
+            if (!deleted && canDelete) {
+                console.error(`[screenshot-modal] Screenshot deletion failed: ${path}`);
+                return;
+            }
+            onClose();
+        } catch (error) {
+            console.error(`[screenshot-modal] Screenshot deletion threw: ${path}`, error);
+        } finally {
+            setIsProcessingSelection(false);
+        }
+    }
+
     async function handleDelete() {
-        setIsDeleting(true);
-        const deleted = await window.api.deleteScreenshot(path);
-        setIsDeleting(false);
-        if (deleted) onClose();
+        await deleteAndClose();
+    }
+
+    async function handleRewardSelection(componentUniqueName: string) {
+        console.info(`[screenshot-modal] Adding selected component: ${componentUniqueName}`);
+        useUserStore.getState().update((prev) => ({
+            components: {
+                ...prev.components,
+                [componentUniqueName]: (prev.components[componentUniqueName] ?? 0) + 1,
+            },
+        }));
+        await deleteAndClose();
     }
 
     return (
@@ -75,7 +101,7 @@ export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: S
                     <h2>Warframe Screenshot</h2>
                     <div className="screenshot-modal-actions">
                                         {canDelete && (
-                                            <button className="screenshot-modal-delete" type="button" onClick={() => void handleDelete()} disabled={isDeleting} aria-label="Close and delete screenshot">
+                                            <button className="screenshot-modal-delete" type="button" onClick={() => void handleDelete()} disabled={isProcessingSelection} aria-label="Close and delete screenshot">
                                                 <Trash size={20} weight="bold" />
                                             </button>
                                         )}
@@ -114,7 +140,14 @@ export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: S
                                         type="button"
                                         data-mastered={isMastered}
                                         data-needed={shouldPrioritize}
-                                        onClick={(event) => event.preventDefault()}
+                                        disabled={isProcessingSelection}
+                                        onClick={() => {
+                                                                            if (match.componentUniqueName) {
+                                                                                void handleRewardSelection(match.componentUniqueName);
+                                                                            } else {
+                                                                                console.warn("[screenshot-modal] Selected reward has no tracked component key.", { match });
+                                                                            }
+                                        }}
                                     >
                                         <span className="screenshot-ocr-card-label">Reward {String(index + 1).padStart(2, "0")}</span>
                                         <strong>{match.name}</strong>

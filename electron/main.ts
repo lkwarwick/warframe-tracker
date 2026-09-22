@@ -67,14 +67,27 @@ function isWatchedScreenshotPath(filePath: string): boolean {
 }
 
 async function sendScreenshot(filePath: string): Promise<void> {
-  if (!win || win.isDestroyed() || pendingScreenshots.has(filePath)) return;
+  if (!win || win.isDestroyed()) {
+    console.warn(`[screenshots] Ignoring capture because the window is unavailable: ${filePath}`);
+    return;
+  }
+  if (pendingScreenshots.has(filePath)) {
+    console.warn(`[screenshots] Ignoring duplicate capture while it is pending: ${filePath}`);
+    return;
+  }
   pendingScreenshots.add(filePath);
 
   try {
     let previousSize = -1;
     let file: Buffer | undefined;
     for (let attempt = 0; attempt < 10; attempt += 1) {
-      const stats = await fsPromises.stat(filePath);
+      let stats: Awaited<ReturnType<typeof fsPromises.stat>>;
+      try {
+        stats = await fsPromises.stat(filePath);
+      } catch (error) {
+        console.error(`[screenshots] Could not stat capture on attempt ${attempt + 1}: ${filePath}`, error);
+        throw error;
+      }
       if (stats.size > 0 && stats.size === previousSize) {
         file = await fsPromises.readFile(filePath);
         break;
@@ -82,7 +95,10 @@ async function sendScreenshot(filePath: string): Promise<void> {
       previousSize = stats.size;
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    if (!file) return;
+    if (!file) {
+      console.warn(`[screenshots] Capture did not become stable before timeout: ${filePath}`);
+      return;
+    }
 
     const extension = path.extname(filePath).toLowerCase();
     const mimeType = extension === ".png" ? "image/png" : "image/jpeg";
@@ -91,8 +107,8 @@ async function sendScreenshot(filePath: string): Promise<void> {
       dataUrl: `data:${mimeType};base64,${file.toString("base64")}`,
       canDelete: filePath !== debugScreenshotPath,
     });
-  } catch (_) {
-    // The file may have been moved or deleted before it finished writing.
+  } catch (error) {
+    console.error(`[screenshots] Failed to load or send capture: ${filePath}`, error);
   } finally {
     pendingScreenshots.delete(filePath);
   }
@@ -121,12 +137,21 @@ function startScreenshotWatcher(): void {
       const watcher = fs.watch(directory, (_eventType, filename) => {
         if (!filename) return;
         const filePath = path.join(directory, filename.toString());
-        if (isScreenshotPath(filePath)) void sendScreenshot(filePath);
+        if (isScreenshotPath(filePath)) {
+          console.info(`[screenshots] Detected capture: ${filePath}`);
+          void sendScreenshot(filePath);
+        }
       });
       screenshotWatchers.push(watcher);
-    } catch (_) {
-      // A missing or inaccessible screenshot directory should not stop startup.
+    } catch (error) {
+      console.error(`[screenshots] Could not watch directory: ${directory}`, error);
     }
+  }
+
+  if (screenshotDirectories.length === 0) {
+    console.error("[screenshots] No screenshot directories are available to watch.");
+  } else {
+    console.info(`[screenshots] Watching directories: ${screenshotDirectories.join(", ")}`);
   }
 }
 
@@ -160,13 +185,15 @@ ipcMain.handle("save-user-data", (_event, data: unknown) => {
 ipcMain.handle("get-user-data-path", () => personalDataPath);
 ipcMain.handle("delete-screenshot", async (_event, filePath: unknown) => {
   if (typeof filePath !== "string" || filePath === debugScreenshotPath || !isScreenshotPath(filePath) || !isWatchedScreenshotPath(filePath)) {
+    console.warn("[screenshots] Refused invalid or protected delete request:", filePath);
     return false;
   }
 
   try {
     await fsPromises.unlink(path.resolve(filePath));
     return true;
-  } catch (_) {
+  } catch (error) {
+    console.error(`[screenshots] Failed to delete capture: ${filePath}`, error);
     return false;
   }
 });
