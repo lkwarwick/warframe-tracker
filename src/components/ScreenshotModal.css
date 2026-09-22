@@ -32,7 +32,7 @@
 .screenshot-modal-header h2 {
     overflow: hidden;
     color: var(--gold);
-    font-size: 20px;
+    font-size: 21px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -80,7 +80,7 @@
 .screenshot-modal-image {
     display: block;
     width: 100%;
-    max-height: calc(94vh - 100px);
+    max-height: 48vh;
     border: 1px solid var(--border);
     background: var(--bg);
     object-fit: contain;
@@ -88,9 +88,9 @@
 
 .screenshot-ocr-panel {
     margin-top: 10px;
-    padding: 12px;
+    padding: 14px;
     border: 1px solid var(--border);
-    background: linear-gradient(135deg, rgba(200, 164, 77, 0.06), rgba(10, 10, 11, 0.72) 45%);
+    background: linear-gradient(135deg, rgba(200, 164, 77, 0.1), rgba(10, 10, 11, 0.78) 45%);
 }
 
 .screenshot-ocr-heading {
@@ -102,33 +102,33 @@
 
 .screenshot-ocr-heading h3 {
     color: var(--gold);
-    font-size: 15px;
+    font-size: 17px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .screenshot-ocr-heading span,
-.screenshot-ocr-card-label,
-.screenshot-ocr-alternatives {
-    color: var(--muted);
-    font-size: 12px;
+.screenshot-ocr-card-label {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .screenshot-ocr-results {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 8px;
-    margin-top: 10px;
+    gap: 10px;
+    margin-top: 12px;
 }
 
 .screenshot-ocr-result {
     display: flex;
     min-width: 0;
-    min-height: 92px;
+    min-height: 128px;
     flex-direction: column;
     align-items: flex-start;
-    gap: 7px;
-    padding: 10px 11px;
+    gap: 10px;
+    padding: 14px;
     border: 1px solid var(--gold-border);
     border-radius: 6px;
     background: var(--gold-bg);
@@ -159,15 +159,16 @@
     overflow: hidden;
     width: 100%;
     color: var(--text);
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.15;
     text-overflow: ellipsis;
     white-space: normal;
 }
 
 .screenshot-ocr-card-label {
     color: currentColor;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.1em;
     opacity: 0.75;
@@ -176,18 +177,21 @@
 
 .screenshot-ocr-statuses {
     display: flex;
+    align-items: center;
+    width: 100%;
     flex-wrap: wrap;
     gap: 4px;
     margin-top: auto;
 }
 
 .screenshot-ocr-status {
-    padding: 3px 6px;
+    padding: 5px 8px;
     border: 1px solid currentColor;
     border-radius: 3px;
     color: var(--gold-dim);
-    font-size: 11px;
-    line-height: 1;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.1;
 }
 
 .screenshot-ocr-status--mastered {
@@ -195,20 +199,24 @@
 }
 
 .screenshot-ocr-status--owned {
+    margin-left: auto;
+    padding: 0;
+    border: 0;
     color: var(--text);
+    text-align: right;
 }
 
 .screenshot-ocr-error {
     margin-top: 8px;
     color: #d47a7a;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .screenshot-modal-path {
     overflow: hidden;
     margin: 8px 4px 0;
-    color: var(--muted);
-    font-size: 12px;
+    color: var(--text);
+    font-size: 13px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }

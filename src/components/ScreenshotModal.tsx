@@ -116,7 +116,6 @@ export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: S
                                         <strong>{match.name}</strong>
                                         <span className="screenshot-ocr-statuses">
                                             {match.ducats !== undefined && <span className="screenshot-ocr-status screenshot-ocr-status--ducats">{match.ducats} Ducats</span>}
-                                            {isMastered && <span className="screenshot-ocr-status screenshot-ocr-status--mastered">Mastered</span>}
                                             {owned > 0 && <span className="screenshot-ocr-status screenshot-ocr-status--owned">Owned {owned}</span>}
                                         </span>
                                     </button>,
