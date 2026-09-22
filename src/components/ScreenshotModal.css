@@ -1,0 +1,96 @@
+.screenshot-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.78);
+}
+
+.screenshot-modal {
+    display: flex;
+    flex-direction: column;
+    width: min(1100px, 94vw);
+    max-height: 94vh;
+    padding: 12px;
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    background: rgb(20 20 20);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+}
+
+.screenshot-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 4px 10px;
+}
+
+.screenshot-modal-header h2 {
+    overflow: hidden;
+    color: var(--gold);
+    font-size: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.screenshot-modal-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.screenshot-modal-delete,
+.screenshot-modal-close {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid var(--gold-border);
+    color: var(--text);
+}
+
+.screenshot-modal-delete {
+    border-color: rgba(190, 70, 70, 0.45);
+    color: #d47a7a;
+}
+
+.screenshot-modal-delete:hover:not(:disabled),
+.screenshot-modal-delete:focus-visible:not(:disabled) {
+    border-color: #d47a7a;
+    color: #f09a9a;
+}
+
+.screenshot-modal-delete:disabled {
+    cursor: wait;
+    opacity: 0.5;
+}
+
+.screenshot-modal-close:hover,
+.screenshot-modal-close:focus-visible {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.screenshot-modal-image {
+    display: block;
+    width: 100%;
+    max-height: calc(94vh - 100px);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    object-fit: contain;
+}
+
+.screenshot-modal-path {
+    overflow: hidden;
+    margin: 8px 4px 0;
+    color: var(--muted);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

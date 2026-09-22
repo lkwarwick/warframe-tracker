@@ -1,4 +1,6 @@
 import { app, BrowserWindow, ipcMain, Menu } from "electron";
+import fs from "fs";
+import { promises as fsPromises } from "fs";
 import path from "path";
 import Store from 'electron-store';
 
@@ -49,6 +51,83 @@ const previousPersonalDataStore = new Store<{ userData: UserData }>({
   name: "user-data",
 });
 
+const screenshotExtensions = new Set([".jpg", ".jpeg", ".png"]);
+const screenshotWatchers: fs.FSWatcher[] = [];
+const pendingScreenshots = new Set<string>();
+let screenshotDirectories: string[] = [];
+
+function isScreenshotPath(filePath: string): boolean {
+  return screenshotExtensions.has(path.extname(filePath).toLowerCase());
+}
+
+function isWatchedScreenshotPath(filePath: string): boolean {
+  const resolvedPath = path.resolve(filePath);
+  return screenshotDirectories.some((directory) => path.dirname(resolvedPath) === directory);
+}
+
+async function sendScreenshot(filePath: string): Promise<void> {
+  if (!win || win.isDestroyed() || pendingScreenshots.has(filePath)) return;
+  pendingScreenshots.add(filePath);
+
+  try {
+    let previousSize = -1;
+    let file: Buffer | undefined;
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const stats = await fsPromises.stat(filePath);
+      if (stats.size > 0 && stats.size === previousSize) {
+        file = await fsPromises.readFile(filePath);
+        break;
+      }
+      previousSize = stats.size;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    if (!file) return;
+
+    const extension = path.extname(filePath).toLowerCase();
+    const mimeType = extension === ".png" ? "image/png" : "image/jpeg";
+    win.webContents.send("screenshot-created", {
+      path: filePath,
+      dataUrl: `data:${mimeType};base64,${file.toString("base64")}`,
+    });
+  } catch (_) {
+    // The file may have been moved or deleted before it finished writing.
+  } finally {
+    pendingScreenshots.delete(filePath);
+  }
+}
+
+function startScreenshotWatcher(): void {
+  const picturesPath = app.getPath("pictures");
+  const homePath = app.getPath("home");
+  const configuredPath = process.env.WARFRAME_SCREENSHOT_DIR;
+  const protonScreenshotDirectories = [
+    path.join(homePath, ".steam", "steam", "steamapps/compatdata/230410/pfx/drive_c/users/steamuser/Pictures/Warframe"),
+    path.join(homePath, ".steam", "debian-installation/steamapps/compatdata/230410/pfx/drive_c/users/steamuser/Pictures/Warframe"),
+    path.join(homePath, ".local", "share/Steam/steamapps/compatdata/230410/pfx/drive_c/users/steamuser/Pictures/Warframe"),
+  ];
+  const directories = [
+    configuredPath,
+    path.join(picturesPath, "Warframe"),
+    path.join(picturesPath, "Screenshots"),
+    picturesPath,
+    ...protonScreenshotDirectories,
+  ].filter((directory): directory is string => Boolean(directory));
+  screenshotDirectories = [...new Set(directories.filter((directory) => fs.existsSync(directory)))];
+
+  for (const directory of screenshotDirectories) {
+    try {
+      const watcher = fs.watch(directory, (_eventType, filename) => {
+        if (!filename) return;
+        const filePath = path.join(directory, filename.toString());
+        if (isScreenshotPath(filePath)) void sendScreenshot(filePath);
+      });
+      screenshotWatchers.push(watcher);
+    } catch (_) {
+      // A missing or inaccessible screenshot directory should not stop startup.
+    }
+  }
+}
+
 function isUserData(value: unknown): value is UserData {
   if (!value || typeof value !== "object") return false;
   const data = value as Partial<UserData>;
@@ -77,6 +156,18 @@ ipcMain.handle("save-user-data", (_event, data: unknown) => {
   return true;
 });
 ipcMain.handle("get-user-data-path", () => personalDataPath);
+ipcMain.handle("delete-screenshot", async (_event, filePath: unknown) => {
+  if (typeof filePath !== "string" || !isScreenshotPath(filePath) || !isWatchedScreenshotPath(filePath)) {
+    return false;
+  }
+
+  try {
+    await fsPromises.unlink(path.resolve(filePath));
+    return true;
+  } catch (_) {
+    return false;
+  }
+});
 
 /* ---------------------------- Browser + Preload --------------------------- */
 
@@ -174,4 +265,6 @@ app.whenReady().then(() => {
   } else {
     void win.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
+
+  startScreenshotWatcher();
 });

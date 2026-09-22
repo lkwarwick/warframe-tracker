@@ -5,10 +5,15 @@ import HeaderPanel from "./layout/HeaderPanel";
 import "./App.css"
 import FooterPanel from "./layout/FooterPanel";
 import MiddlePanel from "./layout/MiddlePanel";
+import ScreenshotModal from "./components/ScreenshotModal";
 import { useEffect, useState } from "react";
 import { View } from "./types/view";
 import { createEmptyUserData, useUserStore, type UserData } from "./persistence/userStore";
 
+type ScreenshotCapture = {
+  path: string;
+  dataUrl: string;
+};
 
 declare global {
     interface Window {
@@ -22,6 +27,8 @@ declare global {
             loadUserData: () => Promise<UserData>;
             saveUserData: (data: UserData) => Promise<boolean>;
             getUserDataPath: () => Promise<string>;
+            deleteScreenshot: (filePath: string) => Promise<boolean>;
+            onScreenshot: (cb: (screenshot: ScreenshotCapture) => void) => void;
             onForceSave: (cb: () => Promise<boolean>) => void;
           }
     }
@@ -29,6 +36,7 @@ declare global {
 
 function App() {
   const [activeView, setActiveView] = useState<View>("foundry");
+  const [screenshot, setScreenshot] = useState<ScreenshotCapture | null>(null);
   const data = useUserStore((state) => state.data);
   const hydrate = useUserStore((state) => state.hydrate);
   const markClean = useUserStore((state) => state.markClean);
@@ -53,6 +61,13 @@ function App() {
   }, [data, markClean]);
 
   useEffect(() => {
+    window.api.onScreenshot((capture) => {
+      setScreenshot(null);
+      window.setTimeout(() => setScreenshot(capture), 0);
+    });
+  }, []);
+
+  useEffect(() => {
     window.api.onForceSave(async () => {
       const currentData = useUserStore.getState().data;
       if (!currentData) return true;
@@ -73,6 +88,14 @@ function App() {
       <footer className="footer">
         <FooterPanel/>
       </footer>
+      {screenshot && (
+        <ScreenshotModal
+          key={screenshot.path}
+          path={screenshot.path}
+          dataUrl={screenshot.dataUrl}
+          onClose={() => setScreenshot(null)}
+        />
+      )}
     </div>
   )
 }

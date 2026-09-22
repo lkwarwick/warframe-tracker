@@ -11,6 +11,12 @@ contextBridge.exposeInMainWorld('api', {
   loadUserData: (): Promise<UserData> => ipcRenderer.invoke('load-user-data'),
   saveUserData: (data: UserData): Promise<boolean> => ipcRenderer.invoke('save-user-data', data),
   getUserDataPath: (): Promise<string> => ipcRenderer.invoke('get-user-data-path'),
+  deleteScreenshot: (filePath: string): Promise<boolean> => ipcRenderer.invoke('delete-screenshot', filePath),
+  onScreenshot: (cb: (screenshot: { path: string; dataUrl: string }) => void) => {
+    ipcRenderer.on('screenshot-created', (_event, screenshot: { path: string; dataUrl: string }) => {
+      cb(screenshot);
+    });
+  },
   // Force save on close: renderer can register a callback which will be called
   // when the main process sends the 'force-save' message.
   onForceSave: (cb: () => Promise<boolean> | boolean) => {
