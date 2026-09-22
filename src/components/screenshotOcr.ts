@@ -31,6 +31,29 @@ export type OcrProgress = {
 };
 
 const catalog = buildCatalog();
+type OcrWorker = Awaited<ReturnType<typeof createWorker>>;
+let workerPoolPromise: Promise<OcrWorker[]> | null = null;
+
+function getWorkerPool(): Promise<OcrWorker[]> {
+    if (workerPoolPromise) return workerPoolPromise;
+
+    workerPoolPromise = Promise.all(
+        Array.from({ length: 4 }, () => createWorker("eng", 1)),
+    )
+        .then(async (workers) => {
+            await Promise.all(workers.map((worker) => worker.setParameters({
+                tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+                preserve_interword_spaces: "1",
+            })));
+            return workers;
+        })
+        .catch((error: unknown) => {
+            workerPoolPromise = null;
+            throw error;
+        });
+
+    return workerPoolPromise;
+}
 
 function buildCatalog(): CatalogItem[] {
     const names = new Set<string>();
@@ -163,35 +186,13 @@ export async function recognizeScreenshot(
     onProgress: (progress: OcrProgress) => void,
 ): Promise<OcrCardResult[]> {
     const image = await loadImage(dataUrl);
-    const worker = await createWorker("eng", 1, {
-        logger: (message) => {
-            onProgress({
-                card: 0,
-                totalCards: 4,
-                status: message.status,
-                progress: message.progress,
-            });
-        },
-    });
-
-    try {
-        await worker.setParameters({
-            tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
-            preserve_interword_spaces: "1",
-        });
-
-        const results: OcrCardResult[] = [];
-        for (let card = 0; card < 4; card += 1) {
-            onProgress({ card: card + 1, totalCards: 4, status: "Recognizing reward", progress: 0 });
-            const crop = createCardCrop(image, card);
-            const result = await worker.recognize(crop);
-            const text = result.data.text.trim();
-            results.push({ text, matches: matchItem(text) });
-            onProgress({ card: card + 1, totalCards: 4, status: "Recognized reward", progress: 1 });
-        }
-
-        return results;
-    } finally {
-        await worker.terminate();
-    }
+    const workers = await getWorkerPool();
+    return await Promise.all(workers.map(async (worker, cardIndex) => {
+        onProgress({ card: cardIndex + 1, totalCards: 4, status: "Recognizing reward", progress: 0 });
+        const crop = createCardCrop(image, cardIndex);
+        const result = await worker.recognize(crop);
+        const text = result.data.text.trim();
+        onProgress({ card: cardIndex + 1, totalCards: 4, status: "Recognized reward", progress: 1 });
+        return { text, matches: matchItem(text) };
+    }));
 }
