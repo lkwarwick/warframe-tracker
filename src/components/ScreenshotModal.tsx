@@ -103,6 +103,9 @@ export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: S
                                 const isMastered = match.itemUniqueName
                                     ? !!mastered[match.itemUniqueName]
                                     : false;
+                                const shouldPrioritize = !isMastered
+                                    && match.itemCount !== undefined
+                                    && owned < match.itemCount;
 
                                 return [
                                     <button
@@ -110,6 +113,7 @@ export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: S
                                         key={`${index}-${match.name}`}
                                         type="button"
                                         data-mastered={isMastered}
+                                        data-needed={shouldPrioritize}
                                         onClick={(event) => event.preventDefault()}
                                     >
                                         <span className="screenshot-ocr-card-label">Reward {String(index + 1).padStart(2, "0")}</span>

@@ -155,6 +155,11 @@
     color: var(--mastered);
 }
 
+.screenshot-ocr-result[data-needed="true"] {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px var(--gold-dim), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
 .screenshot-ocr-result strong {
     overflow: hidden;
     width: 100%;

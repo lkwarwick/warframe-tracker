@@ -4,6 +4,7 @@ import { all } from "../data/items";
 type CatalogItem = {
     name: string;
     ducats?: number;
+    itemCount?: number;
     itemUniqueName?: string;
     componentUniqueName?: string;
 };
@@ -12,6 +13,7 @@ export type OcrMatch = {
     name: string;
     score: number;
     ducats?: number;
+    itemCount?: number;
     itemUniqueName?: string;
     componentUniqueName?: string;
 };
@@ -40,6 +42,7 @@ function buildCatalog(): CatalogItem[] {
                 names.add(JSON.stringify({
                     name: `${item.name} ${component.name}`,
                     ducats,
+                    itemCount: component.itemCount,
                     itemUniqueName: item.uniqueName,
                     componentUniqueName: component.uniqueName,
                 }));
@@ -102,10 +105,11 @@ function matchItem(text: string): OcrMatch[] {
         })
         .filter((match) => match.tokenScores.every((tokenScore) => tokenScore <= 0.34))
         .sort((left, right) => left.score - right.score)
-        .map(({ name, score, ducats, itemUniqueName, componentUniqueName }) => ({
+        .map(({ name, score, ducats, itemCount, itemUniqueName, componentUniqueName }) => ({
             name,
             score,
             ducats,
+            itemCount,
             itemUniqueName,
             componentUniqueName,
         }))
