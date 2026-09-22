@@ -85,12 +85,22 @@ async function sendScreenshot(filePath: string): Promise<void> {
       try {
         stats = await fsPromises.stat(filePath);
       } catch (error) {
+        const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+        if (code === "ENOENT" && attempt < 9) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          continue;
+        }
         console.error(`[screenshots] Could not stat capture on attempt ${attempt + 1}: ${filePath}`, error);
         throw error;
       }
       if (stats.size > 0 && stats.size === previousSize) {
-        file = await fsPromises.readFile(filePath);
-        break;
+        try {
+          file = await fsPromises.readFile(filePath);
+          break;
+        } catch (error) {
+          const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+          if (code !== "ENOENT" || attempt >= 9) throw error;
+        }
       }
       previousSize = stats.size;
       await new Promise((resolve) => setTimeout(resolve, 100));
