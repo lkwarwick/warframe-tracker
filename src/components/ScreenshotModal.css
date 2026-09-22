@@ -86,6 +86,124 @@
     object-fit: contain;
 }
 
+.screenshot-ocr-panel {
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(200, 164, 77, 0.06), rgba(10, 10, 11, 0.72) 45%);
+}
+
+.screenshot-ocr-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.screenshot-ocr-heading h3 {
+    color: var(--gold);
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.screenshot-ocr-heading span,
+.screenshot-ocr-card-label,
+.screenshot-ocr-alternatives {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.screenshot-ocr-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.screenshot-ocr-result {
+    display: flex;
+    min-width: 0;
+    min-height: 92px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 10px 11px;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: var(--gold-bg);
+    color: var(--gold);
+    appearance: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.screenshot-ocr-result:hover,
+.screenshot-ocr-result:focus-visible {
+    border-color: var(--gold);
+    background: var(--gold-panel-bg);
+    outline: none;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--gold-dim);
+}
+
+.screenshot-ocr-result[data-mastered="true"] {
+    border-color: var(--mastered-border);
+    background: var(--mastered-bg);
+    color: var(--mastered);
+}
+
+.screenshot-ocr-result strong {
+    overflow: hidden;
+    width: 100%;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+.screenshot-ocr-card-label {
+    color: currentColor;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    opacity: 0.75;
+    text-transform: uppercase;
+}
+
+.screenshot-ocr-statuses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: auto;
+}
+
+.screenshot-ocr-status {
+    padding: 3px 6px;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    color: var(--gold-dim);
+    font-size: 11px;
+    line-height: 1;
+}
+
+.screenshot-ocr-status--mastered {
+    color: var(--mastered);
+}
+
+.screenshot-ocr-status--owned {
+    color: var(--text);
+}
+
+.screenshot-ocr-error {
+    margin-top: 8px;
+    color: #d47a7a;
+    font-size: 13px;
+}
+
 .screenshot-modal-path {
     overflow: hidden;
     margin: 8px 4px 0;
