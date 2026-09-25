@@ -1,3 +1,13 @@
-import { BaseItem, Buildable } from "@wfcd/items";
+import type { BaseItem, Buildable } from "@wfcd/items";
 
-export type Item = BaseItem & Buildable;
+export type ItemComponent = {
+	uniqueName: string;
+	name: string;
+	itemCount: number;
+	imageName?: string;
+	ducats?: number;
+};
+
+export type Item = BaseItem & Omit<Buildable, "components"> & {
+	components?: ItemComponent[];
+};

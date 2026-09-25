@@ -24,7 +24,19 @@ declare module '@wfcd/items' {
     constructor(options?: ItemsOptions, ...items: Item[]);
     options: ItemsOptions;
     i18n: BundleofI18nBundle<Locale>;
+    /**
+     * Expand component refs on an item using the Components catalog (or a provided catalog).
+     */
+    static resolveComponents(
+      item: Item,
+      catalog?: Component[] | Map<string, Component> | Record<string, Component>
+    ): Item;
   }
+
+  export function resolveComponents(
+    item: Item,
+    catalog?: Component[] | Map<string, Component> | Record<string, Component>
+  ): Item;
 
   interface ModResolveable {
     uniqueName: string;
@@ -65,37 +77,48 @@ declare module '@wfcd/items' {
   interface ItemsOptions {
     category?: (Category | 'SentinelWeapons')[];
     ignoreEnemies?: boolean;
+    /**
+     * If true, load all locales from data/json/i18n/{locale}.json.
+     * If a string array, load only those locale files.
+     */
     i18n?: boolean | string[];
     i18nOnObject?: boolean;
+    /**
+     * When true (default), expand component refs on items at construction
+     * using the Components catalog. Set false to keep on-disk refs.
+     */
+    resolveComponents?: boolean;
   }
 
-  type Item =
-    | Extractor
-    | Melee
-    | Gun
-    | SentinelWeapon
-    | Warframe
-    | Mod
-    | SingleLevelMod
-    | RivenMod
-    | StanceMod
-    | PrimeMod
-    | RailjackMod
-    | ModularPetPart
-    | SolNode
-    | Skin
-    | Relic
-    | RequiemEternaRelic
-    | EmptyRelic
-    | Weapon
-    | ExaltedWeapon
-    | Resource
-    | Arcane
-    | Misc
-    | MinimalItem
-    | ModSet
-    | FocusWay
-    | NightwaveChallenge;
+  type Item
+    = | Extractor
+      | Melee
+      | Gun
+      | SentinelWeapon
+      | Warframe
+      | Mod
+      | SingleLevelMod
+      | RivenMod
+      | StanceMod
+      | PrimeMod
+      | RailjackMod
+      | ModularPetPart
+      | SolNode
+      | Skin
+      | Relic
+      | RequiemEternaRelic
+      | EmptyRelic
+      | Weapon
+      | ExaltedWeapon
+      | Resource
+      | Arcane
+      | Misc
+      | MinimalItem
+      | ModSet
+      | FocusWay
+      | NightwaveChallenge
+      | Honorium
+      | Component;
 
   type ModUnion = Mod | SingleLevelMod | RivenMod | StanceMod | PrimeMod | RailjackMod;
 
@@ -115,8 +138,11 @@ declare module '@wfcd/items' {
     imageName?: string;
     description?: string;
     releaseDate?: string;
+    codexSecret?: boolean;
     excludeFromCodex?: boolean;
     masterable: boolean;
+    /** Parents that list this item as a crafting component (catalog + standalone ingredients) */
+    parentUniqueNames?: UniqueName[];
   }
   interface BaseItem extends MinimalItem, Droppable {
     showInInventory?: boolean;
@@ -148,10 +174,20 @@ declare module '@wfcd/items' {
     buildTime?: number;
     skipBuildTimePrice?: number;
     consumeOnBuild?: boolean;
-    components?: Component[];
+    /**
+     * On disk / with `resolveComponents: false`: component refs.
+     * After construction with default `resolveComponents: true`: full Component objects.
+     */
+    components?: (Component | ComponentRef)[];
     marketCost?: number;
     bpCost?: number | '';
     itemCount?: number;
+  }
+
+  /** On-disk / unresolved parent.components entry */
+  interface ComponentRef {
+    uniqueName: UniqueName;
+    itemCount: number;
   }
   interface WikiaItem {
     wikiaThumbnail?: string;
@@ -253,6 +289,7 @@ declare module '@wfcd/items' {
   interface Arcane extends Named, Buildable, Droppable, WikiaItem {
     category: 'Arcanes';
     excludeFromCodex?: true;
+    codexSecret?: boolean;
     imageName: string;
     levelStats?: LevelStat[];
     masterable: false;
@@ -289,41 +326,41 @@ declare module '@wfcd/items' {
     type: 'Mod Set Mod';
     isPrime: false;
   }
-  type ModType =
-    | 'Railjack'
-    | 'Necramech'
-    | 'Warframe'
-    | 'Secondary'
-    | 'Melee'
-    | 'Companion'
-    | 'Primary'
-    | 'K-Drive'
-    | 'Riven'
-    | 'Archwing'
-    | 'Arch-Melee'
-    | 'Arch-Gun'
-    | 'Shotgun'
-    | 'Creature'
-    | 'Stance'
-    | 'Parazon'
-    | 'Transmutation'
-    | 'Peculiar'
-    | 'Plexus'
-    | 'Posture'
-    | 'Tektolyst Artifact';
+  type ModType
+    = | 'Railjack'
+      | 'Necramech'
+      | 'Warframe'
+      | 'Secondary'
+      | 'Melee'
+      | 'Companion'
+      | 'Primary'
+      | 'K-Drive'
+      | 'Riven'
+      | 'Archwing'
+      | 'Arch-Melee'
+      | 'Arch-Gun'
+      | 'Shotgun'
+      | 'Creature'
+      | 'Stance'
+      | 'Parazon'
+      | 'Transmutation'
+      | 'Peculiar'
+      | 'Plexus'
+      | 'Posture'
+      | 'Tektolyst Artifact';
 
-  type ArcaneType =
-    | 'Primary'
-    | 'Secondary'
-    | 'Melee'
-    | 'Warframe'
-    | 'Amp'
-    | 'Operator'
-    | 'Zaw'
-    | 'Kitgun'
-    | 'Bow'
-    | 'Shotgun'
-    | 'Sniper';
+  type ArcaneType
+    = | 'Primary'
+      | 'Secondary'
+      | 'Melee'
+      | 'Warframe'
+      | 'Amp'
+      | 'Operator'
+      | 'Zaw'
+      | 'Kitgun'
+      | 'Bow'
+      | 'Shotgun'
+      | 'Sniper';
 
   interface Mod extends MinimalItem, WikiaItem, Droppable {
     baseDrain: number;
@@ -418,7 +455,7 @@ declare module '@wfcd/items' {
     category: 'Pets';
   }
   interface Component extends MinimalItem, WikiaItem, Buildable, Attackable, Equippable {
-    itemCount: number;
+    itemCount?: number;
     imageName: string;
     tradable: boolean;
     drops?: Drop[];
@@ -672,41 +709,43 @@ declare module '@wfcd/items' {
 
   type Locale = 'de' | 'fr' | 'it' | 'ko' | 'es' | 'zh' | 'ru' | 'ja' | 'pl' | 'pt' | 'tc' | 'th' | 'tr' | 'uk';
 
-  type ProductCategory =
-    | 'CrewShipWeapons'
-    | 'KubrowPets'
-    | 'LongGuns'
-    | 'MechSuits'
-    | 'Melee'
-    | 'OperatorAmps'
-    | 'Pistols'
-    | 'SentinelWeapons'
-    | 'Sentinels'
-    | 'SpaceGuns'
-    | 'SpaceMelee'
-    | 'SpaceSuits'
-    | 'SpecialItems'
-    | 'Suits';
+  type ProductCategory
+    = | 'CrewShipWeapons'
+      | 'KubrowPets'
+      | 'LongGuns'
+      | 'MechSuits'
+      | 'Melee'
+      | 'OperatorAmps'
+      | 'Pistols'
+      | 'SentinelWeapons'
+      | 'Sentinels'
+      | 'SpaceGuns'
+      | 'SpaceMelee'
+      | 'SpaceSuits'
+      | 'SpecialItems'
+      | 'Suits';
 
-  type Category =
-    | 'All'
-    | 'Arcanes'
-    | 'Archwing'
-    | 'Fish'
-    | 'Gear'
-    | 'Glyphs'
-    | 'Misc'
-    | 'Mods'
-    | 'Node'
-    | 'Pets'
-    | 'Quests'
-    | 'Relics'
-    | 'Resources'
-    | 'Sentinels'
-    | 'Sigils'
-    | 'Skins'
-    | 'Warframes'
-    | Weapon['category'];
+  type Category
+    = | 'All'
+      | 'Arcanes'
+      | 'Archwing'
+      | 'Components'
+      | 'Fish'
+      | 'Gear'
+      | 'Glyphs'
+      | 'Honoria'
+      | 'Misc'
+      | 'Mods'
+      | 'Node'
+      | 'Pets'
+      | 'Quests'
+      | 'Relics'
+      | 'Resources'
+      | 'Sentinels'
+      | 'Sigils'
+      | 'Skins'
+      | 'Warframes'
+      | Weapon['category'];
 
   type ExaltedSlot = 'Primary' | 'Secondary' | 'Melee' | 'Arch-Gun' | 'Arch-Melee';
 
@@ -717,258 +756,293 @@ declare module '@wfcd/items' {
 
   type Noise = 'Alarming' | 'Silent';
 
-  type Polarity =
-    | 'aura'
-    | 'madurai'
-    | 'naramon'
-    | 'penjaga'
-    | 'umbra'
-    | 'unairu'
-    | 'universal'
-    | 'vazarin'
-    | 'zenurik'
-    | 'any';
+  type Polarity
+    = | 'aura'
+      | 'madurai'
+      | 'naramon'
+      | 'penjaga'
+      | 'umbra'
+      | 'unairu'
+      | 'universal'
+      | 'vazarin'
+      | 'zenurik'
+      | 'any';
 
   type Projectile = 'Discharge' | 'Hitscan' | 'Projectile' | 'Thrown';
 
   type Rarity = 'Common' | 'Uncommon' | 'Rare' | 'Legendary';
 
-  type Rotation =
-    | '(Extra)'
-    | 'A'
-    | 'Annihilation'
-    | 'Assassinate'
-    | 'B'
-    | 'C'
-    | 'Capture'
-    | 'Defense'
-    | 'Onslaught'
-    | 'rewards'
-    | 'Sabotage'
-    | 'Survival';
+  type Rotation
+    = | '(Extra)'
+      | 'A'
+      | 'Annihilation'
+      | 'Assassinate'
+      | 'B'
+      | 'C'
+      | 'Capture'
+      | 'Defense'
+      | 'Onslaught'
+      | 'rewards'
+      | 'Sabotage'
+      | 'Survival';
 
   type Sex = 'Male' | 'Female' | 'Androgynous' | 'Non-binary (Pluriform)' | 'Non-binary';
 
   type ShotType = 'Continuous' | 'Hit-Scan' | 'Projectile';
 
-  type Tag =
-    | 'Arbiters of Hexis'
-    | 'Baro'
-    | 'Cephalon'
-    | 'Cephalon Simaris'
-    | 'Cephalon Suda'
-    | 'Corpus'
-    | 'Dagath'
-    | 'Dax'
-    | 'Duviri'
-    | 'Entrati'
-    | 'Founder'
-    | 'Grineer'
-    | 'Incarnon'
-    | 'Infested'
-    | 'Invasion Reward'
-    | 'Kuva Lich'
-    | 'Lua'
-    | 'Never Vaulted'
-    | 'New Loka'
-    | 'Orokin'
-    | 'Perrin Sequence'
-    | 'The Perrin Sequence'
-    | 'Prime'
-    | 'Prisma'
-    | 'Red Veil'
-    | 'Scaldra'
-    | 'Sentient'
-    | 'Stalker'
-    | 'Steel Meridian'
-    | 'Syndicate'
-    | 'Technocyte Coda'
-    | 'Tenet'
-    | 'Tenno'
-    | 'Tutorial'
-    | 'Voruna'
-    | 'Vandal'
-    | 'Vaulted'
-    | 'Wraith'
-    | 'Zariman';
+  type Tag
+    = | 'Adversary'
+      | 'Amp'
+      | 'Arbiters of Hexis'
+      | 'Archimedea'
+      | 'Baro'
+      | 'Boss Fight'
+      | 'Cephalon'
+      | 'Cephalon Simaris'
+      | 'Cephalon Suda'
+      | 'Corpus'
+      | 'Dagath'
+      | 'Dax'
+      | 'Descendia'
+      | 'Dog Days'
+      | 'Duviri'
+      | 'Entrati'
+      | 'Event'
+      | 'Follie\'s Hunt'
+      | 'Focus'
+      | 'Founder'
+      | 'Grineer'
+      | 'Hunhow'
+      | 'Incarnon'
+      | 'Infested'
+      | 'Insign'
+      | 'Invasion Reward'
+      | 'Kitgun'
+      | 'Kuva'
+      | 'Kuva Lich'
+      | 'Lua'
+      | 'KIM'
+      | 'Mastery'
+      | 'Melica'
+      | 'Miscellaneous'
+      | 'Never Vaulted'
+      | 'New Loka'
+      | 'Nightwave'
+      | 'Open World'
+      | 'Orokin'
+      | 'Perrin Sequence'
+      | 'Perita'
+      | 'The Perrin Sequence'
+      | 'Prime'
+      | 'Prisma'
+      | 'Quest'
+      | 'Red Veil'
+      | 'Roathe'
+      | 'Scaldra'
+      | 'Sentient'
+      | 'Staff'
+      | 'Stalker'
+      | 'Steel Meridian'
+      | 'Syndicate'
+      | 'Technocyte Coda'
+      | 'Tektolyst Artifact'
+      | 'Tenet'
+      | 'Tenno'
+      | 'Trials'
+      | 'Tutorial'
+      | 'Voruna'
+      | 'Vandal'
+      | 'Vaulted'
+      | 'Wraith'
+      | 'Zariman'
+      | 'Zaw';
 
   type Trigger = 'Active' | 'Auto' | 'Auto Burst' | 'Burst' | 'Charge' | 'Duplex' | 'Held' | 'Melee' | 'Semi' | '';
 
-  type Type =
-    | 'Alloy'
-    | 'Arcade Minigame Unlock'
-    | 'Arcane'
-    | 'Archwing'
-    | 'Arm Cannon'
-    | 'Assault Saw'
-    | 'Aura'
-    | 'Ayatan Sculpture'
-    | 'Ayatan Star'
-    | 'Boosters'
-    | 'Bow'
-    | 'Captura'
-    | 'Cetus Bounty Rewards'
-    | 'Color Palette'
-    | 'Companion Weapon'
-    | 'Conservation Tag'
-    | 'Conservation Prey'
-    | 'Currency'
-    | 'Cut Gem'
-    | 'Dual Pistols'
-    | 'Dual Shotguns'
-    | 'Eidolon Shard'
-    | 'Emotes'
-    | 'Enemy Blueprint Tables'
-    | 'Enemy Mod Tables'
-    | 'Exalted Weapon'
-    | 'Extractor'
-    | 'Equipment Adapter'
-    | 'Fish'
-    | 'Fish Bait'
-    | 'Fish Part'
-    | 'Focus Lens'
-    | 'Fur Color'
-    | 'Fur Pattern'
-    | 'Gear'
-    | 'Gem'
-    | 'Glyph'
-    | 'Gunblade'
-    | 'Helminth Charger'
-    | 'K-Drive Component'
-    | 'Kavat'
-    | 'Key'
-    | 'Key Rewards'
-    | 'Kitgun Component'
-    | 'Kubrow'
-    | 'Launcher'
-    | 'Medallion'
-    | 'Misc'
-    | 'Mission Rewards'
-    | 'Mod Locations'
-    | 'Mod Set Mod'
-    | 'Nightwave Challenge'
-    | 'Node'
-    | 'Note Packs'
-    | 'Orbiter'
-    | 'Parazon'
-    | 'Pet Collar'
-    | 'Pet Resource'
-    | 'Pet Parts'
-    | 'Pets'
-    | 'Pistol'
-    | 'Plant'
-    | 'Primary'
-    | 'Railjack Turret'
-    | 'Relic'
-    | 'Relics'
-    | 'Resource'
-    | 'Rifle'
-    | 'Secondary'
-    | 'Sentinel'
-    | 'Ship Decoration'
-    | 'Ship Segment'
-    | 'Shotgun'
-    | 'Shotgun Sidearm'
-    | 'Sigil'
-    | 'Simulacrum'
-    | 'Skin'
-    | 'Skins'
-    | 'Solaris Bounty Rewards'
-    | 'Sortie Rewards'
-    | 'Specter'
-    | 'Syandana'
-    | 'Theme Background'
-    | 'Theme Sound'
-    | 'Themes'
-    | 'Thrown'
-    | 'Throwing'
-    | 'Transient Rewards'
-    | 'Transmutation Mod'
-    | 'Unique'
-    | 'Warframe'
-    | 'Zaw Component'
-    | '---'
-    | Mod['type']
-    | RivenMod['type']
-    | WeaponType
-    | MeleeType;
+  type Type
+    = | 'Alloy'
+      | 'Arcade Minigame Unlock'
+      | 'Arcane'
+      | 'Archwing'
+      | 'Arm Cannon'
+      | 'Assault Saw'
+      | 'Aura'
+      | 'Ayatan Sculpture'
+      | 'Ayatan Star'
+      | 'Boosters'
+      | 'Bow'
+      | 'Captura'
+      | 'Cetus Bounty Rewards'
+      | 'Color Palette'
+      | 'Companion Weapon'
+      | 'Conservation Tag'
+      | 'Conservation Prey'
+      | 'Currency'
+      | 'Cut Gem'
+      | 'Dual Pistols'
+      | 'Dual Shotguns'
+      | 'Eidolon Shard'
+      | 'Emotes'
+      | 'Enemy Blueprint Tables'
+      | 'Enemy Mod Tables'
+      | 'Exalted Weapon'
+      | 'Extractor'
+      | 'Equipment Adapter'
+      | 'Fish'
+      | 'Fish Bait'
+      | 'Fish Part'
+      | 'Focus Lens'
+      | 'Fur Color'
+      | 'Fur Pattern'
+      | 'Gear'
+      | 'Gem'
+      | 'Glyph'
+      | 'Gunblade'
+      | 'Helminth Charger'
+      | 'Honorium'
+      | 'K-Drive Component'
+      | 'Kavat'
+      | 'Key'
+      | 'Key Rewards'
+      | 'Kitgun Component'
+      | 'Kubrow'
+      | 'Launcher'
+      | 'Medallion'
+      | 'Misc'
+      | 'Mission Rewards'
+      | 'Mod Locations'
+      | 'Mod Set Mod'
+      | 'Necramech'
+      | 'Nightwave Challenge'
+      | 'Node'
+      | 'Note Packs'
+      | 'Orbiter'
+      | 'Parazon'
+      | 'Pet Collar'
+      | 'Pet Resource'
+      | 'Pet Parts'
+      | 'Pets'
+      | 'Pistol'
+      | 'Plant'
+      | 'Primary'
+      | 'Railjack Turret'
+      | 'Relic'
+      | 'Relics'
+      | 'Resource'
+      | 'Rifle'
+      | 'Secondary'
+      | 'Sentinel'
+      | 'Ship Decoration'
+      | 'Ship Segment'
+      | 'Shotgun'
+      | 'Shotgun Sidearm'
+      | 'Sigil'
+      | 'Simulacrum'
+      | 'Skin'
+      | 'Skins'
+      | 'Solaris Bounty Rewards'
+      | 'Sortie Rewards'
+      | 'Specter'
+      | 'Syandana'
+      | 'Theme Background'
+      | 'Theme Sound'
+      | 'Themes'
+      | 'Thrown'
+      | 'Throwing'
+      | 'Transient Rewards'
+      | 'Transmutation Mod'
+      | 'Unique'
+      | 'Warframe'
+      | 'Zaw Component'
+      | '---'
+      | Mod['type']
+      | RivenMod['type']
+      | WeaponType
+      | MeleeType;
 
-  type MeleeType =
-    | 'Blade And Whip'
-    | 'Blade and Whip'
-    | 'Claws'
-    | 'Dagger'
-    | 'Dual Daggers'
-    | 'Dual Swords'
-    | 'Fist'
-    | 'Glaive'
-    | 'Hammer'
-    | 'Heavy Blade'
-    | 'Machete'
-    | 'Melee'
-    | 'Nikana'
-    | 'Nunchaku'
-    | 'Polearm'
-    | 'Rapier'
-    | 'Scythe'
-    | 'Sparring'
-    | 'Staff'
-    | 'Sword'
-    | 'Sword And Shield'
-    | 'Sword and Shield'
-    | 'Tonfa'
-    | 'Two-Handed Nikana'
-    | 'Warfan'
-    | 'Whip'
-    | 'Zaw Dagger / Staff'
-    | 'Zaw Machete / Hammer'
-    | 'Zaw Machete / Polearm'
-    | 'Zaw Nikana / Staff'
-    | 'Zaw Rapier / Polearm'
-    | 'Zaw Scythe / Heavy Blade'
-    | 'Zaw Scythe / Staff'
-    | 'Zaw Sword / Polearm'
-    | 'Zaw Sword / Staff';
+  type MeleeType
+    = | 'Blade And Whip'
+      | 'Blade and Whip'
+      | 'Claws'
+      | 'Dagger'
+      | 'Dual Daggers'
+      | 'Dual Swords'
+      | 'Fist'
+      | 'Glaive'
+      | 'Hammer'
+      | 'Heavy Blade'
+      | 'Machete'
+      | 'Melee'
+      | 'Nikana'
+      | 'Nunchaku'
+      | 'Polearm'
+      | 'Rapier'
+      | 'Scythe'
+      | 'Sparring'
+      | 'Staff'
+      | 'Sword'
+      | 'Sword And Shield'
+      | 'Sword and Shield'
+      | 'Tonfa'
+      | 'Two-Handed Nikana'
+      | 'Warfan'
+      | 'Whip'
+      | 'Zaw Dagger / Staff'
+      | 'Zaw Machete / Hammer'
+      | 'Zaw Machete / Polearm'
+      | 'Zaw Nikana / Staff'
+      | 'Zaw Rapier / Polearm'
+      | 'Zaw Scythe / Heavy Blade'
+      | 'Zaw Scythe / Staff'
+      | 'Zaw Sword / Polearm'
+      | 'Zaw Sword / Staff';
 
-  type WeaponType =
-    | 'Amp'
-    | 'Arch-Gun'
-    | 'Arch-Melee'
-    | 'Bow'
-    | 'Kitgun'
-    | 'Launcher'
-    | 'Companion Weapon'
-    | 'Melee'
-    | 'Orb'
-    | 'Pistol'
-    | 'Rifle'
-    | 'Shotgun'
-    | 'Sniper'
-    | 'Zaw';
+  type WeaponType
+    = | 'Amp'
+      | 'Arch-Gun'
+      | 'Arch-Melee'
+      | 'Bow'
+      | 'Kitgun'
+      | 'Launcher'
+      | 'Companion Weapon'
+      | 'Melee'
+      | 'Orb'
+      | 'Pistol'
+      | 'Rifle'
+      | 'Shotgun'
+      | 'Sniper'
+      | 'Zaw';
 
-  type SystemName =
-    | 'Mercury'
-    | 'Venus'
-    | 'Earth'
-    | 'Lua'
-    | 'Mars'
-    | 'Deimos'
-    | 'Phobos'
-    | 'Ceres'
-    | 'Jupiter'
-    | 'Europa'
-    | 'Saturn'
-    | 'Uranus'
-    | 'Neptune'
-    | 'Pluto'
-    | 'Sedna'
-    | 'Eris'
-    | 'Kuva Fortress'
-    | 'Zariman'
-    | 'Void'
-    | 'Duviri'
-    | 'Höllvania'
-    | 'Dark Refractory, Deimos';
+  type SystemName
+    = | 'Mercury'
+      | 'Venus'
+      | 'Earth'
+      | 'Lua'
+      | 'Mars'
+      | 'Deimos'
+      | 'Phobos'
+      | 'Ceres'
+      | 'Jupiter'
+      | 'Europa'
+      | 'Saturn'
+      | 'Uranus'
+      | 'Neptune'
+      | 'Pluto'
+      | 'Sedna'
+      | 'Eris'
+      | 'Kuva Fortress'
+      | 'Zariman'
+      | 'Void'
+      | 'Duviri'
+      | 'Höllvania'
+      | 'Dark Refractory, Deimos';
 
   type Element = Capitalize<keyof DamageTypes>;
+
+  interface Honorium extends MinimalItem, WikiaItem {
+    title?: string;
+    titleAffix?: 'Prefix' | 'Suffix' | 'Expletive';
+    req?: string;
+    price?: object;
+  }
 }
