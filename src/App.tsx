@@ -5,35 +5,13 @@ import HeaderPanel from "./layout/HeaderPanel";
 import "./App.css"
 import FooterPanel from "./layout/FooterPanel";
 import MiddlePanel from "./layout/MiddlePanel";
-import ScreenshotModal from "./components/ScreenshotModal";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { View } from "./types/view";
-import { createEmptyUserData, useUserStore, type UserData } from "./persistence/userStore";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { createEmptyUserData, useUserStore } from "./persistence/userStore";
+import { loadUserData, onScreenshot, saveUserData, saveWindowState, type ScreenshotCapture } from "./lib/desktop";
 
-type ScreenshotCapture = {
-  path: string;
-  dataUrl: string;
-  canDelete: boolean;
-};
-
-declare global {
-    interface Window {
-        api: {
-            // Components
-            getComponents: () => Promise<Record<string, number>>;
-            incrementComponent: (uniqueName: string) => Promise<Record<string, number>>;
-            decrementComponent: (uniqueName: string) => Promise<Record<string, number>>;
-            setComponent: (uniqueName: string, value: number) => Promise<Record<string, number>>;
-            removeComponent: (uniqueName: string) => Promise<Record<string, number>>;
-            loadUserData: () => Promise<UserData>;
-            saveUserData: (data: UserData) => Promise<boolean>;
-            getUserDataPath: () => Promise<string>;
-            deleteScreenshot: (filePath: string) => Promise<boolean>;
-            onScreenshot: (cb: (screenshot: ScreenshotCapture) => void) => void;
-            onForceSave: (cb: () => Promise<boolean>) => void;
-          }
-    }
-}
+const ScreenshotModal = lazy(() => import("./components/ScreenshotModal"));
 
 function App() {
   const [activeView, setActiveView] = useState<View>("foundry");
@@ -44,11 +22,11 @@ function App() {
 
   useEffect(() => {
     let mounted = true;
-    window.api.loadUserData()
+    loadUserData()
       .then((savedData) => {
         if (mounted) hydrate(savedData ?? createEmptyUserData());
-      })
-      .catch(() => {
+      }).catch((error: unknown) => {
+        console.error("[app] Failed to load saved user data.", error);
         if (mounted) hydrate(createEmptyUserData());
       });
     return () => { mounted = false; };
@@ -56,24 +34,53 @@ function App() {
 
   useEffect(() => {
     if (!data) return;
-    void window.api.saveUserData(data).then((saved) => {
-      if (saved && useUserStore.getState().data === data) markClean();
-    });
+    void saveUserData(data)
+      .then(() => {
+        if (useUserStore.getState().data === data) markClean();
+      })
+      .catch((error: unknown) => console.error("[app] Failed to save user data.", error));
   }, [data, markClean]);
 
   useEffect(() => {
-    window.api.onScreenshot((capture) => {
-      setScreenshot(null);
-      window.setTimeout(() => setScreenshot(capture), 0);
-    });
+    let cancelled = false;
+    let unlisten: (() => void) | undefined;
+    void onScreenshot((capture) => {
+        setScreenshot(null);
+        window.setTimeout(() => setScreenshot(capture), 0);
+      }).then((stopListening) => {
+        if (cancelled) stopListening();
+        else unlisten = stopListening;
+      }).catch((error: unknown) => console.error("[app] Failed to listen for screenshots.", error));
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
   }, []);
 
   useEffect(() => {
-    window.api.onForceSave(async () => {
-      const currentData = useUserStore.getState().data;
-      if (!currentData) return true;
-      return window.api.saveUserData(currentData);
+    let closing = false;
+    const currentWindow = getCurrentWindow();
+    const unlisten = currentWindow.onCloseRequested(async (event) => {
+      if (closing) return;
+      event.preventDefault();
+      try {
+        const currentData = useUserStore.getState().data;
+        if (currentData) await saveUserData(currentData);
+        await saveWindowState();
+      } catch (error) {
+        console.error("[app] Failed to save application state before closing.", error);
+      }
+      closing = true;
+      try {
+        await currentWindow.destroy();
+      } catch (error) {
+        closing = false;
+        console.error("[app] Failed to close the application window.", error);
+      }
     });
+    return () => {
+      void unlisten.then((stopListening) => stopListening());
+    };
   }, []);
 
   return (
@@ -90,13 +97,15 @@ function App() {
         <FooterPanel/>
       </footer>
       {screenshot && (
-        <ScreenshotModal
-          key={screenshot.path}
-          path={screenshot.path}
-          dataUrl={screenshot.dataUrl}
-          canDelete={screenshot.canDelete}
-          onClose={() => setScreenshot(null)}
-        />
+        <Suspense fallback={null}>
+          <ScreenshotModal
+            key={screenshot.path}
+            path={screenshot.path}
+            dataUrl={screenshot.dataUrl}
+            canDelete={screenshot.canDelete}
+            onClose={() => setScreenshot(null)}
+          />
+        </Suspense>
       )}
     </div>
   )

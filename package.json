@@ -1,16 +1,17 @@
 {
   "name": "warframe-tracker",
-  "main": "out/main/main.js",
   "scripts": {
-    "dev": "electron-vite dev -- --ozone-platform=x11",
-    "fix:electron": "cd node_modules/electron && node install.js && cd ../../",
+    "dev": "tauri dev",
+    "dev:web": "vite --host 127.0.0.1",
     "vendor:update": "bash scripts/update-vendor.sh",
-    "build": "electron-vite build"
+    "build": "tauri build",
+    "build:web": "vite build",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.14.7",
-    "electron": "^43.1.0",
-    "electron-store": "^8.2.0",
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-global-shortcut": "^2.0.0",
     "phosphor-react": "^1.4.1",
     "react": "latest",
     "react-dom": "latest",
@@ -18,10 +19,10 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",
-    "electron-vite": "latest",
     "typescript": "latest",
     "vite": "^7.0.0"
   }

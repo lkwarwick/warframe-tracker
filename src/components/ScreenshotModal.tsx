@@ -3,6 +3,7 @@ import { Trash, X } from "phosphor-react";
 import "./ScreenshotModal.css";
 import { recognizeScreenshot, type OcrCardResult, type OcrProgress } from "./screenshotOcr";
 import { EMPTY_COMPONENTS, EMPTY_MASTERED, useUserStore } from "../persistence/userStore";
+import { deleteScreenshot } from "../lib/desktop";
 
 interface ScreenshotModalProps {
     path: string;
@@ -60,7 +61,7 @@ export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: S
     async function deleteAndClose() {
         setIsProcessingSelection(true);
         try {
-            const deleted = await window.api.deleteScreenshot(path);
+            const deleted = await deleteScreenshot(path);
             if (!deleted && canDelete) {
                 console.error(`[screenshot-modal] Screenshot deletion failed: ${path}`);
                 return;

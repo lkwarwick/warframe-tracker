@@ -109,7 +109,7 @@ const FoundryItemCard = memo(function FoundryItemCard({
                 if (event.key === "Enter" || event.key === " ") onItemModal(item);
             }}>
                 <img
-                    className="item-modal-image"
+                    className="foundry-item-image"
                     style={{ marginBottom: "8px" }}
                     loading="lazy"
                     decoding="async"

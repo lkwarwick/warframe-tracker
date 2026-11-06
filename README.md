@@ -11,9 +11,9 @@ Warframe Tracker helps you manage two key aspects of your Warframe progression: 
 
 ### Local Save Data
 
-The desktop app uses [`electron-store`](https://github.com/sindresorhus/electron-store) to save device-specific window preferences separately from syncable tracker data.
+The desktop app is built with [Tauri](https://tauri.app/). It saves device-specific window preferences separately from syncable tracker data.
 
-Tracker data is stored in a dedicated subfolder of Electron's app-data directory:
+Tracker data is stored in a dedicated subfolder of the app's configuration directory:
 
 ```text
 <app-data>/warframe-tracker/sync-data/user-data.json
@@ -63,7 +63,7 @@ The syncable data is stored under the `userData` key in `user-data.json` with th
 }
 ```
 
-The app loads this record when it starts and saves changes automatically as mastery, component counts, or view settings are updated. It also attempts a final save when the window closes. Existing data from the old combined `config.json` file is migrated automatically on first launch after this change. If the syncable file is missing or invalid, the app starts with empty progress and default view settings.
+The app loads this record when it starts and saves changes automatically as mastery, component counts, or view settings are updated. It also saves tracker data and window state before closing. Existing data from the old combined `config.json` file or the previous Documents folder is migrated automatically on first launch. If the syncable file is missing or invalid, the app starts with empty progress and default view settings.
 
 ### Mastery Checklist
 Keep track of all the equipment you've mastered across every category:
@@ -91,9 +91,16 @@ Want to contribute or just get it running? Here's how to set up the project.
 
 ### Prerequisites
 
-- **Node.js** 18+ (LTS recommended)
-- **npm** or **yarn**
-- **Linux** with X11 support
+- **Node.js** 20+ (LTS recommended)
+- **Rust** and Cargo (install with [rustup](https://rustup.rs/))
+- **Linux** with WebKitGTK 4.1 development libraries and GTK 3
+- **npm**
+
+On Debian/Ubuntu, install the Tauri build prerequisites with:
+
+```bash
+sudo apt install build-essential curl wget file libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf libwebkit2gtk-4.1-dev libgtk-3-dev
+```
 
 ### Setup & Running
 
@@ -108,19 +115,22 @@ Want to contribute or just get it running? Here's how to set up the project.
    npm install
    ```
 
-1. **(Optional) Install Electron
-   
-   Not sure why (if you know, please submit a bug fix PR!) Electron fails to install. If you get an error like this, run the following command:
-   ```bash
-   npm run fix:electron
-   ```
-
-3. **Start the development server**
+3. **Start the desktop app**
    ```bash
    npm run dev
    ```
 
-The app will launch in development mode with hot reload enabled. Any changes to the code will automatically refresh the window.
+The app launches in development mode with hot reload enabled. To create a packaged desktop build, run:
+
+```bash
+npm run build
+```
+
+The default Linux build creates a small `.deb` package that uses the system WebKitGTK runtime. To also build a self-contained AppImage (which bundles WebKitGTK and is substantially larger), run:
+
+```bash
+npx tauri build --bundles appimage
+```
 
 ### Desktop Integration (Optional)
 
@@ -133,8 +143,8 @@ cat > ~/.local/share/applications/warframe-tracker.desktop << EOF
 Type=Application
 Name=Warframe Tracker
 Comment=Track your Warframe mastery and Prime parts
-Exec=npm run dev --prefix /path/to/warframe-tracker
-Icon=/path/to/warframe-tracker/electron/assets/icon.png
+Exec=/path/to/warframe-tracker/src-tauri/target/release/warframe-tracker
+Icon=/path/to/warframe-tracker/src-tauri/icons/128x128.png
 Terminal=false
 Categories=Utility;Games;
 EOF

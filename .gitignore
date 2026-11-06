@@ -1,9 +1,9 @@
 node_modules
 dist
-dist-electron
-.vite
-.DS_Store
+src-tauri/target
+src-tauri/gen/schemas
 out
+.DS_Store
 
 # logs
 *.log

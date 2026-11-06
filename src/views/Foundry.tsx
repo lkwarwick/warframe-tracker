@@ -1,15 +1,16 @@
-import { all, archwing, companions, melee, primaries, secondaries, warframes } from "../data/items"
 import type { Item } from "../data/types"
 import "./Foundry.css"
+import "../components/ItemModal.css"
 import { Circle, Crosshair, Funnel, Package, PawPrint, Rocket, SquaresFour, Sword, User } from "phosphor-react";
 import { useComponentCounts } from "../hooks/useComponentCounts";
 import { EMPTY_MASTERED, type FoundrySettings, useUserStore } from "../persistence/userStore";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ItemGroup, PrimeFilter, PrimePartEntry } from "../types/view";
-import ItemModal from "../components/ItemModal";
 import FoundryItemCard from "../components/FoundryItemCard";
 import PrimePartsModal from "../components/PrimePartsModal";
+
+const ItemModal = lazy(() => import("../components/ItemModal"));
 
 // Must match .grid-item's width constraints in Foundry.css
 const CARD_MIN_WIDTH = 360;  // shrink floor — used only if a comfortable column can't fit at all
@@ -34,6 +35,16 @@ const GROUPS: { key: ItemGroup; label: string; icon: any }[] = [
     { key: "archwing", label: "Archwing", icon: Rocket },
     { key: "companions", label: "Companions", icon: PawPrint },
 ];
+
+const EMPTY_ITEMS_BY_GROUP: Record<ItemGroup, Item[]> = {
+    all: [],
+    warframes: [],
+    primaries: [],
+    secondaries: [],
+    melee: [],
+    archwing: [],
+    companions: [],
+};
 
 // ---------- useColumnCount ----------
 // Mirrors `grid-template-columns: repeat(auto-fill, minmax(CARD_MIN_WIDTH, 1fr))`
@@ -90,17 +101,37 @@ export default function Foundry() {
     const [itemGroup, setItemGroup] = useState<ItemGroup>(DEFAULT_FOUNDRY_SETTINGS.itemGroup);
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
     const [showPrimeParts, setShowPrimeParts] = useState(false);
+    const [itemsByGroup, setItemsByGroup] = useState(EMPTY_ITEMS_BY_GROUP);
+    const [itemsLoaded, setItemsLoaded] = useState(false);
+    const [itemsLoadFailed, setItemsLoadFailed] = useState(false);
     const filtersRef = useRef<HTMLDivElement>(null);
 
-    const itemsByGroup = useMemo(() => ({
-        all: all,
-        warframes: warframes,
-        primaries: primaries,
-        secondaries: secondaries,
-        melee: melee,
-        archwing: archwing,
-        companions: companions,
-    }), []);
+    useEffect(() => {
+        let cancelled = false;
+        let worker: Worker;
+        try {
+            worker = new Worker(new URL("../data/itemCatalog.worker.ts", import.meta.url), { type: "module" });
+        } catch (error) {
+            console.error("[foundry] Could not start the item catalog worker.", error);
+            setItemsLoadFailed(true);
+            return;
+        }
+        worker.onmessage = (event: MessageEvent<typeof EMPTY_ITEMS_BY_GROUP>) => {
+            if (cancelled) return;
+            setItemsByGroup(event.data);
+            setItemsLoaded(true);
+            worker.terminate();
+        };
+        worker.onerror = (event) => {
+            console.error("[foundry] Item catalog worker failed.", event.message);
+            if (!cancelled) setItemsLoadFailed(true);
+            worker.terminate();
+        };
+        return () => {
+            cancelled = true;
+            worker.terminate();
+        };
+    }, []);
 
     useEffect(() => {
         const saved = userData?.settings.foundry;
@@ -172,7 +203,7 @@ export default function Foundry() {
         const parts = new Map<string, PrimePartEntry>();
         const unmasteredRequirements = new Map<string, number>();
 
-        for (const item of all) {
+        for (const item of itemsByGroup.all) {
             if (!item.isPrime || mastered[item.uniqueName]) continue;
             for (const component of item.components ?? []) {
                 unmasteredRequirements.set(
@@ -182,7 +213,7 @@ export default function Foundry() {
             }
         }
 
-        for (const item of all) {
+        for (const item of itemsByGroup.all) {
             if (!item.isPrime) continue;
 
             for (const component of item.components ?? []) {
@@ -213,7 +244,7 @@ export default function Foundry() {
         }
 
         return [...parts.values()].sort((a, b) => a.name.localeCompare(b.name));
-    }, [counts, mastered]);
+    }, [counts, itemsByGroup.all, mastered]);
 
     const clearPrimeParts = useCallback(() => {
         if (primeParts.length === 0) return;
@@ -358,7 +389,11 @@ export default function Foundry() {
                             height: rowVirtualizer.getTotalSize(),
                         }}
                     >
-                        {rowVirtualizer.getVirtualItems().map(virtualRow => {
+                        {itemsLoadFailed ? (
+                            <p className="foundry-grid-state" role="alert">Could not load item data.</p>
+                        ) : !itemsLoaded ? (
+                            <p className="foundry-grid-state" role="status">Loading item data...</p>
+                        ) : rowVirtualizer.getVirtualItems().map(virtualRow => {
                             const row = rows[virtualRow.index];
                             return (
                                 <div
@@ -397,13 +432,17 @@ export default function Foundry() {
                     </div>
                 </div>
             </div>
-            <ItemModal
-                item={selectedItem}
-                isMastered={!!mastered[selectedItem?.uniqueName ?? ""]}
-                toggleMastered={toggleMasteredFromModal}
-                isOpen={selectedItem !== null}
-                onClose={() => setSelectedItem(null)}
-            />
+            {selectedItem && (
+                <Suspense fallback={null}>
+                    <ItemModal
+                        item={selectedItem}
+                        isMastered={!!mastered[selectedItem.uniqueName]}
+                        toggleMastered={toggleMasteredFromModal}
+                        isOpen
+                        onClose={() => setSelectedItem(null)}
+                    />
+                </Suspense>
+            )}
             <PrimePartsModal
                 entries={primeParts}
                 isOpen={showPrimeParts}
