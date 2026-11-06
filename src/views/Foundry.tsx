@@ -3,6 +3,7 @@ import "./Foundry.css"
 import "../components/ItemModal.css"
 import { Circle, Crosshair, Funnel, Package, PawPrint, Rocket, SquaresFour, Sword, User } from "phosphor-react";
 import { useComponentCounts } from "../hooks/useComponentCounts";
+import { useSmoothWheelScroll } from "../hooks/useSmoothWheelScroll";
 import { EMPTY_MASTERED, type FoundrySettings, useUserStore } from "../persistence/userStore";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -288,6 +289,7 @@ export default function Foundry() {
     }, [items, mastered, itemSearchText, hideCompleted, primeFilter]);
 
     const gridRef = useRef<HTMLDivElement>(null);
+    useSmoothWheelScroll(gridRef);
     const columns = useColumnCount(gridRef);
 
     const rows = useMemo(() => {
@@ -306,7 +308,7 @@ export default function Foundry() {
     });
 
     useEffect(() => {
-        gridRef.current?.scrollTo({ top: 0 });
+        gridRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     }, [itemGroup]);
 
     useEffect(() => {

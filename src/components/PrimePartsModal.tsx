@@ -1,7 +1,9 @@
 import { Package, Trash, X } from "phosphor-react";
+import { useRef } from "react";
 import type { PrimePartEntry } from "../types/view";
 import ThumbnailImage from "./ThumbnailImage";
 import "./PrimePartsModal.css";
+import { useSmoothWheelScroll } from "../hooks/useSmoothWheelScroll";
 
 interface PrimePartsModalProps {
     entries: PrimePartEntry[];
@@ -11,6 +13,9 @@ interface PrimePartsModalProps {
 }
 
 export default function PrimePartsModal({ entries, isOpen, onClear, onClose }: PrimePartsModalProps) {
+    const listRef = useRef<HTMLDivElement>(null);
+    useSmoothWheelScroll(listRef, isOpen);
+
     if (!isOpen) return null;
 
     const totalOwned = entries.reduce((total, entry) => total + entry.owned, 0);
@@ -31,7 +36,7 @@ export default function PrimePartsModal({ entries, isOpen, onClear, onClose }: P
                         <X size={20} weight="bold" />
                     </button>
                 </header>
-                <div className="prime-parts-list">
+                <div className="prime-parts-list" ref={listRef}>
                     {entries.map((entry) => (
                         <div className="prime-part-row" key={entry.uniqueName}>
                             <ThumbnailImage imageName={entry.imageName} size={80} alt="" />

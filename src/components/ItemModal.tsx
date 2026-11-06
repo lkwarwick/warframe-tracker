@@ -1,9 +1,11 @@
 import { BaseItem, Buildable, Component } from "@wfcd/items";
+import { useRef } from "react";
 import "./ItemModal.css";
 import { FlowerLotus, CheckCircle, XCircle } from "phosphor-react";
 import { useComponentCounts } from "../hooks/useComponentCounts";
 import relicsJson from "../../vendor/warframe-items/data/json/Relics.json";
 import ThumbnailImage from "./ThumbnailImage";
+import { useSmoothWheelScroll } from "../hooks/useSmoothWheelScroll";
 
 type Relic = {
     name: string;
@@ -47,12 +49,16 @@ interface ItemModalProps {
 
 export default function ItemModal({ item, isMastered, toggleMastered, isOpen, onClose }: ItemModalProps) {
     const { counts, increment, decrement, setValue } = useComponentCounts();
+    const modalRef = useRef<HTMLDivElement>(null);
+    const relicsRef = useRef<HTMLDivElement>(null);
+    useSmoothWheelScroll(modalRef, isOpen);
+    useSmoothWheelScroll(relicsRef, isOpen);
     
     if (!isOpen || !item) return null;
 
     return (
         <div className="modal-backdrop" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content" ref={modalRef} onClick={(e) => e.stopPropagation()}>
                 <div className="item-modal-body">
                     <div className="item-modal-left">
                     <ThumbnailImage className="item-modal-image" imageName={item.imageName} size={500} alt={item.name} data-is-mastered={isMastered} />
@@ -107,7 +113,7 @@ export default function ItemModal({ item, isMastered, toggleMastered, isOpen, on
                             {item.isPrime && (
                                 <>
                                     <h3>Relics</h3>
-                                    <div className="item-modal-relics">
+                                    <div className="item-modal-relics" ref={relicsRef}>
                                         {item.components?.map((component) => {
                                             const componentRelics = getRelicsForComponent(item.name, component.name);
 
