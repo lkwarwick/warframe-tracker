@@ -5,6 +5,10 @@
     min-height: 0;
 }
 
+.foundry-view > .toolbar-high {
+    z-index: 2;
+}
+
 .grid-container {
     flex: 1;
     min-height: 0;
