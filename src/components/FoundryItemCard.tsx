@@ -2,14 +2,14 @@ import { memo } from "react";
 import type { BaseItem, Component } from "@wfcd/items";
 import { CheckCircle, XCircle } from "phosphor-react";
 import type { Item } from "../data/types";
+import ThumbnailImage from "./ThumbnailImage";
 import "./FoundryItemCard.css";
 
 const IMAGE_OVERRIDES: Record<string, string> = { '/Lotus/Types/Items/MiscItems/Forma': 'Forma.png' };
 
-function getImageUrl(item: BaseItem | Component): string {
+function getImageName(item: BaseItem | Component): string | undefined {
     const override = IMAGE_OVERRIDES[item.uniqueName];
-    const imageName = override ?? item.imageName;
-    return imageName ? `https://cdn.warframestat.us/img/${imageName}` : '/fallback-icon.png';
+    return override ?? item.imageName;
 }
 
 interface ComponentRowProps {
@@ -33,7 +33,7 @@ const ComponentRow = memo(function ComponentRow({
     return (
         <div className="item-modal-component grid-item-component">
             <span className="component-image-tooltip" tabIndex={0} role="img" aria-label={component.name}>
-                <img className="item-modal-component-image" src={getImageUrl(component)} style={{ width: "40px" }} />
+                <ThumbnailImage className="item-modal-component-image" imageName={getImageName(component)} size={80} alt="" style={{ width: "40px" }} />
                 <span className="tooltip">{component.name}</span>
             </span>
             <h5 className="item-modal-component-text" style={{ width: "100px" }}>{component.name}</h5>
@@ -108,12 +108,13 @@ const FoundryItemCard = memo(function FoundryItemCard({
             <div className="grid-column" role="button" tabIndex={0} onClick={() => onItemModal(item)} onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") onItemModal(item);
             }}>
-                <img
+                <ThumbnailImage
                     className="foundry-item-image"
                     style={{ marginBottom: "8px" }}
-                    loading="lazy"
                     decoding="async"
-                    src={getImageUrl(item)}
+                    imageName={getImageName(item)}
+                    size={288}
+                    alt={item.name}
                     data-is-mastered={isMastered}
                 />
                 <h1 className="item-modal-title" style={{ fontSize: "18px" }}>{item.name}</h1>

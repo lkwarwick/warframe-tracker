@@ -1,5 +1,6 @@
 import { Package, Trash, X } from "phosphor-react";
 import type { PrimePartEntry } from "../types/view";
+import ThumbnailImage from "./ThumbnailImage";
 import "./PrimePartsModal.css";
 
 interface PrimePartsModalProps {
@@ -7,10 +8,6 @@ interface PrimePartsModalProps {
     isOpen: boolean;
     onClear: () => void;
     onClose: () => void;
-}
-
-function getImageUrl(imageName?: string): string {
-    return imageName ? `https://cdn.warframestat.us/img/${imageName}` : "/fallback-icon.png";
 }
 
 export default function PrimePartsModal({ entries, isOpen, onClear, onClose }: PrimePartsModalProps) {
@@ -37,7 +34,7 @@ export default function PrimePartsModal({ entries, isOpen, onClear, onClose }: P
                 <div className="prime-parts-list">
                     {entries.map((entry) => (
                         <div className="prime-part-row" key={entry.uniqueName}>
-                            <img src={getImageUrl(entry.imageName)} alt="" />
+                            <ThumbnailImage imageName={entry.imageName} size={80} alt="" />
                             <div className="prime-part-details">
                                 <strong>{entry.name}</strong>
                             </div>

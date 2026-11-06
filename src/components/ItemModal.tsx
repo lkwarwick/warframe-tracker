@@ -3,6 +3,7 @@ import "./ItemModal.css";
 import { FlowerLotus, CheckCircle, XCircle } from "phosphor-react";
 import { useComponentCounts } from "../hooks/useComponentCounts";
 import relicsJson from "../../vendor/warframe-items/data/json/Relics.json";
+import ThumbnailImage from "./ThumbnailImage";
 
 type Relic = {
     name: string;
@@ -49,16 +50,12 @@ export default function ItemModal({ item, isMastered, toggleMastered, isOpen, on
     
     if (!isOpen || !item) return null;
 
-    function getImageUrl(item: BaseItem | Component): string {
-        return `https://cdn.warframestat.us/img/${item.imageName}`;
-    }
-
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="item-modal-body">
                     <div className="item-modal-left">
-                    <img className="item-modal-image" data-is-mastered={isMastered} src={getImageUrl(item)}></img>
+                    <ThumbnailImage className="item-modal-image" imageName={item.imageName} size={500} alt={item.name} data-is-mastered={isMastered} />
                     <h1 className="item-modal-title"><FlowerLotus data-is-mastered={isMastered} className="item-modal-mastery-icon" size={26} weight="bold" />{item.name}</h1>
                     <p className="item-modal-subtitle">{item.category}</p>
                     <button className="item-modal-mastery-button" onClick={(e) => toggleMastered(e, item)} data-is-mastered={isMastered}>Mastered</button>
@@ -91,7 +88,7 @@ export default function ItemModal({ item, isMastered, toggleMastered, isOpen, on
 
                             return (
                             <div className="item-modal-component" key={component.name}>
-                                <img className="item-modal-component-image" src={getImageUrl(component)}></img>
+                                <ThumbnailImage className="item-modal-component-image" imageName={component.imageName} size={160} alt="" />
                                 <h5 className="item-modal-component-text">{component.name}</h5>
                                 <div className="item-modal-component-owned">
                                     <button onClick={() => decrement(component.uniqueName)}>-</button>

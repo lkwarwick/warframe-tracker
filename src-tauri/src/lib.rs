@@ -1,16 +1,19 @@
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use image::{imageops::FilterType, ImageFormat};
 use notify::{EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use std::{
     collections::{HashMap, HashSet},
     fs,
+    io::Cursor,
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
     thread,
     time::Duration,
 };
-use tauri::{Emitter, Manager, State};
+use tauri::{ipc::Response, Emitter, Manager, State};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Shortcut, ShortcutState};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -518,6 +521,100 @@ fn debug_screenshot_path(home: &Path) -> PathBuf {
     )
 }
 
+#[tauri::command]
+async fn fetch_thumbnail(
+    app: tauri::AppHandle,
+    image_name: String,
+    size: u32,
+) -> Result<Response, String> {
+    const CDN_HOST: &str = "cdn.warframestat.us";
+    const IMAGE_HOST: &str = "raw.githubusercontent.com";
+    const MAX_IMAGE_BYTES: u64 = 20 * 1024 * 1024;
+    if size == 0 || size > 1024 {
+        return Err("Thumbnail size must be between 1 and 1024 pixels".into());
+    }
+    if image_name.is_empty()
+        || image_name.starts_with('/')
+        || image_name
+            .split('/')
+            .any(|part| part.is_empty() || part == "." || part == "..")
+        || !image_name
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric() || "-_./".contains(character))
+    {
+        return Err("Invalid image name".into());
+    }
+
+    let cache_dir = app
+        .path()
+        .app_cache_dir()
+        .map_err(|error| error.to_string())?
+        .join("thumbs");
+    fs::create_dir_all(&cache_dir)
+        .map_err(|error| format!("Could not create thumbnail cache: {error}"))?;
+
+    let key = format!(
+        "{:x}",
+        Sha256::digest(format!("{image_name}|{size}").as_bytes())
+    );
+    let cache_path = cache_dir.join(format!("{key}.png"));
+    match fs::read(&cache_path) {
+        Ok(cached) => return Ok(Response::new(cached)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => eprintln!("[thumbnails] Could not read cache: {error}"),
+    }
+
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(30))
+        .redirect(reqwest::redirect::Policy::custom(|attempt| {
+            if matches!(attempt.url().host_str(), Some(CDN_HOST | IMAGE_HOST)) {
+                attempt.follow()
+            } else {
+                attempt.stop()
+            }
+        }))
+        .build()
+        .map_err(|error| error.to_string())?;
+    let url = format!("https://{CDN_HOST}/img/{image_name}");
+    let response = client
+        .get(url)
+        .send()
+        .await
+        .map_err(|error| error.to_string())?
+        .error_for_status()
+        .map_err(|error| error.to_string())?;
+    if response
+        .content_length()
+        .is_some_and(|length| length > MAX_IMAGE_BYTES)
+    {
+        return Err("Thumbnail image exceeds the 20 MiB download limit".into());
+    }
+    let bytes = response.bytes().await.map_err(|error| error.to_string())?;
+    if bytes.len() as u64 > MAX_IMAGE_BYTES {
+        return Err("Thumbnail image exceeds the 20 MiB download limit".into());
+    }
+
+    let png = tauri::async_runtime::spawn_blocking(move || -> Result<Vec<u8>, String> {
+        let image = image::load_from_memory(&bytes).map_err(|error| error.to_string())?;
+        let thumbnail = image.resize(size, size, FilterType::Lanczos3);
+        let mut output = Cursor::new(Vec::new());
+        thumbnail
+            .write_to(&mut output, ImageFormat::Png)
+            .map_err(|error| error.to_string())?;
+        Ok(output.into_inner())
+    })
+    .await
+    .map_err(|error| error.to_string())??;
+
+    if let Err(error) = fs::write(&cache_path, &png) {
+        eprintln!(
+            "[thumbnails] Could not write cache {}: {error}",
+            cache_path.display()
+        );
+    }
+    Ok(Response::new(png))
+}
+
 pub fn run() {
     let f7_shortcut = Shortcut::new(None, Code::F7);
     let shortcut_for_handler = f7_shortcut.clone();
@@ -539,7 +636,8 @@ pub fn run() {
             save_user_data,
             get_user_data_path,
             delete_screenshot,
-            save_window_state
+            save_window_state,
+            fetch_thumbnail
         ])
         .setup(move |app| {
             let data_dir = app_data_dir(app.handle()).map_err(std::io::Error::other)?;
