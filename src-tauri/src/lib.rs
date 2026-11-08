@@ -658,9 +658,13 @@ pub fn run() {
             );
             app.manage(state);
 
-            if let Some(window) = app.get_webview_window("main") {
-                restore_window(&window, &data_dir);
-            }
+            let window = app
+                .get_webview_window("main")
+                .ok_or_else(|| std::io::Error::other("main window is unavailable"))?;
+            let window_icon =
+                tauri::image::Image::from_bytes(include_bytes!("../icons/128x128.png"))?;
+            window.set_icon(window_icon)?;
+            restore_window(&window, &data_dir);
             start_screenshot_watchers(app.handle(), &app.state::<AppState>());
             app.global_shortcut().register(f7_shortcut.clone())?;
             Ok(())
