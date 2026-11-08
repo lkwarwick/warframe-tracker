@@ -134,12 +134,15 @@ function matchItem(text: string): OcrMatch[] {
                 return closestTokenDistance;
             });
             const score = tokenScores.reduce((sum, tokenScore) => sum + tokenScore, 0) / tokenScores.length;
-            return { ...item, score, tokenScores };
+            const phraseMatch = ` ${normalizedText} `.includes(` ${normalizedName} `);
+            return { ...item, score, tokenScores, phraseMatch };
         })
         .filter((match) => match.tokenScores.every((tokenScore) => tokenScore <= 0.34))
-        .sort((left, right) => left.score - right.score)
+        .sort((left, right) => Number(right.phraseMatch) - Number(left.phraseMatch) || left.score - right.score)
         .map(({ name, score, ducats, itemCount, itemUniqueName, componentUniqueName }) => ({
-            name,
+            name: textTokens.includes("blueprint") && !normalize(name).split(" ").includes("blueprint")
+                ? `${name} Blueprint`
+                : name,
             score,
             ducats,
             itemCount,
@@ -168,18 +171,82 @@ function loadImage(dataUrl: string): Promise<HTMLImageElement> {
     });
 }
 
-function createCardCrop(image: HTMLImageElement, cardIndex: number): HTMLCanvasElement {
+function detectRewardCardCount(image: HTMLImageElement): 2 | 3 | 4 {
     const sourceWidth = image.naturalWidth;
     const sourceHeight = image.naturalHeight;
-    const rewardLeft = sourceWidth * 0.273;
-    const rewardWidth = sourceWidth * 0.454;
-    const cardWidth = rewardWidth / 4;
+    const scanY = Math.round(sourceHeight * 0.23);
+    const scanHeight = Math.round(sourceHeight * 0.21);
+    const scan = document.createElement("canvas");
+    scan.width = sourceWidth;
+    scan.height = scanHeight;
+
+    const context = scan.getContext("2d");
+    if (!context) {
+        console.error("[ocr] Could not create card-layout detection canvas.");
+        throw new Error("Could not detect the reward card layout.");
+    }
+
+    context.drawImage(image, 0, scanY, sourceWidth, scanHeight, 0, 0, sourceWidth, scanHeight);
+    const pixels = context.getImageData(0, 0, sourceWidth, scanHeight).data;
+    const edgeStrength = new Float64Array(sourceWidth);
+
+    for (let y = 0; y < scanHeight; y += 1) {
+        const firstIndex = y * sourceWidth * 4;
+        let previousLuminance = pixels[firstIndex] * 0.2126
+            + pixels[firstIndex + 1] * 0.7152
+            + pixels[firstIndex + 2] * 0.0722;
+
+        for (let x = 1; x < sourceWidth; x += 1) {
+            const index = (y * sourceWidth + x) * 4;
+            const luminance = pixels[index] * 0.2126
+                + pixels[index + 1] * 0.7152
+                + pixels[index + 2] * 0.0722;
+            edgeStrength[x] += Math.abs(luminance - previousLuminance);
+            previousLuminance = luminance;
+        }
+    }
+
+    const cardWidth = sourceWidth * 0.454 / 4;
+    const edgeRadius = Math.max(2, Math.round(sourceWidth * 0.002));
+    const candidates = ([2, 3, 4] as const).map((cardCount) => {
+        const rewardLeft = (sourceWidth - cardWidth * cardCount) / 2;
+        const boundaryStrength = Array.from({ length: cardCount + 1 }, (_, index) => {
+            const boundary = Math.round(rewardLeft + index * cardWidth);
+            const start = Math.max(0, boundary - edgeRadius);
+            const end = Math.min(sourceWidth - 1, boundary + edgeRadius);
+            let strongest = 0;
+            for (let x = start; x <= end; x += 1) {
+                strongest = Math.max(strongest, edgeStrength[x]);
+            }
+            return strongest;
+        });
+        const score = boundaryStrength.reduce((sum, strength) => sum + strength, 0) / boundaryStrength.length;
+        return { cardCount, score };
+    });
+
+    const bestCandidate = candidates.sort(
+        (left, right) => right.score - left.score || right.cardCount - left.cardCount,
+    )[0];
+    if (!bestCandidate || bestCandidate.score < 2500) {
+        console.warn("[ocr] Could not confidently detect reward card count; defaulting to four.");
+        return 4;
+    }
+
+    console.info(`[ocr] Detected ${bestCandidate.cardCount} reward cards.`);
+    return bestCandidate.cardCount;
+}
+
+function createCardCrop(image: HTMLImageElement, cardIndex: number, cardCount: number): HTMLCanvasElement {
+    const sourceWidth = image.naturalWidth;
+    const sourceHeight = image.naturalHeight;
+    const cardWidth = sourceWidth * 0.454 / 4;
+    const rewardLeft = (sourceWidth - cardWidth * cardCount) / 2;
     const crop = document.createElement("canvas");
     const sourceX = rewardLeft + cardIndex * cardWidth;
-    const sourceY = sourceHeight * 0.347;
+    const sourceY = sourceHeight * 0.39;
     const sourceCropWidth = cardWidth * 0.98;
-    const sourceCropHeight = sourceHeight * 0.125;
-    const scale = 4;
+    const sourceCropHeight = sourceHeight * 0.05;
+    const scale = 8;
 
     crop.width = Math.round(sourceCropWidth * scale);
     crop.height = Math.round(sourceCropHeight * scale);
@@ -204,6 +271,29 @@ function createCardCrop(image: HTMLImageElement, cardIndex: number): HTMLCanvasE
     return crop;
 }
 
+async function recognizeCards(
+    image: HTMLImageElement,
+    workers: OcrWorker[],
+    cardCount: number,
+    onProgress: (progress: OcrProgress) => void,
+): Promise<OcrCardResult[]> {
+    return Promise.all(Array.from({ length: cardCount }, async (_, cardIndex) => {
+        const worker = workers[cardIndex];
+        try {
+            onProgress({ card: cardIndex + 1, totalCards: cardCount, status: "Recognizing reward", progress: 0 });
+            const crop = createCardCrop(image, cardIndex, cardCount);
+            const result = await worker.recognize(crop.toDataURL("image/png"));
+            const text = result.data.text.trim();
+            onProgress({ card: cardIndex + 1, totalCards: cardCount, status: "Recognized reward", progress: 1 });
+            console.info(`[ocr] Card ${cardIndex + 1} recognized.`, { text });
+            return { text, matches: matchItem(text) };
+        } catch (error) {
+            console.error(`[ocr] Card ${cardIndex + 1} recognition failed.`, error);
+            throw error;
+        }
+    }));
+}
+
 export async function recognizeScreenshot(
     dataUrl: string,
     onProgress: (progress: OcrProgress) => void,
@@ -215,18 +305,6 @@ export async function recognizeScreenshot(
         throw new Error("The screenshot has invalid dimensions.");
     }
     const workers = await getWorkerPool();
-    return await Promise.all(workers.map(async (worker, cardIndex) => {
-        try {
-            onProgress({ card: cardIndex + 1, totalCards: 4, status: "Recognizing reward", progress: 0 });
-            const crop = createCardCrop(image, cardIndex);
-            const result = await worker.recognize(crop);
-            const text = result.data.text.trim();
-            onProgress({ card: cardIndex + 1, totalCards: 4, status: "Recognized reward", progress: 1 });
-            console.info(`[ocr] Card ${cardIndex + 1} recognized.`, { text });
-            return { text, matches: matchItem(text) };
-        } catch (error) {
-            console.error(`[ocr] Card ${cardIndex + 1} recognition failed.`, error);
-            throw error;
-        }
-    }));
+    const cardCount = detectRewardCardCount(image);
+    return recognizeCards(image, workers, cardCount, onProgress);
 }
