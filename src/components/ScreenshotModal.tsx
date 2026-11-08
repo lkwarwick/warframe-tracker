@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Trash, X } from "phosphor-react";
+import { Download, Trash, X } from "phosphor-react";
 import "./ScreenshotModal.css";
 import { recognizeScreenshot, type OcrCardResult, type OcrProgress } from "./screenshotOcr";
 import { EMPTY_COMPONENTS, EMPTY_MASTERED, useUserStore } from "../persistence/userStore";
-import { deleteScreenshot } from "../lib/desktop";
+import { deleteScreenshot, saveScreenshotCopy } from "../lib/desktop";
 
 interface ScreenshotModalProps {
     path: string;
@@ -14,6 +14,8 @@ interface ScreenshotModalProps {
 
 export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: ScreenshotModalProps) {
     const [isProcessingSelection, setIsProcessingSelection] = useState(false);
+    const [isSavingScreenshot, setIsSavingScreenshot] = useState(false);
+    const [downloadError, setDownloadError] = useState<string | null>(null);
     const [ocrResults, setOcrResults] = useState<OcrCardResult[]>([]);
     const [ocrProgress, setOcrProgress] = useState<OcrProgress | null>(null);
     const [ocrError, setOcrError] = useState<string | null>(null);
@@ -78,6 +80,19 @@ export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: S
         await deleteAndClose();
     }
 
+    async function handleDownload() {
+        setIsSavingScreenshot(true);
+        setDownloadError(null);
+        try {
+            await saveScreenshotCopy(path, dataUrl);
+        } catch (error) {
+            console.error("[screenshot-modal] Failed to save screenshot copy.", error);
+            setDownloadError("Could not save the screenshot. Please try again.");
+        } finally {
+            setIsSavingScreenshot(false);
+        }
+    }
+
     async function handleRewardSelection(componentUniqueName: string) {
         console.info(`[screenshot-modal] Adding selected component: ${componentUniqueName}`);
         useUserStore.getState().update((prev) => ({
@@ -101,16 +116,20 @@ export default function ScreenshotModal({ path, dataUrl, canDelete, onClose }: S
                 <div className="screenshot-modal-header">
                     <h2>Warframe Screenshot</h2>
                     <div className="screenshot-modal-actions">
-                                        {canDelete && (
-                                            <button className="screenshot-modal-delete" type="button" onClick={() => void handleDelete()} disabled={isProcessingSelection} aria-label="Close and delete screenshot">
-                                                <Trash size={20} weight="bold" />
-                                            </button>
-                                        )}
+                        {canDelete && (
+                            <button className="screenshot-modal-delete" type="button" onClick={() => void handleDelete()} disabled={isProcessingSelection || isSavingScreenshot} aria-label="Close and delete screenshot">
+                                <Trash size={20} weight="bold" />
+                            </button>
+                        )}
+                        <button className="screenshot-modal-download" type="button" onClick={() => void handleDownload()} disabled={isSavingScreenshot} aria-label="Save a copy of the screenshot" title="Save a copy of this screenshot">
+                            <Download size={20} weight="bold" />
+                        </button>
                         <button className="screenshot-modal-close" type="button" onClick={onClose} aria-label="Close screenshot">
                             <X size={22} weight="bold" />
                         </button>
                     </div>
                 </div>
+                {downloadError && <p className="screenshot-modal-download-error" role="alert">{downloadError}</p>}
                 <img className="screenshot-modal-image" src={dataUrl} alt="Warframe screenshot captured with F6" />
                 <div className="screenshot-ocr-panel">
                     <div className="screenshot-ocr-heading">

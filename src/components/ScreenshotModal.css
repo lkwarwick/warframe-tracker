@@ -43,6 +43,7 @@
 }
 
 .screenshot-modal-delete,
+.screenshot-modal-download,
 .screenshot-modal-close {
     display: inline-flex;
     flex: 0 0 auto;
@@ -53,6 +54,17 @@
     padding: 0;
     border: 1px solid var(--gold-border);
     color: var(--text);
+}
+
+.screenshot-modal-download:hover:not(:disabled),
+.screenshot-modal-download:focus-visible:not(:disabled) {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.screenshot-modal-download:disabled {
+    cursor: wait;
+    opacity: 0.5;
 }
 
 .screenshot-modal-delete {
@@ -75,6 +87,12 @@
 .screenshot-modal-close:focus-visible {
     border-color: var(--gold);
     color: var(--gold);
+}
+
+.screenshot-modal-download-error {
+    margin: 0 4px 8px;
+    color: #d47a7a;
+    font-size: 14px;
 }
 
 .screenshot-modal-image {

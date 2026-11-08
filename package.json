@@ -12,6 +12,7 @@
   "dependencies": {
     "@tanstack/react-virtual": "^3.14.7",
     "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.8.4",
     "@tauri-apps/plugin-global-shortcut": "^2.0.0",
     "phosphor-react": "^1.4.1",
     "react": "latest",

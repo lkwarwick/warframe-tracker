@@ -150,6 +150,22 @@ fn delete_screenshot(state: State<'_, AppState>, file_path: String) -> bool {
 }
 
 #[tauri::command]
+fn save_screenshot_copy(file_path: String, data_url: String) -> Result<(), String> {
+    let (metadata, encoded_image) = data_url
+        .split_once(',')
+        .ok_or_else(|| "Invalid screenshot image data".to_string())?;
+    if metadata != "data:image/png;base64" && metadata != "data:image/jpeg;base64" {
+        return Err("Unsupported screenshot image format".into());
+    }
+
+    let image_bytes = BASE64
+        .decode(encoded_image)
+        .map_err(|error| format!("Could not decode screenshot image: {error}"))?;
+    fs::write(&file_path, image_bytes)
+        .map_err(|error| format!("Could not write screenshot to {file_path}: {error}"))
+}
+
+#[tauri::command]
 fn save_window_state(
     window: tauri::WebviewWindow,
     state: State<'_, AppState>,
@@ -619,6 +635,7 @@ pub fn run() {
     let f7_shortcut = Shortcut::new(None, Code::F7);
     let shortcut_for_handler = f7_shortcut.clone();
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(move |app, shortcut, event| {
@@ -636,6 +653,7 @@ pub fn run() {
             save_user_data,
             get_user_data_path,
             delete_screenshot,
+            save_screenshot_copy,
             save_window_state,
             fetch_thumbnail
         ])
