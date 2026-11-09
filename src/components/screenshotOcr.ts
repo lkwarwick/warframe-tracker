@@ -115,6 +115,27 @@ function levenshtein(left: string, right: string): number {
     return previous[right.length];
 }
 
+function phraseDistance(name: string, textTokens: string[]): number {
+    const normalizedName = normalize(name);
+    const nameTokens = normalizedName.split(" ");
+    const expected = textTokens.includes("blueprint") && !nameTokens.includes("blueprint")
+        ? `${normalizedName} blueprint`.replace(/\s+/g, "")
+        : normalizedName.replace(/\s+/g, "");
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    for (let start = 0; start < textTokens.length; start += 1) {
+        const minLength = Math.max(1, nameTokens.length - 1);
+        const maxLength = Math.min(textTokens.length - start, nameTokens.length + 3);
+        for (let length = minLength; length <= maxLength; length += 1) {
+            const phrase = textTokens.slice(start, start + length).join("");
+            const distance = levenshtein(expected, phrase) / Math.max(expected.length, phrase.length);
+            bestDistance = Math.min(bestDistance, distance);
+        }
+    }
+
+    return bestDistance;
+}
+
 function matchItem(text: string): OcrMatch[] {
     const normalizedText = normalize(text);
     if (!normalizedText) {
@@ -137,13 +158,16 @@ function matchItem(text: string): OcrMatch[] {
             const phraseMatch = ` ${normalizedText} `.includes(` ${normalizedName} `);
             return { ...item, score, tokenScores, phraseMatch };
         })
-        .filter((match) => match.tokenScores.every((tokenScore) => tokenScore <= 0.34))
-        .sort((left, right) => Number(right.phraseMatch) - Number(left.phraseMatch) || left.score - right.score)
-        .map(({ name, score, ducats, itemCount, itemUniqueName, componentUniqueName }) => ({
+        .filter((match) => match.tokenScores.every((tokenScore) => tokenScore <= 0.45))
+        .map((match) => ({ ...match, phraseScore: phraseDistance(match.name, textTokens) }))
+        .sort((left, right) => Number(right.phraseMatch) - Number(left.phraseMatch)
+            || left.score - right.score
+            || left.phraseScore - right.phraseScore)
+        .map(({ name, score, phraseScore, ducats, itemCount, itemUniqueName, componentUniqueName }) => ({
             name: textTokens.includes("blueprint") && !normalize(name).split(" ").includes("blueprint")
                 ? `${name} Blueprint`
                 : name,
-            score,
+            score: score + phraseScore * 0.5,
             ducats,
             itemCount,
             itemUniqueName,
@@ -271,6 +295,74 @@ function createCardCrop(image: HTMLImageElement, cardIndex: number, cardCount: n
     return crop;
 }
 
+function createBinarizedCrop(crop: HTMLCanvasElement): HTMLCanvasElement {
+    const context = crop.getContext("2d");
+    if (!context) {
+        console.error("[ocr] Could not read OCR canvas pixels.");
+        throw new Error("Could not preprocess an OCR image.");
+    }
+
+    const imageData = context.getImageData(0, 0, crop.width, crop.height);
+    const histogram = new Uint32Array(256);
+    const luminanceValues = new Uint8Array(crop.width * crop.height);
+    for (let pixel = 0; pixel < luminanceValues.length; pixel += 1) {
+        const index = pixel * 4;
+        const luminance = Math.round(
+            imageData.data[index] * 0.2126
+            + imageData.data[index + 1] * 0.7152
+            + imageData.data[index + 2] * 0.0722,
+        );
+        luminanceValues[pixel] = luminance;
+        histogram[luminance] += 1;
+    }
+
+    const pixelCount = luminanceValues.length;
+    let totalLuminance = 0;
+    for (let level = 0; level < histogram.length; level += 1) {
+        totalLuminance += level * histogram[level];
+    }
+
+    let backgroundWeight = 0;
+    let backgroundLuminance = 0;
+    let threshold = 127;
+    let strongestSeparation = 0;
+    for (let level = 0; level < histogram.length; level += 1) {
+        backgroundWeight += histogram[level];
+        if (backgroundWeight === 0) continue;
+        const foregroundWeight = pixelCount - backgroundWeight;
+        if (foregroundWeight === 0) break;
+
+        backgroundLuminance += level * histogram[level];
+        const backgroundMean = backgroundLuminance / backgroundWeight;
+        const foregroundMean = (totalLuminance - backgroundLuminance) / foregroundWeight;
+        const separation = backgroundWeight * foregroundWeight * (backgroundMean - foregroundMean) ** 2;
+        if (separation > strongestSeparation) {
+            strongestSeparation = separation;
+            threshold = level;
+        }
+    }
+
+    const binarized = document.createElement("canvas");
+    binarized.width = crop.width;
+    binarized.height = crop.height;
+    const binarizedContext = binarized.getContext("2d");
+    if (!binarizedContext) {
+        console.error("[ocr] Could not create binarized OCR canvas.");
+        throw new Error("Could not preprocess an OCR image.");
+    }
+
+    for (let pixel = 0; pixel < luminanceValues.length; pixel += 1) {
+        const value = luminanceValues[pixel] > threshold ? 0 : 255;
+        const index = pixel * 4;
+        imageData.data[index] = value;
+        imageData.data[index + 1] = value;
+        imageData.data[index + 2] = value;
+        imageData.data[index + 3] = 255;
+    }
+    binarizedContext.putImageData(imageData, 0, 0);
+    return binarized;
+}
+
 async function recognizeCards(
     image: HTMLImageElement,
     workers: OcrWorker[],
@@ -282,11 +374,19 @@ async function recognizeCards(
         try {
             onProgress({ card: cardIndex + 1, totalCards: cardCount, status: "Recognizing reward", progress: 0 });
             const crop = createCardCrop(image, cardIndex, cardCount);
-            const result = await worker.recognize(crop.toDataURL("image/png"));
-            const text = result.data.text.trim();
+            const variants = [crop, createBinarizedCrop(crop)];
+            const attempts = [];
+            for (const variant of variants) {
+                const result = await worker.recognize(variant.toDataURL("image/png"));
+                const text = result.data.text.trim();
+                attempts.push({ text, matches: matchItem(text) });
+            }
+            const { text, matches } = attempts
+                .sort((left, right) => (left.matches[0]?.score ?? Number.POSITIVE_INFINITY)
+                    - (right.matches[0]?.score ?? Number.POSITIVE_INFINITY))[0];
             onProgress({ card: cardIndex + 1, totalCards: cardCount, status: "Recognized reward", progress: 1 });
             console.info(`[ocr] Card ${cardIndex + 1} recognized.`, { text });
-            return { text, matches: matchItem(text) };
+            return { text, matches };
         } catch (error) {
             console.error(`[ocr] Card ${cardIndex + 1} recognition failed.`, error);
             throw error;

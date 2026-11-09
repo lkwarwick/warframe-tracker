@@ -20,7 +20,8 @@ Object.defineProperty(globalThis, "document", {
 
 const screenshotCases = [
     {
-        fileName: "rewards-forma.jpg",  // 4 Rewards, 2 Forma
+        imagePath: "./__fixtures__/rewards-forma.jpg",  // 4 Rewards, 2 Forma
+        fileName: "rewards-forma.jpg",
         expectedItems: [
             "Forma Blueprint",
             "Lex Prime Barrel",
@@ -29,7 +30,8 @@ const screenshotCases = [
         ],
     },
     {
-        fileName: "rewards-long-forma.jpg",  // 4 Rewards, 1 Forma, 1 Two-Lines
+        imagePath: "./__fixtures__/rewards-long-forma.jpg",  // 4 Rewards, 1 Forma, 1 Two-Lines
+        fileName: "rewards-long-forma.jpg",
         expectedItems: [
             "Vadarya Prime Stock",
             "Steflos Prime Receiver",
@@ -38,7 +40,8 @@ const screenshotCases = [
         ],
     },
     {
-        fileName: "rewards-long-three.jpg",  // 3 Rewards, 1 Two-Lines
+        imagePath: "./__fixtures__/rewards-long-three.jpg",  // 3 Rewards, 1 Two-Lines
+        fileName: "rewards-long-three.jpg",
         expectedItems: [
             "Akbronco Prime Link",
             "Perigale Prime Stock",
@@ -46,7 +49,8 @@ const screenshotCases = [
         ],
     },
     {
-        fileName: "rewards-long-four.jpg",  // 4 Rewards, 1 Two-Lines
+        imagePath: "./__fixtures__/rewards-long-four.jpg",  // 4 Rewards, 1 Two-Lines
+        fileName: "rewards-long-four.jpg",
         expectedItems: [
             "Daikyu Prime String",
             "Octavia Prime Systems Blueprint",
@@ -54,10 +58,39 @@ const screenshotCases = [
             "Fang Prime Blueprint",
         ],
     },
+    {
+        imagePath: "./__fixtures__/warframe-0011.jpg",
+        fileName: "warframe-0011.jpg",
+        expectedItems: [
+            "Paris Prime String",
+            "Afuris Prime Barrel",
+            "Kompressa Prime Blueprint",
+            "Spira Prime Blueprint",
+        ],
+    },
+    {
+        imagePath: "./__fixtures__/warframe-0012.jpg",
+        fileName: "warframe-0012.jpg",
+        expectedItems: [
+            "Paris Prime Upper Limb",
+            "Kompressa Prime Blueprint",
+            "Oberon Prime Chassis Blueprint",
+            "Cedo Prime Receiver",
+        ],
+    },
+    {
+        imagePath: "./__fixtures__/warframe-0013.jpg",
+        fileName: "warframe-0013.jpg",
+        expectedItems: [
+            "Braton Prime Blueprint",
+            "Gyre Prime Chassis Blueprint",
+            "Burston Prime Stock",
+        ],
+    },
 ];
 
-it.each(screenshotCases)("recognizes reward cards in $fileName", async ({ fileName, expectedItems }) => {
-    const image = await readFile(new URL(`./__fixtures__/${fileName}`, import.meta.url));
+it.each(screenshotCases)("recognizes reward cards in $fileName", async ({ fileName, imagePath, expectedItems }) => {
+    const image = await readFile(new URL(imagePath, import.meta.url));
     const dataUrl = `data:image/jpeg;base64,${image.toString("base64")}`;
     const originalDirectory = process.cwd();
     const cacheDirectory = await mkdtemp(join(tmpdir(), "warframe-tracker-ocr-"));
