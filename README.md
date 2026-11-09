@@ -79,6 +79,9 @@ Never lose progress wondering what you've already leveled. The app remembers exa
 ### Prime Parts Inventory
 Track your Prime parts collection and their ducat values at a glance. Perfect for keeping organized when you're racking up parts for prime vaulted items or just managing your farm haul.
 
+### Void Fissures
+The right sidebar shows active PC fissures for the Star Chart and Steel Path, plus Railjack Void Storms in their own section. Entries are ordered by relic tier and show the mission and time remaining. Fissures load when the app opens, refresh every five minutes, and refresh again when the next listed fissure expires. Live world-state data is provided by the community-maintained [Warframe Status API](https://docs.warframestat.us/).
+
 ## Getting Started (Users)
 
 ### How to Run
